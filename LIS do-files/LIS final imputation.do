@@ -224,6 +224,8 @@ capture program drop csv_percentiles_pooled
 program csv_percentiles_pooled   
  syntax varlist, ccyylist(namelist) [ n_quantiles(integer 100) ]   
   
+preserve
+
  di "************ BEGIN CSV_PERCENTILES ****************"  
  di "* " c(current_time)  
 
@@ -292,6 +294,8 @@ end
 capture program drop display_summaries   
 program display_summaries   
  syntax namelist
+
+preserve
   
 	local summeanvars $summeanvars
 	local sumondhivars $sumondhivars
