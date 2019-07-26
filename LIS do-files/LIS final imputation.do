@@ -15,7 +15,6 @@
 *******************
 
 quiet {
-
 /********************************
 * DEFINITION OF MACRO VARIABLES *
 *********************************/
@@ -23,7 +22,7 @@ quiet {
 * I. independent variables in the econometric model *
 ****************************************************/
 global depvars 										///
-		i.nhhmem_top	i.nhhmem65_top 	i.old_alone ///   
+		i.nhhmem_top	i.nhhmem65_top 	i.single_senior ///   
 		i.nearn_top 	i.hpartner_agg 	i.own_agg
 
 		
@@ -102,7 +101,7 @@ global quvars $quvars_obs $quvars_pred
 /********************
 * IV. datasets used *
 ********************/
-	
+{	
 global ccyy_to_imput ///
 	au81 au85 au89 au95 au01 au03 au08 au10 at87 at97 at00 at04 at07 at10 at13 be85 be88 be92 /// 
  	be97 br06 br09 br11 br13 ca71 ca75 ca81 ca87 ca91 ca94 ca97 ca98 ca00 ca04 ca07 ca10 ca13 /// 
@@ -142,94 +141,304 @@ global ccyy3 ///
  	se87 se92 se95 se00 se05 ch82 ch92 ch00 ch02 ch04 ch07 ch10 ch13 tw81 tw86 tw91 tw95 tw97 /// 
  	tw00 tw05 tw07 tw10 tw13 uk69 uk74 uk79 uk86 uk91 uk94 uk95 uk99 uk04 uk07 uk10 uk13 us74 /// 
  	us79 us86 us91 us94 us97 us00 us04 us07 us10 us13 uy04 uy07 uy10 uy13 uy16 
-  
-   
+}
+
 ************************************   
-*        MULTIPLE_CSV              *   
+*        MAIN PROGRAM              *   
 ************************************   
+
 /* This program takes datasets as input   
 and makes a call to csv_percentiles once for each file */   
-capture program drop multiple_csv   
-program multiple_csv   
- syntax namelist, model(integer) [ n_quantiles(integer 100) print test quiet summaries]   
-  
-  
- di "************ BEGIN MULTIPLE_CSV ****************"  
- di "* " c(current_time)  
-  
- di "on a test == `test'"  
- di "on a print == `print'"  
- di "on a quiet == `quiet'"  
- di "on a summaries == `summaries'"  
- di "on a obs == `obs'"  
-   
- if ("`test'"=="test") {  
- local ccyylist au01 fr10  us04
- }  
- else {  
- local ccyylist $ccyy_to_imput 
- }  
-   
- gen ccyy = ""   
- foreach ccyy in `ccyylist' {   
- qui append using $`ccyy'h, generate(appending) nolabel nonotes ///   
- keep(cname year dhi hmc hmchous hchous nhhmem hhtype ///   
- hpartner own nhhmem65 nhhmem5 nhhmem17 nearn hwgt)
- qui replace ccyy = "`ccyy'" if appending == 1   
- qui drop appending   
- }  
+capture program drop main_program   
+program main_program   
+	syntax namelist, model(integer) [ n_quantiles(integer 100) print test quiet summaries]   
+
+
+	di "************ BEGIN MAIN PROGRAM ****************"  
+	di "* " c(current_time)  
+
+	di "on a test == `test'"  
+	di "on a print == `print'"  
+	di "on a quiet == `quiet'"  
+	di "on a summaries == `summaries'"  
+	di "on a obs == `obs'"  
+
+	if ("`test'"=="test") {  
+	local ccyylist au01 fr10  us04
+	}  
+	else {  
+	local ccyylist $ccyy_to_imput 
+	}  
+
+	gen ccyy = ""   
+	foreach ccyy in `ccyylist' {   
+		qui append using $`ccyy'h, generate(appending) nolabel nonotes ///   
+		keep(cname year dhi hmc hmchous hchous nhhmem hhtype ///   
+		hpartner own nhhmem65 nhhmem5 nhhmem17 nearn hwgt)
+		qui replace ccyy = "`ccyy'" if appending == 1   
+		qui drop appending   
+	}  
+
+	qui merge m:1 ccyy using "$mydata/jblasc/18-09-09 availability matrix.dta", ///
+	keepusing(dhi_ccyy hmc_ccyy model1_ccyy model2_ccyy wor_ccyy rich_ccyy nearn)
+	qui drop if _merge==2
+	qui drop _merge
+
+	qui merge m:1 cname year using $mydata/jblasc/18-08-31_itrcs_scalings.dta, ///  
+	keepusing(itrc_carey itrc_euro itrc_ours oecd_prop_wor oecd_prop ///  
+	itrc_carey_wor itrc_euro_wor itrc_ours_wor oecd_prop_wor_def ///
+	oecd_P31CP041 oecd_P31CP042 oecd_income_S14 oecd_income_S14_S15)  
+	qui drop if _merge==2  
+
+	di "************ BEGIN PREPROCESSING ****************"  
+	di "* " c(current_time)
+
+	`quiet' preprocessing `ccyylist', model(`model')
+
+	di "----------- start regressions ------------"  
+	di "- " c(current_time)  
+
+	`quiet' consumption_imputation `ccyylist', model(`model')
+
+	di "----------- variables creation ------------"  
+	di "- " c(current_time) 
+	
+	`quiet' variables_creation
+	
+	
+	if ("`test'"=="test") {  
+	local ccyylist au01 fr10 us04 
+	}  
+	else {  
+	local ccyylist `namelist'
+	}  
+
+
+	if ("`print'"=="print") {  
+	display_percentiles $quvars, ccyylist(`ccyylist') ///
+									n_quantiles(`n_quantiles') `median'
+	}  
+
+	if ("`summaries'"=="summaries") {  
+	display_summaries `ccyylist'
+	}  
+
+	di "************** End of program : ************"  
+	di c(current_time)  
+
+	end   
+ // end main_program
+
  
- qui merge m:1 ccyy using "$mydata/jblasc/18-09-09 availability matrix.dta", ///
- keepusing(dhi_ccyy hmc_ccyy model1_ccyy model2_ccyy wor_ccyy rich_ccyy nearn)
- qui drop if _merge==2
- qui drop _merge
-   
- qui merge m:1 cname year using $mydata/jblasc/18-08-31_itrcs_scalings.dta, ///  
- keepusing(itrc_carey itrc_euro itrc_ours oecd_prop_wor oecd_prop ///  
-   itrc_carey_wor itrc_euro_wor itrc_ours_wor oecd_prop_wor_def ///
-   oecd_P31CP041 oecd_P31CP042 oecd_income_S14 oecd_income_S14_S15)  
- qui drop if _merge==2  
-   
- di "************ BEGIN PREPROCESSING ****************"  
- di "* " c(current_time)
-   
- `quiet' preprocessing `ccyylist', model(`model')
+************************************   
+*        PREPROCESSING             *   
+************************************  
+{ 
+/* This program transforms initial dataset before printing :   
+ - top and bottom coding   
+ - creating new variables   
+ - doing some analysis   
+*/   
+capture program drop preprocessing   
+program preprocessing     
+	syntax namelist, model(integer)
   
    
- if ("`test'"=="test") {  
- local ccyylist au01 fr10 us04 
- }  
- else {  
- local ccyylist `namelist'
- }  
-   
-   
- if ("`print'"=="print") {  
-	csv_percentiles_pooled $quvars, ccyylist(`ccyylist') ///
-								 n_quantiles(`n_quantiles') `median'
- }  
-   
- if ("`summaries'"=="summaries") {  
- display_summaries `ccyylist'
- }  
-   
- di "************** End of program : ************"  
- di c(current_time)  
-   
+	 /* trim and bottom-code:   
+	 we could also drop first percentiles but we use the method in    
+	 Addition to Consumption VAT program_eg.do */   
+	   
+	  
+	 gen dhi_obs 		= dhi_ccyy 		& !mi(dhi)
+	 gen hmc_obs 		= hmc_ccyy		& !mi(hmc)
+	 gen model0_obs		= 1
+	 gen model1_obs 	= model1_ccyy 	& !mi(dhi, nhhmem, hpartner)
+	 gen model2_obs 	= model2_ccyy 	& model1_obs & !mi(hchous, own, nhhmem65)
+	 gen wor_obs 		= wor_ccyy 		& !mi(hmchous)
+	 
+	 replace dhi_obs = 0 if dhi <= 0 
+	 
+	 // scope: dhi available + model variables available + same obs that in regression
+	 gen scope = dhi_obs & model`model'_obs & !(hmc_ccyy & mi(hmc))
+	 gen scope_regression = dhi_obs & model`model'_obs & hmc_obs & rich_ccyy
+	 gen scope_hmc = scope & !mi(hmc)
+	 
+	 egen nb_scope 			= sum(scope)
+	 egen nb_scope_regress  = sum(scope_regression)
+	 
+	 rename hmc hmc_old
+	 gen hmc = max(1, hmc_old) if !mi(hmc_old)
+	 
+	 rename hchous hchous_old
+	 gen hchous = max(1, hchous_old) if !mi(hchous_old)
+	 
+	 /* equivalise */   
+	 foreach var in dhi hmc hmchous hchous {   
+	 replace `var' = `var'/(nhhmem^0.5)   
+	 }   
+	  
+	  
+	 foreach var in hmc dhi hmchous hchous {   
+	 gen `var'_median = .
+		foreach ccyy in `namelist' {
+			sum `var' [w=hwgt*nhhmem] if ccyy == "`ccyy'" & scope, de 
+			replace `var'_median = r(p50) if ccyy == "`ccyy'"
+		} 
+	 gen `var'_medianized = `var'/`var'_median   
+	 gen log_`var'_medianized = log(`var'_medianized)   
+	 }   
+	   
+	 foreach var in nhhmem {   
+	 gen `var'_top = `var'   
+	 replace `var'_top = 6 if `var'>6   
+	 }   
+	  
+	 foreach var in nhhmem65 nhhmem5 nhhmem17 nearn {   
+	 gen `var'_top = `var'   
+	 replace `var'_top = 2 if `var'>2   
+	 }   
+	  
+	 foreach var in hpartner own {   
+	 gen `var'_agg = int(`var'/100)   
+	 }   
+	  
+	 gen single_senior = nhhmem65*nhhmem == 1  
+	   
+	 gen dhipov_ind = (dhi_medianized<0.6)
+	 
+	 gen log_dhi_med_shifted = log_dhi_medianized -log(0.6)
+  
 end   
+     
+} // end preprocessing
 
 
+**************************************
+*      IMPUTATION OF CONSUMPTION     *
+**************************************
+{
+program consumption_imputation
+	syntax namelist, model(integer)
+	
+	if (`model'==0) {
+		noisily glm hmc_medianized c.log_dhi_medianized [aw=hwgt*nhhmem]  if scope_regression, link(log)
+	}
+	else if (`model'==1) {
+		noisily glm hmc_medianized c.log_dhi_medianized ///
+		c.log_dhi_med_shifted#i.dhipov_ind   ///   
+		i.nhhmem_top i.hpartner_agg [aw=hwgt*nhhmem]  if scope_regression, link(log)  
+	}
+	else if (`model'==2) {
+		noisily glm hmc_medianized c.log_dhi_medianized ///
+		c.log_dhi_med_shifted#i.dhipov_ind  log_hchous_medianized ///   
+		$depvars [aw=hwgt*nhhmem]  if scope_regression, link(log)  
+	}
+	
+	local no_regress = e(N)
+
+	if (nb_scope_regress != `no_regress') {
+		noisily di "__________REGRESSION SCOPE PROBLEM__________"
+		noisily di nb_scope_regress
+		noisily di `no_regress'
+		}
+	
+ predict hmc_medianized_predict if scope
+ count if !mi(hmc_medianized_predict)
+
+	local no_imput = r(N)
+	
+	if (nb_scope != `no_imput') {
+		noisily di "__________IMPUTATION SCOPE PROBLEM__________"
+		noisily di nb_scope
+		noisily di `no_imput'
+		}
+ 
+ end
+ 
+ } // end consumption_imputation
+	
+**************************************
+*      CREATION OF VARIABLES         *
+**************************************
+{
+program variables_creation
+	
+	 // compute scaled variables, propensities, tax rates, etc.  
+	   
+	 egen dhi_mean = wtmean(dhi) if scope,  by(ccyy)  weight(hwgt*nhhmem) 
+		
+	 egen hmc_mean = wtmean(hmc) if scope, by(ccyy)  weight(hwgt*nhhmem) 
+	 gen hmc_scaled = oecd_prop * (dhi_mean/hmc_mean) * hmc  
+	 gen prop_scaled = hmc_scaled/dhi  
+	 
+	foreach def in carey euro ours {   
+	 gen tax_eff_`def' = hmc_scaled * itrc_`def'
+	 gen tax_rate_`def' = tax_eff_`def'/dhi  
+	 gen inc_5_`def' = dhi - tax_eff_`def'
+	 }  
+	 
+	 gen hmc_wor = hmc-hmchous  
+	 egen hmc_wor_mean = wtmean(hmc_wor) if scope, by(ccyy)  weight(hwgt*nhhmem) 
+	 gen hmc_wor_scaled = oecd_prop_wor * (dhi_mean/hmc_wor_mean) * hmc_wor  
+	 gen prop_wor_scaled = hmc_wor_scaled/dhi  
+	   
+	 foreach def in carey euro ours {   
+	 gen tax_eff_`def'_wor = hmc_wor_scaled * itrc_`def'_wor  
+	 gen tax_rate_`def'_wor = tax_eff_`def'_wor/dhi  
+	 gen inc_5_`def'_wor = dhi - tax_eff_`def'_wor  
+	 }   
+	  
+	 // version with rent  
+	 egen hmc_medianized_predict_mean = wtmean(hmc_medianized_predict) if scope, by(ccyy)  weight(hwgt*nhhmem) 
+	 gen hmc_pred_scaled = oecd_prop * (dhi_mean/hmc_medianized_predict_mean) * ///  
+		hmc_medianized_predict  
+	 gen prop_pred_scaled = hmc_pred_scaled/dhi  
+	   
+	 // compute taxes   
+	 foreach def in carey euro ours {   
+	 gen tax_eff_`def'_pred = hmc_pred_scaled * itrc_`def'  
+	 gen tax_rate_`def'_pred = tax_eff_`def'_pred/dhi  
+	 gen inc_5_`def'_pred = dhi - tax_eff_`def'_pred  
+	 }  
+	   
+	   
+	 // version without rent 
+	 egen hmchous_mean = wtmean(hmchous) if scope, by(ccyy)  weight(hwgt*nhhmem)
+	 gen oecd_income = 	cond(oecd_prop_wor_def == 0, oecd_income_S14-oecd_P31CP042, ///
+						cond(oecd_prop_wor_def == 1, oecd_income_S14, ///
+						cond(oecd_prop_wor_def == 2, oecd_income_S14_S15-oecd_P31CP042, ///
+						cond(oecd_prop_wor_def == 3, oecd_income_S14_S15, .))))
+	 gen hmchous_scaled = oecd_P31CP041/oecd_income * (dhi_mean/hmchous_mean) * hmchous
+	 
+	 gen hmc_wor_pred = hmc_pred_scaled - hmchous_scaled
+	 egen hmc_wor_pred_mean = wtmean(hmc_wor_pred) if scope, by(ccyy) weight(hwgt*nhhmem)  
+	 gen hmc_wor_pred_scaled = oecd_prop_wor * (dhi_mean/hmc_wor_pred_mean) * ///  
+	   hmc_wor_pred  
+	 gen prop_wor_pred_scaled = hmc_wor_pred_scaled/dhi  
+	  
+	 // compute taxes   
+	 foreach def in carey euro ours {   
+	 gen tax_eff_`def'_wor_pred = hmc_wor_pred_scaled * itrc_`def'_wor  
+	 gen tax_rate_`def'_wor_pred = tax_eff_`def'_wor_pred/dhi  
+	 gen inc_5_`def'_wor_pred = dhi - tax_eff_`def'_wor_pred  
+	 }  
+	   
+ end
+ 
+ } // end variables_creation
+
 ************************************   
-*        CSV_PERCENTILES_POOLED    *   
+*        DISPLAY_PERCENTILES       *   
 ************************************   
+{ 
 /* This program computes quantiles of income and outputs a CSV */   
-capture program drop csv_percentiles_pooled   
-program csv_percentiles_pooled   
+capture program drop display_percentiles   
+program display_percentiles   
  syntax varlist, ccyylist(namelist) [ n_quantiles(integer 100) ]   
   
 preserve
 
- di "************ BEGIN CSV_PERCENTILES ****************"  
+ di "************ BEGIN DISPLAY_PERCENTILES ****************"  
  di "* " c(current_time)  
 
  quiet {
@@ -288,11 +497,12 @@ preserve
  */
    
 end   
-   
+} // end display_percentiles
    
 ***************************************   
 *          DISPLAY_SUMMARIES          *   
 ***************************************   
+{ 
 /* This program computes summaries and outputs a CSV */   
 capture program drop display_summaries   
 program display_summaries   
@@ -351,199 +561,12 @@ preserve
 	 di
  }  
 end   
+} // end display_summaries
 
-   
-   
-************************************   
-*        PREPROCESSING             *   
-************************************   
-/* This program transforms initial dataset before printing :   
- - top and bottom coding   
- - creating new variables   
- - doing some analysis   
-*/   
-capture program drop preprocessing   
-program preprocessing     
-	syntax namelist, model(integer)
-  
-   
- /* trim and bottom-code:   
- we could also drop first percentiles but we use the method in    
- Addition to Consumption VAT program_eg.do */   
-   
- 
- 
- gen dhi_obs 		= dhi_ccyy 		& !mi(dhi)
- gen hmc_obs 		= hmc_ccyy		& !mi(hmc)
- gen model0_obs		= 1
- gen model1_obs 	= model1_ccyy 	& !mi(dhi, nhhmem, hpartner)
- gen model2_obs 	= model2_ccyy 	& model1_obs & !mi(hchous, own, nhhmem65)
- gen wor_obs 		= wor_ccyy 		& !mi(hmchous)
- 
- replace dhi_obs = 0 if dhi <= 0 
- 
- // scope: dhi available + model variables available + same obs that in regression
- gen scope = dhi_obs & model`model'_obs & !(hmc_ccyy & mi(hmc))
- gen scope_regression = dhi_obs & model`model'_obs & hmc_obs & rich_ccyy
- gen scope_hmc = scope & !mi(hmc)
- 
- egen nb_scope 			= sum(scope)
- egen nb_scope_regress  = sum(scope_regression)
- 
- rename hmc hmc_old
- gen hmc = max(1, hmc_old) if !mi(hmc_old)
- 
- rename hchous hchous_old
- gen hchous = max(1, hchous_old) if !mi(hchous_old)
- 
- di "`namelist'"
- 
- quiet { 
- 
- /* equivalise */   
- foreach var in dhi hmc hmchous hchous {   
- replace `var' = `var'/(nhhmem^0.5)   
- }   
-  
-  
- foreach var in hmc dhi hmchous hchous {   
- gen `var'_median = .
-	foreach ccyy in `namelist' {
-		sum `var' [w=hwgt*nhhmem] if ccyy == "`ccyy'" & scope, de 
-		replace `var'_median = r(p50) if ccyy == "`ccyy'"
-	} 
- gen `var'_medianized = `var'/`var'_median   
- gen log_`var'_medianized = log(`var'_medianized)   
- }   
-  
- gen dhi_medianized2 = dhi_medianized^2  
- gen log_dhi_medianized2 = log_dhi_medianized^2  
-  
- foreach var in nhhmem {   
- gen `var'_top = `var'   
- replace `var'_top = 6 if `var'>6   
- }   
-  
- foreach var in nhhmem65 nhhmem5 nhhmem17 nearn {   
- gen `var'_top = `var'   
- replace `var'_top = 2 if `var'>2   
- }   
-  
- foreach var in hpartner own {   
- gen `var'_agg = int(`var'/100)   
- }   
-  
- gen old_alone = nhhmem65*nhhmem == 1  
-   
- gen dhipov_ind = (dhi_medianized<0.6)
- 
- gen log_dhi_med_shifted = log_dhi_medianized -log(0.6)
-   
- 
- noisily di "----------- start regressions ------------"  
- noisily di "- " c(current_time)  
- 
-	if (`model'==0) {
-		noisily glm hmc_medianized c.log_dhi_medianized [aw=hwgt*nhhmem]  if scope_regression, link(log)
-	}
-	else if (`model'==1) {
-		noisily glm hmc_medianized c.log_dhi_medianized ///
-		c.log_dhi_med_shifted#i.dhipov_ind   ///   
-		i.nhhmem_top i.hpartner_agg [aw=hwgt*nhhmem]  if scope_regression, link(log)  
-	}
-	else if (`model'==2) {
-		noisily glm hmc_medianized c.log_dhi_medianized ///
-		c.log_dhi_med_shifted#i.dhipov_ind  log_hchous_medianized ///   
-		$depvars [aw=hwgt*nhhmem]  if scope_regression, link(log)  
-	}
-	
-	local no_regress = e(N)
-
-	if (nb_scope_regress != `no_regress') {
-		noisily di "__________REGRESSION SCOPE PROBLEM__________"
-		noisily di nb_scope_regress
-		noisily di `no_regress'
-		}
-	
- predict hmc_medianized_predict if scope
- count if !mi(hmc_medianized_predict)
-
-	local no_imput = r(N)
-	
-	if (nb_scope != `no_imput') {
-		noisily di "__________IMPUTATION SCOPE PROBLEM__________"
-		noisily di nb_scope
-		noisily di `no_imput'
-		}
-   
- // compute scaled variables, propensities, tax rates, etc.  
-   
- egen dhi_mean = wtmean(dhi) if scope,  by(ccyy)  weight(hwgt*nhhmem) 
-    
- egen hmc_mean = wtmean(hmc) if scope, by(ccyy)  weight(hwgt*nhhmem) 
- gen hmc_scaled = oecd_prop * (dhi_mean/hmc_mean) * hmc  
- gen prop_scaled = hmc_scaled/dhi  
- 
-foreach def in carey euro ours {   
- gen tax_eff_`def' = hmc_scaled * itrc_`def'
- gen tax_rate_`def' = tax_eff_`def'/dhi  
- gen inc_5_`def' = dhi - tax_eff_`def'
- }  
- 
- gen hmc_wor = hmc-hmchous  
- egen hmc_wor_mean = wtmean(hmc_wor) if scope, by(ccyy)  weight(hwgt*nhhmem) 
- gen hmc_wor_scaled = oecd_prop_wor * (dhi_mean/hmc_wor_mean) * hmc_wor  
- gen prop_wor_scaled = hmc_wor_scaled/dhi  
-   
- foreach def in carey euro ours {   
- gen tax_eff_`def'_wor = hmc_wor_scaled * itrc_`def'_wor  
- gen tax_rate_`def'_wor = tax_eff_`def'_wor/dhi  
- gen inc_5_`def'_wor = dhi - tax_eff_`def'_wor  
- }   
-  
- // version with rent  
- egen hmc_medianized_predict_mean = wtmean(hmc_medianized_predict) if scope, by(ccyy)  weight(hwgt*nhhmem) 
- gen hmc_pred_scaled = oecd_prop * (dhi_mean/hmc_medianized_predict_mean) * ///  
-    hmc_medianized_predict  
- gen prop_pred_scaled = hmc_pred_scaled/dhi  
-   
- // compute taxes   
- foreach def in carey euro ours {   
- gen tax_eff_`def'_pred = hmc_pred_scaled * itrc_`def'  
- gen tax_rate_`def'_pred = tax_eff_`def'_pred/dhi  
- gen inc_5_`def'_pred = dhi - tax_eff_`def'_pred  
- }  
-   
-   
- // version without rent 
- egen hmchous_mean = wtmean(hmchous) if scope, by(ccyy)  weight(hwgt*nhhmem)
- gen oecd_income = 	cond(oecd_prop_wor_def == 0, oecd_income_S14-oecd_P31CP042, ///
-					cond(oecd_prop_wor_def == 1, oecd_income_S14, ///
-					cond(oecd_prop_wor_def == 2, oecd_income_S14_S15-oecd_P31CP042, ///
-					cond(oecd_prop_wor_def == 3, oecd_income_S14_S15, .))))
- gen hmchous_scaled = oecd_P31CP041/oecd_income * (dhi_mean/hmchous_mean) * hmchous
- 
- gen hmc_wor_pred = hmc_pred_scaled - hmchous_scaled
- egen hmc_wor_pred_mean = wtmean(hmc_wor_pred) if scope, by(ccyy) weight(hwgt*nhhmem)  
- gen hmc_wor_pred_scaled = oecd_prop_wor * (dhi_mean/hmc_wor_pred_mean) * ///  
-   hmc_wor_pred  
- gen prop_wor_pred_scaled = hmc_wor_pred_scaled/dhi  
-  
- // compute taxes   
- foreach def in carey euro ours {   
- gen tax_eff_`def'_wor_pred = hmc_wor_pred_scaled * itrc_`def'_wor  
- gen tax_rate_`def'_wor_pred = tax_eff_`def'_wor_pred/dhi  
- gen inc_5_`def'_wor_pred = dhi - tax_eff_`def'_wor_pred  
- }  
-   
-   
- }  
-end   
-   
 }
-   
+
 /***************************************   
 * Call function on desired datasets    
 ***************************************/   
    
-multiple_csv $ccyy_to_imput, model(2) n_quantiles(10) test print summaries quiet
+main_program $ccyy_to_imput, model(2) n_quantiles(10) test print summaries quiet
