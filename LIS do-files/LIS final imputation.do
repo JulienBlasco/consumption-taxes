@@ -151,7 +151,7 @@ global ccyy3 ///
 and makes a call to csv_percentiles once for each file */   
 capture program drop main_program   
 program main_program   
-	syntax namelist, model(integer) [ n_quantiles(integer 100) print test quiet summaries]   
+	syntax namelist, model(integer) [ n_quantiles(integer 100) print test quiet summaries crossvalid]   
 
 
 	di "************ BEGIN MAIN PROGRAM ****************"  
@@ -164,7 +164,7 @@ program main_program
 	di "on a obs == `obs'"  
 
 	if ("`test'"=="test") {  
-	local ccyylist au01 fr10  us04
+	local ccyylist au01 fr10 it14 us04
 	}  
 	else {  
 	local ccyylist $ccyy_to_imput 
@@ -194,25 +194,31 @@ program main_program
 	di "* " c(current_time)
 
 	`quiet' preprocessing `ccyylist', model(`model')
-
-	di "----------- start regressions ------------"  
-	di "- " c(current_time)  
-
-	`quiet' consumption_imputation `ccyylist', model(`model')
-
-	di "----------- variables creation ------------"  
-	di "- " c(current_time) 
-	
-	`quiet' variables_creation
-	
 	
 	if ("`test'"=="test") {  
-	local ccyylist au01 fr10 us04 
+	local ccyylist au01 fr10 it14 us04
 	}  
 	else {  
 	local ccyylist `namelist'
 	}  
+	
+	di "----------- start regressions ------------"  
+	di "- " c(current_time)  
+	
+	if ("`crossvalid'"=="crossvalid") {  
+		foreach ccyy in `ccyylist' {
+		`quiet' consumption_imputation , model(`model') crossvalid("`ccyy'")
+		}  
+	}
+	else {  
+	`quiet' consumption_imputation , model(`model') 
+	}
 
+	
+	di "----------- variables creation ------------"  
+	di "- " c(current_time) 
+	
+	`quiet' variables_creation
 
 	if ("`print'"=="print") {  
 	display_percentiles $quvars, ccyylist(`ccyylist') ///
@@ -281,7 +287,7 @@ program preprocessing
 	 foreach var in hmc dhi hmchous hchous {   
 	 gen `var'_median = .
 		foreach ccyy in `namelist' {
-			sum `var' [w=hwgt*nhhmem] if ccyy == "`ccyy'" & scope, de 
+			quiet sum `var' [w=hwgt*nhhmem] if ccyy == "`ccyy'" & scope, de 
 			replace `var'_median = r(p50) if ccyy == "`ccyy'"
 		} 
 	 gen `var'_medianized = `var'/`var'_median   
@@ -318,41 +324,54 @@ end
 **************************************
 {
 program consumption_imputation
-	syntax namelist, model(integer)
+	syntax , model(integer) [crossvalid(string)]
 	
 	if (`model'==0) {
-		noisily glm hmc_medianized c.log_dhi_medianized [aw=hwgt*nhhmem]  if scope_regression, link(log)
+		noisily glm hmc_medianized c.log_dhi_medianized [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)
 	}
 	else if (`model'==1) {
 		noisily glm hmc_medianized c.log_dhi_medianized ///
 		c.log_dhi_med_shifted#i.dhipov_ind   ///   
-		i.nhhmem_top i.hpartner_agg [aw=hwgt*nhhmem]  if scope_regression, link(log)  
+		i.nhhmem_top i.hpartner_agg [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
 	}
 	else if (`model'==2) {
 		noisily glm hmc_medianized c.log_dhi_medianized ///
 		c.log_dhi_med_shifted#i.dhipov_ind  log_hchous_medianized ///   
-		$depvars [aw=hwgt*nhhmem]  if scope_regression, link(log)  
+		$depvars [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
 	}
-	
-	local no_regress = e(N)
 
-	if (nb_scope_regress != `no_regress') {
-		noisily di "__________REGRESSION SCOPE PROBLEM__________"
-		noisily di nb_scope_regress
-		noisily di `no_regress'
+	if "`crossvalid'" != "" { 
+		predict temp_pred if scope & substr(ccyy, 1,2) == substr("`crossvalid'", 1,2)
+		capture confirm variable hmc_medianized_predict
+		if (!_rc) {
+			replace hmc_medianized_predict = temp_pred if scope & substr(ccyy, 1,2) == substr("`crossvalid'", 1,2)
 		}
-	
- predict hmc_medianized_predict if scope
- count if !mi(hmc_medianized_predict)
+		else {
+			gen hmc_medianized_predict = temp_pred
+		}
+		drop temp_pred
+	}
+	else {
+		local no_regress = e(N)
 
-	local no_imput = r(N)
-	
-	if (nb_scope != `no_imput') {
-		noisily di "__________IMPUTATION SCOPE PROBLEM__________"
-		noisily di nb_scope
-		noisily di `no_imput'
-		}
- 
+		if (nb_scope_regress != `no_regress') {
+			noisily di "__________REGRESSION SCOPE PROBLEM__________"
+			noisily di nb_scope_regress
+			noisily di `no_regress'
+			}
+			
+		predict hmc_medianized_predict if scope
+		count if !mi(hmc_medianized_predict)
+
+		local no_imput = r(N)
+		
+		if (nb_scope != `no_imput') {
+			noisily di "__________IMPUTATION SCOPE PROBLEM__________"
+			noisily di nb_scope
+			noisily di `no_imput'
+			}
+	}
+		 
  end
  
  } // end consumption_imputation
@@ -569,4 +588,4 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, model(2) n_quantiles(10) test print summaries quiet
+main_program $ccyy_to_imput, model(1) n_quantiles(10) test print summaries quiet
