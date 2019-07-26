@@ -190,6 +190,9 @@ program multiple_csv
    oecd_P31CP041 oecd_P31CP042 oecd_income_S14 oecd_income_S14_S15)  
  qui drop if _merge==2  
    
+ di "************ BEGIN PREPROCESSING ****************"  
+ di "* " c(current_time)
+   
  `quiet' preprocessing `ccyylist', model(`model')
   
    
@@ -296,6 +299,10 @@ program display_summaries
  syntax namelist
 
 preserve
+
+ di "************ BEGIN DISPLAY_SUMMARIES ****************"  
+ di "* " c(current_time)  
+
   
 	local summeanvars $summeanvars
 	local sumondhivars $sumondhivars
@@ -358,8 +365,7 @@ end
 capture program drop preprocessing   
 program preprocessing     
 	syntax namelist, model(integer)
- di "************ BEGIN PREPROCESSING ****************"  
- di "* " c(current_time)  
+  
    
  /* trim and bottom-code:   
  we could also drop first percentiles but we use the method in    
@@ -540,4 +546,4 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-multiple_csv $ccyy1, model(1) n_quantiles(10) test print quiet
+multiple_csv $ccyy_to_imput, model(2) n_quantiles(10) test print summaries quiet
