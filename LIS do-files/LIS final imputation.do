@@ -167,6 +167,11 @@ program main_program
 	di "on a savemodel == `savemodel'"
 	di "on a runmodel == `runmodel'"
 
+	if ("`runmodel'"!="") & ("`savemodel'"!="") {
+		display as error "runmodel and savemodel cannot be both defined"
+		exit
+	}
+	
 	if ("`test'"=="test") {  
 	local ccyylist au01 fr10 it14 us04
 	}  
@@ -220,13 +225,13 @@ program main_program
 	else {  
 		`quiet' consumption_imputation , model(`model') savemodel("`savemodel'") runmodel("`runmodel'")
 	}
-
 	
+	if ("`quantiles'"!="") | ("`summaries'"!="") {
 	di "----------- variables creation ------------"  
 	di "- " c(current_time) 
-	
 	quiet variables_creation
-
+	}
+	
 	if ("`quantiles'"!="") {  
 	display_percentiles $quvars, ccyylist(`ccyylist') ///
 									n_quantiles(`quantiles') `median'
@@ -334,27 +339,45 @@ program consumption_imputation
 	syntax , model(integer) [crossvalid(string) savemodel(string) runmodel(string)]
 	
 	if ("`runmodel'" != "") {
-		estimates use "$mydata/jblasc/estimation_models/`runmodel'"
+		local model = `model' + 1
+		estimates use "$mydata/jblasc/estimation_models/`runmodel'", number(`model')
 	}
 	else {
-		if (`model'==0) {
+		if (`model'==0) | ("`savemodel'" != "") {
 			noisily glm hmc_medianized c.log_dhi_medianized [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)
+			if (`model'==0) {
+				estimates store themodel
+			}
+			if ("`savemodel'" != "") {
+				estimates save "$mydata/jblasc/estimation_models/`savemodel'", replace
+			}
 		}
-		else if (`model'==1) {
+		if (`model'==1) | ("`savemodel'" != "") {
 			noisily glm hmc_medianized c.log_dhi_medianized ///
 			c.log_dhi_med_shifted#i.dhipov_ind   ///   
 			i.nhhmem_top i.hpartner_agg [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
+			if (`model'==1) {
+				estimates store themodel
+			}
+			if ("`savemodel'" != "") {
+				estimates save "$mydata/jblasc/estimation_models/`savemodel'", append
+			}
 		}
-		else if (`model'==2) {
+		if (`model'==2) | ("`savemodel'" != "") {
 			noisily glm hmc_medianized c.log_dhi_medianized ///
 			c.log_dhi_med_shifted#i.dhipov_ind  log_hchous_medianized ///   
 			$depvars [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
+			if (`model'==2) {
+				estimates store themodel
+			}
+			if ("`savemodel'" != "") {
+				estimates save "$mydata/jblasc/estimation_models/`savemodel'", append
+			}
 		}
+		
+		estimates restore themodel
 	}
 
-	if ("`savemodel'" != "") {
-		estimates save "$mydata/jblasc/estimation_models/`savemodel'", replace
-	}
 	
 	if ("`crossvalid'" != "") { 
 		predict temp_pred if scope & substr(ccyy, 1,2) == substr("`crossvalid'", 1,2)
@@ -481,13 +504,10 @@ preserve
  quiet {
  egen dhi_quantiles = xtile(dhi) if scope, by(ccyy) nquantiles(`n_quantiles') weights(hwgt*nhhmem)  
    
-
- 
  foreach variable of local varlist {
 	local varlist_q `varlist_q' `variable'_q
 	egen `variable'_q = wtmean(`variable') if scope, by(ccyy dhi_quantiles) weight(hwgt*nhhmem)
  }
- 
   
  keep dhi_quantiles ccyy `varlist_q'
  duplicates drop
@@ -498,9 +518,7 @@ preserve
  gen to_output = 0
  
  foreach ccyy in `ccyylist' {
- 
 	replace to_output = 1 if ccyy=="`ccyy'"
- 
  }
  
  drop if to_output == 0
