@@ -152,7 +152,7 @@ global ccyy3 ///
 and makes a call to csv_percentiles once for each file */   
 capture program drop main_program   
 program main_program   
-	syntax namelist, model(integer) [ test quiet quantiles(integer 100) summaries crossvalid savemodel(string) runmodel(string) compare]   
+	syntax namelist, model(integer) [ test quiet quantiles(integer 0) summaries crossvalid savemodel(string) runmodel(string) compare]   
 
 
 	di "************ BEGIN MAIN PROGRAM ****************"  
@@ -170,6 +170,11 @@ program main_program
 
 	if ("`runmodel'"!="") & ("`savemodel'"!="") {
 		display as error "runmodel and savemodel cannot be both defined"
+		exit
+	}
+	
+	if ("`runmodel'"=="") & ("`compare'"!="") {
+		display as error "runmodel has to be defined when compare is"
 		exit
 	}
 	
@@ -231,14 +236,14 @@ program main_program
 			`quiet' consumption_imputation , model(`model') savemodel("`savemodel'") runmodel("`runmodel'")
 		}
 		
-		if ("`quantiles'"!="") | ("`summaries'"!="") {
+		if (`quantiles'!=0) | ("`summaries'"!="") {
 		di "----------- variables creation ------------"  
 		di "- " c(current_time) 
 		quiet variables_creation
 		}
 	}
 	
-	if ("`quantiles'"!="") {  
+	if (`quantiles'!=0) {  
 	display_percentiles $quvars, ccyylist(`ccyylist') ///
 									n_quantiles(`quantiles') `median'
 	}  
@@ -382,6 +387,15 @@ program consumption_imputation
 		}
 		
 		estimates restore themodel
+		
+		local no_regress = e(N)
+		if (nb_scope_regress != `no_regress') {
+			noisily display as error "__________REGRESSION SCOPE PROBLEM__________"
+			noisily display as error nb_scope_regress
+			noisily display as error `no_regress'
+			exit
+			}
+		
 	}
 
 	
@@ -397,18 +411,9 @@ program consumption_imputation
 		drop temp_pred
 	}
 	else {
-		local no_regress = e(N)
-
-		if (nb_scope_regress != `no_regress') {
-			noisily display as error "__________REGRESSION SCOPE PROBLEM__________"
-			noisily display as error nb_scope_regress
-			noisily display as error `no_regress'
-			exit
-			}
-			
+		
 		predict hmc_medianized_predict if scope
-		count if !mi(hmc_medianized_predict)
-
+		quiet count if !mi(hmc_medianized_predict)
 		local no_imput = r(N)
 		
 		if (nb_scope != `no_imput') {
@@ -500,7 +505,7 @@ program variables_creation
 /* This program computes quantiles of income and outputs a CSV */   
 capture program drop display_percentiles   
 program display_percentiles   
- syntax varlist, ccyylist(namelist) [ n_quantiles(integer 100) ]   
+ syntax varlist, ccyylist(namelist) [ n_quantiles(integer 0) ]   
   
 preserve
 
@@ -652,7 +657,7 @@ sort ccyy
 	egen corr`i' = corr(hmc_medianized hmc_medianized_predict`i'), by(ccyy)
 	gen R2_`i' = corr`i'^2
  }
-  
+
 end   
 } // end compare_models
 }
