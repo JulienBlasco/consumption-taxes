@@ -120,27 +120,6 @@ global ccyy_to_imput ///
  	tw00 tw05 tw07 tw10 tw13 uk69 uk74 uk79 uk86 uk91 uk94 uk95 uk99 uk04 uk07 uk10 uk13 us74 /// 
  	us79 us86 us91 us94 us97 us00 us04 us07 us10 us13 uy04 uy07 uy10 uy13 uy16 
 
-global ccyy1 ///
-	au81 au85 au89 au95 au01 au03 au08 au10 at87 at97 at00 at04 at07 at10 at13 be85 be88 be92 /// 
- 	be97 br06 br09 br11 br13 ca71 ca75 ca81 ca87 ca91 ca94 ca97 ca98 ca00 ca04 ca07 ca10 ca13 /// 
- 	cn02 co07 cz92 cz96 cz02 cz04 cz07 cz10 cz13 dk87 dk92 dk95 dk00 dk04 dk07 dk10 dk13 do07 /// 
- 	eg12 ee00 ee04 ee07 ee10 ee13 fi87 fi91 fi95 fi00 fi04 fi07 fi10 fi13 fr78 fr84 fr89 fr94 /// 
- 	fr00 fr05 fr10 ge10 ge13 de73 de78 de81 de83 de84 de89 de94 de00 de04 de07 de10 de13 gr95
-	
-global ccyy2 ///
- 	gr00 gr04 gr07 gr10 gr13 gt06 gt11 gt14 hu91 hu94 hu05 hu07 hu09 hu12 is04 is07 is10 in04 /// 
- 	in11 ie87 ie94 ie95 ie96 ie04 ie07 ie10 il79 il86 il92 il97 il01 il05 il07 il10 il12 it86 /// 
- 	it87 it89 it91 it93 it95 it98 it00 it04 it08 it10 it14 lt10 lt13 lu85 lu91 lu94 lu97 lu00 /// 
- 	lu04 lu07 lu10 lu13 mx84 mx89 mx92 mx94 mx96 mx98 mx00 mx02 mx04 mx08 mx10 mx12 nl83 nl87 /// 
- 	nl90 nl93 nl04 nl07 nl10 nl13 no79 no86 no91 no95 no00 no04 no07 no10 no13 pa07 pa10 pa13
-	
-global ccyy3 ///
- 	py10 py13 pe04 pe07 pe10 pe13 pl86 pl92 pl95 pl99 pl04 pl07 pl10 pl13 ro95 ro97 ru00 ru04 /// 
- 	ru10 ru13 rs06 rs10 rs13 sk92 sk96 sk04 sk07 sk10 sk13 si97 si99 si04 si07 si10 si12 za08 /// 
- 	za10 za12 kr06 kr08 kr10 kr12 es80 es85 es90 es95 es00 es04 es07 es10 es13 se67 se75 se81 /// 
- 	se87 se92 se95 se00 se05 ch82 ch92 ch00 ch02 ch04 ch07 ch10 ch13 tw81 tw86 tw91 tw95 tw97 /// 
- 	tw00 tw05 tw07 tw10 tw13 uk69 uk74 uk79 uk86 uk91 uk94 uk95 uk99 uk04 uk07 uk10 uk13 us74 /// 
- 	us79 us86 us91 us94 us97 us00 us04 us07 us10 us13 uy04 uy07 uy10 uy13 uy16 
 }
 
 ************************************   
