@@ -152,24 +152,30 @@ global ccyy3 ///
 and makes a call to csv_percentiles once for each file */   
 capture program drop main_program   
 program main_program   
-	syntax namelist, model(integer) [ n_quantiles(integer 100) print test quiet summaries crossvalid]   
+	syntax namelist, model(integer) [ test quiet quantiles(integer 100) summaries crossvalid savemodel(string) runmodel(string)]   
 
 
 	di "************ BEGIN MAIN PROGRAM ****************"  
 	di "* " c(current_time)  
 
-	di "on a test == `test'"  
-	di "on a print == `print'"  
 	di "on a quiet == `quiet'"  
+	di "on a test == `test'"  
+	di "on a quantiles == `quantiles'"  
 	di "on a summaries == `summaries'"  
 	di "on a obs == `obs'"  
+	di "on a crossvalid == `crossvalid'"
+	di "on a savemodel == `savemodel'"
+	di "on a runmodel == `runmodel'"
 
 	if ("`test'"=="test") {  
 	local ccyylist au01 fr10 it14 us04
 	}  
-	else {  
+	else if ("`runmodel'"!="") {  
+	local ccyylist `namelist'
+	}
+	else {
 	local ccyylist $ccyy_to_imput 
-	}  
+	}
 
 	gen ccyy = ""   
 	foreach ccyy in `ccyylist' {   
@@ -194,7 +200,7 @@ program main_program
 	di "************ BEGIN PREPROCESSING ****************"  
 	di "* " c(current_time)
 
-	`quiet' preprocessing `ccyylist', model(`model')
+	quiet preprocessing `ccyylist', model(`model')
 	
 	if ("`test'"=="test") {  
 	local ccyylist au01 fr10 it14 us04
@@ -208,22 +214,22 @@ program main_program
 	
 	if ("`crossvalid'"=="crossvalid") {  
 		foreach ccyy in `ccyylist' {
-		`quiet' consumption_imputation , model(`model') crossvalid("`ccyy'")
+		`quiet' consumption_imputation , model(`model') crossvalid("`ccyy'") 
 		}  
 	}
 	else {  
-	`quiet' consumption_imputation , model(`model') 
+		`quiet' consumption_imputation , model(`model') savemodel("`savemodel'") runmodel("`runmodel'")
 	}
 
 	
 	di "----------- variables creation ------------"  
 	di "- " c(current_time) 
 	
-	`quiet' variables_creation
+	quiet variables_creation
 
-	if ("`print'"=="print") {  
+	if ("`quantiles'"!="") {  
 	display_percentiles $quvars, ccyylist(`ccyylist') ///
-									n_quantiles(`n_quantiles') `median'
+									n_quantiles(`quantiles') `median'
 	}  
 
 	if ("`summaries'"=="summaries") {  
@@ -325,23 +331,32 @@ end
 **************************************
 {
 program consumption_imputation
-	syntax , model(integer) [crossvalid(string)]
+	syntax , model(integer) [crossvalid(string) savemodel(string) runmodel(string)]
 	
-	if (`model'==0) {
-		noisily glm hmc_medianized c.log_dhi_medianized [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)
+	if ("`runmodel'" != "") {
+		estimates use "$mydata/jblasc/estimation_models/`runmodel'"
 	}
-	else if (`model'==1) {
-		noisily glm hmc_medianized c.log_dhi_medianized ///
-		c.log_dhi_med_shifted#i.dhipov_ind   ///   
-		i.nhhmem_top i.hpartner_agg [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
-	}
-	else if (`model'==2) {
-		noisily glm hmc_medianized c.log_dhi_medianized ///
-		c.log_dhi_med_shifted#i.dhipov_ind  log_hchous_medianized ///   
-		$depvars [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
+	else {
+		if (`model'==0) {
+			noisily glm hmc_medianized c.log_dhi_medianized [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)
+		}
+		else if (`model'==1) {
+			noisily glm hmc_medianized c.log_dhi_medianized ///
+			c.log_dhi_med_shifted#i.dhipov_ind   ///   
+			i.nhhmem_top i.hpartner_agg [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
+		}
+		else if (`model'==2) {
+			noisily glm hmc_medianized c.log_dhi_medianized ///
+			c.log_dhi_med_shifted#i.dhipov_ind  log_hchous_medianized ///   
+			$depvars [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
+		}
 	}
 
-	if "`crossvalid'" != "" { 
+	if ("`savemodel'" != "") {
+		estimates save "$mydata/jblasc/estimation_models/`savemodel'", replace
+	}
+	
+	if ("`crossvalid'" != "") { 
 		predict temp_pred if scope & substr(ccyy, 1,2) == substr("`crossvalid'", 1,2)
 		capture confirm variable hmc_medianized_predict
 		if (!_rc) {
@@ -356,9 +371,10 @@ program consumption_imputation
 		local no_regress = e(N)
 
 		if (nb_scope_regress != `no_regress') {
-			noisily di "__________REGRESSION SCOPE PROBLEM__________"
-			noisily di nb_scope_regress
-			noisily di `no_regress'
+			noisily display as error "__________REGRESSION SCOPE PROBLEM__________"
+			noisily display as error nb_scope_regress
+			noisily display as error `no_regress'
+			exit
 			}
 			
 		predict hmc_medianized_predict if scope
@@ -367,9 +383,10 @@ program consumption_imputation
 		local no_imput = r(N)
 		
 		if (nb_scope != `no_imput') {
-			noisily di "__________IMPUTATION SCOPE PROBLEM__________"
-			noisily di nb_scope
-			noisily di `no_imput'
+			noisily display as error "__________IMPUTATION SCOPE PROBLEM__________"
+			noisily display as error nb_scope
+			noisily display as error `no_imput'
+			exit
 			}
 	}
 		 
@@ -506,14 +523,7 @@ preserve
 	 }  
 	 di   
  }  
- 
- /* AUTRE OPTION :
- 1. TENTER UN DISPLAY DHI
- 
- 2. UTILISER SUM [VARLIST] IN [...], MEANONLY
- EN METTANT IN 1 C'EST EQUIVALENT A DISPLAY LA VARIABLE
- */
-   
+    
 end   
 } // end display_percentiles
    
@@ -587,4 +597,5 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, model(1) n_quantiles(10) test print summaries quiet
+main_program $ccyy_to_imput, model(2) test quantiles(10) summaries
+
