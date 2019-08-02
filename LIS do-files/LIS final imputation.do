@@ -12,6 +12,7 @@
 * modified 28 September to rationalize computation of percentiles and add quiet
 * modified 02 February to add a hmc_conditionned dhi Gini
 * modified 07 July to remove gap at poverty rate in model
+* 
 *******************
 
 quiet {
@@ -496,17 +497,15 @@ preserve
  }  
  di  
  
- local i 1
- foreach ccyy in `ccyylist' {  
-	 forvalues x = 1(1)`n_quantiles' {   
-		 di dhi_quantiles[`i'] "," ccyy[`i']  _continue   
-		 foreach variable_q of local varlist_q {   
-			di "," `variable_q'[`i'] _continue   
-		 }  
-		 di   
-		 local i = `i'+1
+ local nrow = _N
+  
+ forvalues x = 1(1)`nrow' {   
+	 di dhi_quantiles[`x'] "," ccyy[`x']  _continue   
+	 foreach variable_q of local varlist_q {   
+		di "," `variable_q'[`x'] _continue   
 	 }  
- } 
+	 di   
+ }  
  
  /* AUTRE OPTION :
  1. TENTER UN DISPLAY DHI
