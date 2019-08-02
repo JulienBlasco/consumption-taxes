@@ -12,7 +12,6 @@
 * modified 28 September to rationalize computation of percentiles and add quiet
 * modified 02 February to add a hmc_conditionned dhi Gini
 * modified 07 July to remove gap at poverty rate in model
-* 
 *******************
 
 quiet {
@@ -152,7 +151,7 @@ global ccyy3 ///
 and makes a call to csv_percentiles once for each file */   
 capture program drop main_program   
 program main_program   
-	syntax namelist, model(integer) [ test quiet quantiles(integer 0) summaries crossvalid savemodel(string) runmodel(string) compare]   
+	syntax namelist, model(integer) [ test quiet quantiles(integer 0) summaries crossvalid savemodel(string) runmodel(string) compare extreme_gap(real 0)]   
 
 
 	di "************ BEGIN MAIN PROGRAM ****************"  
@@ -167,6 +166,7 @@ program main_program
 	di "on a savemodel == `savemodel'"
 	di "on a runmodel == `runmodel'"
 	di "on a compare == `compare'"
+	di "on a extreme_gap == `extreme_gap'"
 
 	if ("`runmodel'"!="") & ("`savemodel'"!="") {
 		display as error "runmodel and savemodel cannot be both defined"
@@ -239,7 +239,7 @@ program main_program
 		if (`quantiles'!=0) | ("`summaries'"!="") {
 		di "----------- variables creation ------------"  
 		di "- " c(current_time) 
-		quiet variables_creation
+		quiet variables_creation , extreme_gap(`extreme_gap')
 		}
 	}
 	
@@ -433,6 +433,7 @@ program consumption_imputation
 **************************************
 {
 program variables_creation
+	syntax [, extreme_gap(real 0)]
 	
 	 // compute scaled variables, propensities, tax rates, etc.  
 	   
@@ -453,6 +454,14 @@ program variables_creation
 	 gen hmc_wor_scaled = oecd_prop_wor * (dhi_mean/hmc_wor_mean) * hmc_wor  
 	 gen prop_wor_scaled = hmc_wor_scaled/dhi  
 	   
+	 // define quintile of income
+	egen dhi_percentile = xtile(dhi) if scope, by(ccyy) nquantiles(100) weights(hwgt*nhhmem)  
+	   
+	foreach def in carey euro ours { 
+		replace itrc_`def' = itrc_`def' + `extreme_gap' * (dhi_percentile-50)/100
+		replace itrc_`def'_wor = itrc_`def'_wor + `extreme_gap' * (dhi_percentile-50)/100
+		}
+		
 	 foreach def in carey euro ours {   
 	 gen tax_eff_`def'_wor = hmc_wor_scaled * itrc_`def'_wor  
 	 gen tax_rate_`def'_wor = tax_eff_`def'_wor/dhi  
