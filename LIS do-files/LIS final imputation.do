@@ -12,6 +12,11 @@
 * modified 28 September to rationalize computation of percentiles and add quiet
 * modified 02 February to add a hmc_conditionned dhi Gini
 * modified 07 July to remove gap at poverty rate in model
+* modified 02 August to allow
+*	- saving regression models
+*	- different consumption tax rates depending on income percentile
+*	- crossvalidation
+*	- comparison of different models
 *******************
 
 quiet {
@@ -649,8 +654,6 @@ sort ccyy
 end   
 } // end compare_models
 }
-
-
 
 /***************************************   
 * Call function on desired datasets    
