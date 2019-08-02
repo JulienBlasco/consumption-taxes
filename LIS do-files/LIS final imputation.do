@@ -152,7 +152,7 @@ global ccyy3 ///
 and makes a call to csv_percentiles once for each file */   
 capture program drop main_program   
 program main_program   
-	syntax namelist, model(integer) [ test quiet quantiles(integer 100) summaries crossvalid savemodel(string) runmodel(string)]   
+	syntax namelist, model(integer) [ test quiet quantiles(integer 100) summaries crossvalid savemodel(string) runmodel(string) compare]   
 
 
 	di "************ BEGIN MAIN PROGRAM ****************"  
@@ -166,6 +166,7 @@ program main_program
 	di "on a crossvalid == `crossvalid'"
 	di "on a savemodel == `savemodel'"
 	di "on a runmodel == `runmodel'"
+	di "on a compare == `compare'"
 
 	if ("`runmodel'"!="") & ("`savemodel'"!="") {
 		display as error "runmodel and savemodel cannot be both defined"
@@ -214,31 +215,36 @@ program main_program
 	local ccyylist `namelist'
 	}  
 	
-	di "----------- start regressions ------------"  
-	di "- " c(current_time)  
-	
-	if ("`crossvalid'"=="crossvalid") {  
-		foreach ccyy in `ccyylist' {
-		`quiet' consumption_imputation , model(`model') crossvalid("`ccyy'") 
-		}  
-	}
-	else {  
-		`quiet' consumption_imputation , model(`model') savemodel("`savemodel'") runmodel("`runmodel'")
-	}
-	
-	if ("`quantiles'"!="") | ("`summaries'"!="") {
-	di "----------- variables creation ------------"  
-	di "- " c(current_time) 
-	quiet variables_creation
+	if ("`compare'"=="compare") {  
+		compare_models `runmodel'
+		}
+	else {
+		di "----------- start regressions ------------"  
+		di "- " c(current_time)  
+		
+		if ("`crossvalid'"=="crossvalid") {  
+			foreach ccyy in `ccyylist' {
+			`quiet' consumption_imputation , model(`model') crossvalid("`ccyy'") 
+			}  
+		}
+		else {  
+			`quiet' consumption_imputation , model(`model') savemodel("`savemodel'") runmodel("`runmodel'")
+		}
+		
+		if ("`quantiles'"!="") | ("`summaries'"!="") {
+		di "----------- variables creation ------------"  
+		di "- " c(current_time) 
+		quiet variables_creation
+		}
 	}
 	
 	if ("`quantiles'"!="") {  
 	display_percentiles $quvars, ccyylist(`ccyylist') ///
 									n_quantiles(`quantiles') `median'
 	}  
-
+	
 	if ("`summaries'"=="summaries") {  
-	display_summaries `ccyylist'
+	display_summaries `ccyylist', summeanvars($summeanvars) sumondhivars($sumondhivars) sumonvarvars($sumonvarvars)
 	}  
 
 	di "************** End of program : ************"  
@@ -552,17 +558,13 @@ end
 /* This program computes summaries and outputs a CSV */   
 capture program drop display_summaries   
 program display_summaries   
- syntax namelist
+ syntax namelist, [summeanvars(namelist) sumondhivars(namelist) sumonvarvars(namelist)]
 
 preserve
 
  di "************ BEGIN DISPLAY_SUMMARIES ****************"  
  di "* " c(current_time)  
 
-  
-	local summeanvars $summeanvars
-	local sumondhivars $sumondhivars
-	local sumonvarvars $sumonvarvars
  
  /* display header */   
  di "ccyy" _continue   
@@ -609,11 +611,56 @@ preserve
 end   
 } // end display_summaries
 
+***************************************   
+*          COMPARE_MODELS             *   
+***************************************   
+{ 
+/* This program computes summaries and outputs a CSV */   
+capture program drop compare_models   
+program compare_models   
+ syntax anything(name=runmodel)
+
+ di "************ BEGIN COMPARE_MODELS ****************"  
+ di "* " c(current_time)  
+
+global summeanvars 		///
+	error0 error1 error2 	///
+	corr0 corr1 corr2 		///
+	R2_0 R2_1 R2_2 
+	
+global sumondhivars
+
+global sumonvarvars
+	
+global quvars_obs hmc dhi hmc_medianized					
+
+global quvars_pred			///
+	hmc_medianized_predict0 hmc_medianized_predict1 hmc_medianized_predict2			
+	
+global quvars $quvars_obs $quvars_pred
+  
+forvalues i = 0(1)2 {
+	local model = `i' + 1
+	estimates use "$mydata/jblasc/estimation_models/`runmodel'", number(`model')
+	predict hmc_medianized_predict`i' if scope
 }
+  
+sort ccyy
+ 
+ forvalues i = 0(1)2 {
+	gen error`i' = (hmc_medianized - hmc_medianized_predict`i')^2
+	egen corr`i' = corr(hmc_medianized hmc_medianized_predict`i'), by(ccyy)
+	gen R2_`i' = corr`i'^2
+ }
+  
+end   
+} // end compare_models
+}
+
+
 
 /***************************************   
 * Call function on desired datasets    
 ***************************************/   
    
 main_program $ccyy_to_imput, model(2) test quantiles(10) summaries
-
