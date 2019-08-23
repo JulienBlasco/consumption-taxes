@@ -88,8 +88,8 @@ global sumonvarvars $sumonvarvars_obs $sumonvarvars_pred
 * III. a) Observed variables *
 
 global quvars_obs												///
-	hmc	dhi	 hmchous	/* hchous  									///
-	hmc_wor_scaled 		hmc_scaled  							///    
+	hmc	dhi	 hmchous	tax_eff_ours tax_eff_ours_wor
+	/* hchous  hmc_wor_scaled 		hmc_scaled  							///    
 	prop_scaled  		prop_wor_scaled 	*/					
 
 
