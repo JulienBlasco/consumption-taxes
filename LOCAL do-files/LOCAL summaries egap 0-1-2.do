@@ -1,7 +1,5 @@
 use "D:\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\19-08-23 V6 fr10 summaries egap 0-1-2.dta", clear
 keep extreme_gap Gini_pre Gini_ours Gini_ours_wor
-reshape wide Gini_ours_wor , i( Gini_pre Gini_ours ) j(extreme_gap )
-reshape wide Gini_ours_wor , i( Gini_pre Gini_ours ) j(extreme_gap ) string
 replace extreme_gap = "1" in 2
 replace extreme_gap = "2" in 3
 reshape wide Gini_ours_wor , i( Gini_pre Gini_ours ) j(extreme_gap ) string
