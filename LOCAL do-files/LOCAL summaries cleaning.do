@@ -4,20 +4,20 @@
 
 /* CHANGE DIRECTORY */
 cd "D:"
-cd "\BLASCOLIEPP\Code\18-07-27 Datasets V5\"
+cd "/BLASCOLIEPP\Code\19-08-21 Datasets V6\"
 
 // choose file
-local filename "18-09-14 summaries V5 mod2 ours"
+local filename "19-08-23 V6 fr10 summaries egap 0-1-2"
 
 
 
 // get cnames and years
-merge 1:1 ccyy using ".\DTA\match cname year.dta"
+merge m:1 ccyy using ".\DTA\match cname year.dta"
 drop if _merge == 2
 drop _merge
 
 // merge with itrcs
-merge 1:1 cname year using ".\Itrcs scalings\18-08-31_itrcs_scalings.dta", ///
+merge m:1 cname year using ".\Itrcs scalings\18-08-31_itrcs_scalings.dta", ///
 		keepusing(itrc_carey itrc_euro itrc_ours oecd_prop_wor oecd_prop ///
 				  itrc_carey_wor itrc_euro_wor itrc_ours_wor)
 drop if _merge == 2
@@ -48,7 +48,7 @@ forvalues j = 1(1)2 {
 		gen G_diff_`def'`_wor' = inc_5_`def'`_wor'_conc_inc_5 - gini_dhi_scope_hmc
 		gen RS_`def'`_wor' = inc_5_`def'`_wor'_conc_dhi - gini_dhi_scope_hmc
 	}
-	gen kak = hmc`_wor'_conc_dhi - gini_dhi_scope_hmc
+	gen kak`_wor' = hmc`_wor'_conc_dhi - gini_dhi_scope_hmc
 	local _wor _wor
 }
 
