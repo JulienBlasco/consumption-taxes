@@ -7,8 +7,8 @@ reshape wide Gini_ours_wor , i( Gini_pre Gini_ours ) j(extreme_gap ) string
 label variable Gini_pre "Disposable income"
 label variable Gini_ours "Post-tax with constant rate on whole consumption"
 label variable Gini_ours_wor0 "Post-tax with constant rate on non-rent consumption"
-label variable Gini_ours_wor1 "Post-tax with progressive rate (1 % point between ends)"
-label variable Gini_ours_wor2 "Post-tax with progressive rate (2 % points between ends)"
+label variable Gini_ours_wor1 "Post-tax with progressive rate (medium scenario)"
+label variable Gini_ours_wor2 "Post-tax with progressive rate (extreme scenario)"
 
 graph dot (asis) Gini_ours Gini_ours_wor0 Gini_ours_wor1 Gini_ours_wor2 Gini_pre, ///
 exclude0 marker(1, msize(large)) marker(2, msize(large) msymbol(square)) ///
@@ -26,10 +26,29 @@ reshape wide tax_eff_ours_wor global_rate_wor , i(quantile dhi tax_eff_ours glob
 
 label variable global_rate "Constant rate on whole consumption"
 label variable global_rate_wor0 "Constant rate on non-rent consumption"
-label variable global_rate_wor1 "Progressive rate (1 % point between ends)"
-label variable global_rate_wor2 "Progressive rate (2 % points between ends)"
+label variable global_rate_wor1 "Progressive rate (medium scenario)"
+label variable global_rate_wor2 "Progressive rate (extreme scenario)"
 
 twoway (line global_rate quantile) (line global_rate_wor0 quantile) ///
 (line global_rate_wor1 quantile) (line global_rate_wor2 quantile), ///
+yscale(range(0 0.3)) xtitle(Income vingtile) ytitle(Tax-to-income ratio) ///
+graphregion(fcolor(white)) legend(cols(1)) xsize(5.5) ysize(5.5) scale(0.8) yla(0(0.05)0.35) 
+
+// version by decile of income
+gen decile = ceil(quantile/2)
+collapse dhi tax_eff_ours tax_eff_ours_wor0 tax_eff_ours_wor1 tax_eff_ours_wor2, by(decile)
+reshape long tax_eff, i(decile dhi) j(def, string)
+gen global_rate = tax_eff/dhi
+reshape wide
+reshape wide tax_eff global_rate, i(decile dhi) j(def, string)
+
+label variable global_rate_ours "Constant rate on whole consumption"
+label variable global_rate_ours_wor0 "Constant rate on non-rent consumption"
+label variable global_rate_ours_wor1 "Progressive rate (1 % point between ends)"
+label variable global_rate_ours_wor2 "Progressive rate (2 % points between ends)"
+
+twoway (line global_rate_ours decile) (line global_rate_ours_wor0 decile) ///
+(line global_rate_ours_wor1 decile) (line global_rate_ours_wor2 decile), ///
 yscale(range(0 0.3)) xtitle(Income vingtile) graphregion(fcolor(white)) ///
 legend(cols(1)) xsize(5.5) ysize(5.5) scale(0.8) 
+
