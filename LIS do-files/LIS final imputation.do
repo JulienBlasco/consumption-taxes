@@ -17,6 +17,7 @@
 *	- different consumption tax rates depending on income percentile
 *	- crossvalidation
 *	- comparison of different models
+* modified 24 February 2020 to add count of hmc imputed in compare
 *******************
 
 quiet {
@@ -163,7 +164,7 @@ program main_program
 	}
 	
 	if ("`test'"=="test") {  
-	local ccyylist au01 fr10 it14 us04
+	local ccyylist au10 fr10 it14 us04
 	}  
 	else if ("`runmodel'"!="") {  
 	local ccyylist `namelist'
@@ -198,7 +199,7 @@ program main_program
 	quiet preprocessing `ccyylist', model(`model')
 	
 	if ("`test'"=="test") {  
-	local ccyylist au01 fr10 it14 us04
+	local ccyylist au10 fr10 it14 us04
 	}  
 	else {  
 	local ccyylist `namelist'
@@ -624,7 +625,9 @@ program compare_models
 global summeanvars 		///
 	error0 error1 error2 	///
 	corr0 corr1 corr2 		///
-	R2_0 R2_1 R2_2 
+	R2_0 R2_1 R2_2 ///
+	non_missing_hmc ///
+	non_missing_hmc_pred0 non_missing_hmc_pred1 non_missing_hmc_pred2
 	
 global sumondhivars
 
@@ -640,15 +643,17 @@ global quvars $quvars_obs $quvars_pred
 forvalues i = 0(1)2 {
 	local model = `i' + 1
 	estimates use "$mydata/jblasc/estimation_models/`runmodel'", number(`model')
-	predict hmc_medianized_predict`i' if scope
+	predict hmc_medianized_predict`i'
 }
   
 sort ccyy
  
+ gen non_missing_hmc = !mi(hmc_medianized)
  forvalues i = 0(1)2 {
 	gen error`i' = (hmc_medianized - hmc_medianized_predict`i')^2
-	egen corr`i' = corr(hmc_medianized hmc_medianized_predict`i'), by(ccyy)
+	egen corr`i' = corr(hmc_medianized hmc_medianized_predict`i') if scope, by(ccyy)
 	gen R2_`i' = corr`i'^2
+	gen non_missing_hmc_pred`i' = !mi(hmc_medianized_predict`i')
  }
 
 end   
@@ -659,4 +664,4 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, model(2) test quantiles(10) summaries
+main_program $ccyy_to_imput, runmodel(02_08_2019_V6) summaries compare   
