@@ -1,7 +1,7 @@
 /* CHANGE DIRECTORY */
 cd "G:"
 
-use ".\Code\18-07-27 Datasets V5\DTA\18-09-14 summaries V5 mod1 ours.dta", clear
+use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\18-09-14 summaries V5 mod2.dta", clear
 
 // see if scaling is effective
 twoway (scatter apc_lis oecd_prop, mlabel(ccyy)) || (function y=x, range(oecd_prop))
@@ -161,12 +161,23 @@ uk13	0.32130608	0.54051956
 us10	0.34185302	0.48930527
 */
 
-graph dot (asis) factor Gini_pre Gini_ours_pred if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
-& !mi(G_diff_ours_pred), over(cname, sort(Gini_pre) descending) ///
-marker(1, msymbol(triangle)) marker(3, msymbol(lgx))
+/* __________________________________________*/
 
-gen redistrib1 = factor - Gini_pre
-gen redistrib2 = factor - Gini_ours_pred
+merge 1:1 ccyy using "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\redistribution_data.dta"
+
+label variable inc2_gini "Market Income (Four Levers)"
+label variable inc3_gini "Gross Income (Four Levers)"
+label variable Gini_pre "Disposable Income"
+label variable Gini_ours_pred "Post-Tax Income"
+
+graph dot (asis) inc2_gini inc3_gini Gini_pre Gini_ours_pred if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
+& !mi(G_diff_ours_pred) & !mi(inc2_gini), over(cname, sort(Gini_pre) descending) ///
+marker(1, msymbol(square)) marker(2, msymbol(triangle)) marker(4, msymbol(lgx))
+
+gen effet_TVA = Gini_ours_pred - Gini_pre
+gen effet_taxes = inc3_gini - Gini_pre
+gen effet_transfers = inc2_gini - inc3_gini
+gen effet_redistribution = Gini_pre - inc2_gini
 
 *twoway graph redis itrc
 twoway (scatter redistrib1 itrc_ours if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
