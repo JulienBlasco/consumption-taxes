@@ -1,10 +1,10 @@
 /* CHANGE DIRECTORY */
-cd "G:"
-cd "\BLASCOLIEPP\Code\18-07-27 Datasets V5\"
+cd "D:"
+cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6\"
 
 
 // choose file
-local filename "19-06-30 qu100 fr10 differents taux"
+local filename "02_08_2019_V6 mod2 qu100"
 local mod "mod2"
 //
 

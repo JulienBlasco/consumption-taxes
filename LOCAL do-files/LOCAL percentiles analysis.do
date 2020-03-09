@@ -1,7 +1,9 @@
 /* CHANGE DIRECTORY */
 cd "E:"
 
-use "\BLASCOLIEPP\Code\18-07-27 Datasets V5\DTA\18-11-19 cross-validation qu100.dta", clear
+use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\18-11-19 cross-validation qu100.dta", clear
+
+append using "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\18-09-29 qu100 V5 mod2 za12.dta"
 
 sort ccyy quantile
 
@@ -66,3 +68,18 @@ twoway (line global_rate_ours_predde13 quantile if global_rate_ours_predde13<0.4
 (line global_rate_ours_predus13 quantile if global_rate_ours_predus13<0.4) ///
 (line global_rate_ours_preddk04 quantile if global_rate_ours_preddk04<0.4)
 restore
+
+* compare actual and estimated propensities
+twoway (line global_prop_pred  quantile) || ///
+	(scatter global_prop quantile, msize(vsmall)) ///
+	if !mi(global_prop  )&global_prop_pred <2&global_prop<2, by(ccyy_f) 
+
+* compare actual and estimated propensities
+twoway (line global_rate_ours_pred  quantile) || ///
+	(scatter global_rate_ours quantile, msize(vsmall)) ///
+	if !mi(global_prop  )&global_rate_ours_pred <0.4&global_rate_ours<0.4, by(ccyy_f) 
+
+* compare actual and estimated propensities for South Africa 2012
+twoway (line global_rate_ours_pred  quantile) || ///
+	(scatter global_rate_ours quantile, msize(vsmall)) ///
+	if ccyy=="za12"&global_rate_ours_pred <0.4&global_rate_ours<0.4, by(ccyy_f) 
