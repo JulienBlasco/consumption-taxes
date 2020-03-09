@@ -41,8 +41,7 @@ global depvars 										///
 // means
 global summeanvars_obs 											///
 	hmc	dhi	hmchous	hchous 										///
-	hmc_wor_scaled		hmc_scaled 			/*					///  
-	prop_scaled  		prop_wor_scaled 		*/				
+	hmc_wor_scaled		hmc_scaled			
 
 // concentration indices
 global sumondhivars_obs 									///
@@ -61,8 +60,7 @@ global sumonvarvars_obs 								///
 
 // means
 global summeanvars_pred 													///
-	hmc_wor_pred_scaled 	hmc_pred_scaled 			/*					///  
-	prop_pred_scaled  		prop_wor_pred_scaled 			*/				
+	hmc_wor_pred_scaled 	hmc_pred_scaled
 
 // concentration indices
 global sumondhivars_pred 													///
@@ -87,19 +85,11 @@ global sumonvarvars $sumonvarvars_obs $sumonvarvars_pred
 ******************************************/
 
 * III. a) Observed variables *
-
-global quvars_obs												///
-	hmc	dhi	 hmchous	tax_eff_ours tax_eff_ours_wor
-	/* hchous  hmc_wor_scaled 		hmc_scaled  							///    
-	prop_scaled  		prop_wor_scaled 	*/					
-
+global quvars_obs hmc dhi hmchous				
 
 * III. b) Predicted (imputed) variables *
+global quvars_pred	hmc_medianized_predict hmc_wor_pred_scaled				
 
-global quvars_pred															///
-	hmc_medianized_predict			 hmc_wor_pred_scaled 	/*							///  
-	prop_pred_scaled  		prop_wor_pred_scaled 		*/					
-	
 * III. c) Variables in the quantiles
 global quvars $quvars_obs $quvars_pred
 	
