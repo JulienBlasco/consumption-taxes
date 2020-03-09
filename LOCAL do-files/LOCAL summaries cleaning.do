@@ -7,9 +7,9 @@ cd "D:"
 cd "/BLASCOLIEPP\Code\19-08-21 Datasets V6\"
 
 // choose file
-local filename "19-08-23 V6 fr10 summaries egap 0-1-2"
+local filename "02_08_2019_V6 mod2 summaries"
 
-
+import delimited "./CSV/`filename'.csv", clear 
 
 // get cnames and years
 merge m:1 ccyy using ".\DTA\match cname year.dta"

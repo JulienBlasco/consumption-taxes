@@ -1,7 +1,7 @@
 /* CHANGE DIRECTORY */
 cd "G:"
 
-use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\18-09-14 summaries V5 mod2.dta", clear
+use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\02_08_2019_V6 mod2 summaries.dta", clear
 
 // see if scaling is effective
 twoway (scatter apc_lis oecd_prop, mlabel(ccyy)) || (function y=x, range(oecd_prop))
@@ -47,7 +47,7 @@ graph dot (asis) G_diff_ours_pred G_diff_ours_pred1 G_diff_ours if year>2000&!mi
 			over(ccyy, sort(RS_ours))
 			
 // plot indicators of redistribution and progressivity
-graph dot (asis) G_diff_ours_pred if year==2010&!mi(RS_ours_pred), ///
+graph dot (asis) G_diff_ours_pred G_diff_ours_wor_pred if year==2010&!mi(RS_ours_pred), ///
 			over(cname, sort(G_diff_ours_pred))
 			
 graph export ".\Code\18-03-07 Datasets V4\18-03-18 Réponse conf Science Po\18-03-18 gini diff 2010.png", ///
@@ -180,8 +180,8 @@ gen effet_transfers = inc2_gini - inc3_gini
 gen effet_redistribution = Gini_pre - inc2_gini
 
 *twoway graph redis itrc
-twoway (scatter redistrib1 itrc_ours if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
-& !mi(G_diff_ours_pred), mlabel("cname") yscale(range(0 0.25)))
+twoway (scatter effet_TVA itrc_ours if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
+& !mi(G_diff_ours_pred) & !mi(inc2_gini), mlabel("cname") ) || (lfit effet_TVA itrc_ours, yscale(range(0 0.025))) 
 
 twoway (scatter redistrib1 itrc_ours if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
 & !mi(G_diff_ours_pred), mlabel("cname")) || (scatter redistrib2 itrc_ours if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
