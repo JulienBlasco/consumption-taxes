@@ -4,7 +4,7 @@
 
 global datasets "at04 at07 at13 au03 au08 au10 ca04 ca07 ca10 ca13 ch00 ch02 ch04 ch07 ch10 ch13 cz02 cz04 cz07 cz10 cz13 de00 de04 de07 de10 de13 de15 dk00 dk04 dk07 dk10 dk13 ee10 ee13 es07 es10 es13 fi00 fi04 fi07 fi10 fi13 fr00 fr05 fr10 gr07 gr10 gr13 ie04 ie07 ie10 il10 is04 is07 is10 it04 it08 it10 it14 jp08 kr06 kr08 kr10 kr12 lu04 lu07 lu10 lu13 nl99 nl04 nl07 nl10 nl13 no00 no04 no07 no10 no13 pl04 pl07 pl10 pl13 pl16 pl99 se00 se05 sk04 sk07 sk10 sk13 uk99 uk04 uk07 uk10 uk13 us00 us04 us07 us10 us13 us16 at00 be00 gr00 hu05 hu07 hu09 hu12 hu99 ie00 lu00 mx00 mx02 mx04 mx08 mx10 mx12 mx98 si10"  /*it00 il12 si12*/ 
 global net_datasets "at00 be00 gr00 hu05 hu07 hu09 hu12 hu99 ie00 lu00 mx00 mx02 mx04 mx08 mx10 mx12 mx98 si10" /*it00*/ // Removed es00 and it98 in this version since they contain dupicates and missing values respectively in pil.
-global pvars "pid hid dname pil pxit pxiti pxits age relation"
+global pvars "pid hid dname pil pxit pxiti pxits age emp relation"
 global hvars "hid dname nhhmem dhi nhhmem17 nhhmem65 hwgt"
 global hvarsflow "hil hic pension hits hitsil hitsup hitsap hxit hxiti hxits hc hicvip dhi hitsilmip hitsilo hitsilep hitsilwi hitsilepo hitsilepd hitsileps" // Local currency, given in the datasets
 global hvarsnew "hsscer hsscee" // Local currency, imputed
@@ -17,7 +17,10 @@ global fixpension_datasets3 "ie04 ie07 ie10 uk99 uk04 uk07 uk10 uk13"
 *************************************************************
 
 program define merge_ssc
+	* Merge labour income variables for gross and mixed datasets
 	merge m:1 dname using "$mydata/vamour/SSC_20180621.dta", keep(match master) nogenerate
+	 * Impute taxes for net datasets
+   nearmrg dname using "$mydata/molcke/net_20161101.dta", nearvar(pil) lower keep(match master) nogenerate
 end
 
 program define gen_employee_ssc
@@ -49,8 +52,8 @@ end
 program define convert_ssc_to_household_level
   * Convert variables to household level 
   {
-  bysort ccyy hid: egen hsscee=total(psscee)
-  bysort ccyy hid: egen hsscer=total(psscer) 
+  bysort ccyy hid: egen hsscee=total(psscee) if income_type != "net"
+  bysort ccyy hid: egen hsscer=total(psscer) if income_type != "net"
   
   *create a dummy variable taking 1 if head of household btw 25 and 59
   gen headactivage=1 if age>24 & age<60 & relation==1000
@@ -58,7 +61,7 @@ program define convert_ssc_to_household_level
   bys ccyy hid: egen hhactivage=total(headactivage)
   
   * Keep only household level SSC and household id and activage dummy
-  drop pid pil pxit pxiti pxits age relation headactivage
+  drop pid pil pxit pxiti pxits age emp relation headactivage
   drop if hid==.
   duplicates drop
   }
@@ -119,7 +122,6 @@ end
 
 program define FR_gen_pvars
 {
-  merge_ssc
   * Impute individual level income tax from household level income tax
   bysort hid: egen hemp = total(emp) , missing // missing option to set a total of all missing values to missing rather than zero.
   drop pxiti
@@ -146,7 +148,6 @@ end
 
 program define IT_gen_pvars
 {
-  merge_ssc
   **IMPORTANT**Convert Italian datasets from net to gross
   replace pil=pil+pxit
   gen_employee_ssc 
@@ -157,8 +158,7 @@ end
 
 program define NET_gen_pvars
 {
-  * Impute taxes for net datasets
-  nearmrg dname using "$mydata/molcke/net_20161101.dta", nearvar(pil) lower keep(match) nogenerate
+
   * Convert variables to household level
   bysort hid: egen hxiti=total(pinctax)
   bysort hid: egen hsscee=total(psscee)
@@ -442,6 +442,28 @@ program define correct_dhi
   replace hxiti_temp = 0 if hxit==.
   replace dhi = dhi - hxiti_temp
 end
+
+
+*********************************************************
+* add income_type as a variable 
+*********************************************************
+gen income_type = ""
+foreach ccyy in $datasets {
+	local cc : di substr("`ccyy'",1,2)
+	  if "`cc'" == "fr" {
+		replace income_type = "France"
+	  }
+	  else if "`cc'" == "it" {
+		replace income_type = "Italy"
+	  }
+	  else if strpos("$net_datasets","`ccyy'") > 0 {
+		replace income_type = "net"
+	  }
+	  else {
+		replace income_type = "gross"
+	  }
+	
+	
 
 
 **********************************************************
