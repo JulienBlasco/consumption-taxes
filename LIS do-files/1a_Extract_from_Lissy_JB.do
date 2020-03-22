@@ -26,6 +26,10 @@ end
 program define gen_employee_ssc
   * Generate Employee Social Security Contributions	
   {
+  
+  **IMPORTANT**Convert Italian datasets from net to gross
+  replace pil=pil+pxit if income_type == "Italy"
+  
   gen psscee=.
   replace psscee = pil*ee_r1
   replace psscee = (pil-ee_c1)*ee_r2 + ee_r1*ee_c1  if pil>ee_c1 & ee_c1!=.
@@ -136,22 +140,12 @@ program define FR_gen_pvars
   replace psscee = 1/(1-ee_r2)*(ee_r2*(pil - ee_c1) + ee_r1*ee_c1) if pil>(ee_c1 - ee_r1*ee_c1) & pil<=(ee_c2 - ee_r1*ee_c1 - ee_r2*(ee_c2-ee_c1))
   replace psscee = 1/(1-ee_r3)*(ee_r3*(pil - ee_c2) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1)) if pil>(ee_c2 - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & pil<=(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1)
   replace psscee = 1/(1-ee_r4)*(ee_r4*(pil - ee_c3) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1) + ee_r3*(ee_c3 - ee_c2)) if pil>(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1)
-
-
 **IMPORTANT**Convert French datasets from net to gross
   replace pil=pil+pxiti+psscee
+  
+  
   gen_employer_ssc
   manual_corrections_employer_ssc
-  convert_ssc_to_household_level
-  }
-end
-
-program define IT_gen_pvars
-{
-  **IMPORTANT**Convert Italian datasets from net to gross
-  replace pil=pil+pxit
-  gen_employee_ssc 
-  gen_employer_ssc
   convert_ssc_to_household_level
   }
 end
