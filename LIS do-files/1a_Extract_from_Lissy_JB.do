@@ -16,12 +16,23 @@ global fixpension_datasets3 "ie04 ie07 ie10 uk99 uk04 uk07 uk10 uk13"
 * Program: Generate SSC variables from person level dataset
 *************************************************************
 
+program define gen_pvars
+  merge_ssc
+  gen_employee_ssc
+  manual_corrections_employee_ssc
+  gen_employer_ssc
+  manual_corrections_employer_ssc
+  convert_ssc_to_household_level
+end
+
+
 program define merge_ssc
 	* Merge labour income variables for gross and mixed datasets
 	merge m:1 dname using "$mydata/vamour/SSC_20180621.dta", keep(match master) nogenerate
 	 * Impute taxes for net datasets
    nearmrg dname using "$mydata/molcke/net_20161101.dta", nearvar(pil) lower keep(match master) nogenerate
 end
+
 
 program define gen_employee_ssc
   * Generate Employee Social Security Contributions	
@@ -53,6 +64,7 @@ program define gen_employee_ssc
   }
 end
 
+
 program define gen_employer_ssc
   * Generate Employer Social Security Contributions
   {
@@ -82,59 +94,6 @@ program define convert_ssc_to_household_level
   drop if hid==.
   duplicates drop
   }
-end
-
-program define missing_values
-/*Here we replace missing values of aggregates by the sum of values of the subvariables if it brings extra information*/
-	{
-  egen hitsilep2=rowtotal(hitsilepo hitsilepd hitsileps)
-  replace hitsilep=hitsilep2 if hitsilep==. & hitsilep2 !=0
-  
-  egen hitsil2=rowtotal(hitsilmip hitsilo hitsilep hitsilwi)  
-  replace hitsil=hitsil2 if hitsil==. & hitsil2 !=0
-  
-  egen hitsis2=rowtotal(hitsissi hitsisma hitsiswi hitsisun) 
-  replace hitsis=hitsis2 if hitsis==. &	 hitsis !=0
-  
-  egen hitsup2=rowtotal(hitsupo hitsupd hitsups)
-  replace hitsup=hitsup2 if hitsup==. & hitsup2 !=0
-  
-  egen hitsufa2=rowtotal(hitsufaca hitsufaam hitsufacc)
-  replace hitsufa = hitsufa2 if hitsufa==. & hitsufa !=0
-  
-  egen hitsu2=rowtotal(hitsup hitsuun hitsudi hitsufa hitsued)
-  replace hitsu=hitsu2 if hitsu==. & hitsu2 !=0
-  
-  egen hitsap2=rowtotal(hitsapo hitsapd hitsaps) 
-  replace hitsap=hitsap2 if hitsap==. & hitsap2 !=0
-  
-  egen hitsa2=rowtotal(hitsagen hitsap hitsaun hitsafa hitsaed hitsaho hitsahe hitsafo hitsame)
-  replace hitsa=hitsa2 if hitsa==. & hitsa2 !=0
-  
-  egen hits2=rowtotal(hitsi hitsil hitsis hitsu hitsa)
-  replace hits=hits2 if hits==. & hits2 !=0
-  
-  egen pension2=rowtotal(hitsil hitsup hitsap hicvip)
-  replace pension=pension2 if pension==. & pension2 !=0 /*A priori pension is always defined so this should have no impact...*/
-
-  egen hicid2=rowtotal(hicidi hicidd)
-  replace hicid=hicid2 if hicid==.
-  
-  egen hicren2=rowtotal(hicrenr hicrenl hicrenm)
-  replace hicren=hicren2 if hicren==.
-
-  egen hic2=rowtotal(hicid hicren hicroy)
-  replace hic=hic2 if hic==.  
-  }
-end
-
-program define gen_pvars
-  merge_ssc
-  gen_employee_ssc
-  manual_corrections_employee_ssc
-  gen_employer_ssc
-  manual_corrections_employer_ssc
-  convert_ssc_to_household_level
 end
 
 
@@ -243,6 +202,52 @@ program define manual_corrections_employer_ssc
   replace psscer=psscer + 0.0675*29493  if pil>0 & pil<32600 & dname=="nl04"
   }
 end
+
+
+program define missing_values
+/*Here we replace missing values of aggregates by the sum of values of the subvariables if it brings extra information*/
+	{
+  egen hitsilep2=rowtotal(hitsilepo hitsilepd hitsileps)
+  replace hitsilep=hitsilep2 if hitsilep==. & hitsilep2 !=0
+  
+  egen hitsil2=rowtotal(hitsilmip hitsilo hitsilep hitsilwi)  
+  replace hitsil=hitsil2 if hitsil==. & hitsil2 !=0
+  
+  egen hitsis2=rowtotal(hitsissi hitsisma hitsiswi hitsisun) 
+  replace hitsis=hitsis2 if hitsis==. &	 hitsis !=0
+  
+  egen hitsup2=rowtotal(hitsupo hitsupd hitsups)
+  replace hitsup=hitsup2 if hitsup==. & hitsup2 !=0
+  
+  egen hitsufa2=rowtotal(hitsufaca hitsufaam hitsufacc)
+  replace hitsufa = hitsufa2 if hitsufa==. & hitsufa !=0
+  
+  egen hitsu2=rowtotal(hitsup hitsuun hitsudi hitsufa hitsued)
+  replace hitsu=hitsu2 if hitsu==. & hitsu2 !=0
+  
+  egen hitsap2=rowtotal(hitsapo hitsapd hitsaps) 
+  replace hitsap=hitsap2 if hitsap==. & hitsap2 !=0
+  
+  egen hitsa2=rowtotal(hitsagen hitsap hitsaun hitsafa hitsaed hitsaho hitsahe hitsafo hitsame)
+  replace hitsa=hitsa2 if hitsa==. & hitsa2 !=0
+  
+  egen hits2=rowtotal(hitsi hitsil hitsis hitsu hitsa)
+  replace hits=hits2 if hits==. & hits2 !=0
+  
+  egen pension2=rowtotal(hitsil hitsup hitsap hicvip)
+  replace pension=pension2 if pension==. & pension2 !=0 /*A priori pension is always defined so this should have no impact...*/
+
+  egen hicid2=rowtotal(hicidi hicidd)
+  replace hicid=hicid2 if hicid==.
+  
+  egen hicren2=rowtotal(hicrenr hicrenl hicrenm)
+  replace hicren=hicren2 if hicren==.
+
+  egen hic2=rowtotal(hicid hicren hicroy)
+  replace hic=hic2 if hic==.  
+  }
+end
+
 
 
 
