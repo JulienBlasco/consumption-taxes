@@ -107,7 +107,7 @@ program define manual_corrections_employee_ssc
   *Belgium 2000 BE00
   replace psscee=psscee-2600 if pil>34000 & pil<=42500 & dname=="be00"
   replace psscee=psscee-(2600-0.4*(pil-42500)) if pil>42500 & pil<=4900 & dname=="be00"
-  bysort hid: egen hil=total(pil) if dname=="be00"
+  bysort ccyy hid: egen hil=total(pil) if dname=="be00"
   replace psscee=psscee+0.09*hil if hil>750000 & hil<=850000 & dname=="be00"
   replace psscee=psscee+9000+0.013*hil if hil>850000 & hil<=2426924 & dname=="be00"
   replace psscee=psscee+29500 if hil>2426924 & dname=="be00"
