@@ -26,38 +26,51 @@ end
 program define gen_employee_ssc
   * Generate Employee Social Security Contributions	
   {
-  
   **IMPORTANT**Convert Italian datasets from net to gross
   replace pil=pil+pxit if income_type == "Italy"
   
-  gen psscee=.
-  replace psscee = pil*ee_r1
-  replace psscee = (pil-ee_c1)*ee_r2 + ee_r1*ee_c1  if pil>ee_c1 & ee_c1!=.
-  replace psscee = (pil-ee_c2)*ee_r3 + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c2 & ee_c2!=.
-  replace psscee = (pil-ee_c3)*ee_r4 + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c3 & ee_c3!=.
-  replace psscee = (pil-ee_c4)*ee_r5 + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c4 & ee_c4!=.
-  replace psscee = (pil-ee_c5)*ee_r6 + ee_r5*(ee_c5 - ee_c4) + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1  if pil>ee_c5 & ee_c5!=. 
+  replace psscee = pil*ee_r1 if inlist(income_type, "gross", "Italy")
+  replace psscee = (pil-ee_c1)*ee_r2 + ee_r1*ee_c1  if pil>ee_c1 & ee_c1!=. & inlist(income_type, "gross", "Italy")
+  replace psscee = (pil-ee_c2)*ee_r3 + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c2 & ee_c2!=. & inlist(income_type, "gross", "Italy")
+  replace psscee = (pil-ee_c3)*ee_r4 + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c3 & ee_c3!=. & inlist(income_type, "gross", "Italy")
+  replace psscee = (pil-ee_c4)*ee_r5 + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c4 & ee_c4!=. & inlist(income_type, "gross", "Italy")
+  replace psscee = (pil-ee_c5)*ee_r6 + ee_r5*(ee_c5 - ee_c4) + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1  if pil>ee_c5 & ee_c5!=.  & inlist(income_type, "gross", "Italy")
+  
+   **IMPORTANT**Convert French datasets from net to gross
+   * Impute individual level income tax from household level income tax
+  bysort ccyy hid: egen hemp = total(emp) , missing // missing option to set a total of all missing values to missing rather than zero.
+  replace pxiti = hxiti/hemp if income_type == "France"
+  replace pxiti =. if emp!=1 & income_type == "France"
+  * Impute Employee Social Security Contributions
+  /*We assume that the original INSEE survey provides information about actual "net" wages in the sense "net of all contributions" and not in the sense of "declared income", which contains non deductible CSG. If not, one should 
+  remove this rate in the excel file and add it manually after we have the gross income*/
+  replace psscee = pil*ee_r1/(1-ee_r1) if pil>0 & pil<=(ee_c1 - ee_r1*ee_c1) & income_type == "France"
+  replace psscee = 1/(1-ee_r2)*(ee_r2*(pil - ee_c1) + ee_r1*ee_c1) if pil>(ee_c1 - ee_r1*ee_c1) & pil<=(ee_c2 - ee_r1*ee_c1 - ee_r2*(ee_c2-ee_c1)) & income_type == "France"
+  replace psscee = 1/(1-ee_r3)*(ee_r3*(pil - ee_c2) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1)) if pil>(ee_c2 - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & pil<=(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & income_type == "France"
+  replace psscee = 1/(1-ee_r4)*(ee_r4*(pil - ee_c3) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1) + ee_r3*(ee_c3 - ee_c2)) if pil>(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & income_type == "France"
+**IMPORTANT**Convert French datasets from net to gross
+  replace pil=pil+pxiti+psscee if income_type == "France"
   }
 end
 
 program define gen_employer_ssc
   * Generate Employer Social Security Contributions
   {
-  gen psscer=.
-  replace psscer = pil*er_r1
-  replace psscer = (pil-er_c1)*er_r2 + er_r1*er_c1  if pil>er_c1 & er_c1!=.
-  replace psscer = (pil-er_c2)*er_r3 + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c2 & er_c2!=.
-  replace psscer = (pil-er_c3)*er_r4 + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c3 & er_c3!=.
-  replace psscer = (pil-er_c4)*er_r5 + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c4 & er_c4!=.
-  replace psscer = (pil-er_c5)*er_r6 + er_r5*(er_c5 - er_c4) + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1  if pil>er_c5 & er_c5!=. 
+  replace psscer = pil*er_r1 if inlist(income_type, "gross", "Italy", "France")
+  replace psscer = (pil-er_c1)*er_r2 + er_r1*er_c1  if pil>er_c1 & er_c1!=. & inlist(income_type, "gross", "Italy", "France")
+  replace psscer = (pil-er_c2)*er_r3 + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c2 & er_c2!=. & inlist(income_type, "gross", "Italy", "France")
+  replace psscer = (pil-er_c3)*er_r4 + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c3 & er_c3!=. & inlist(income_type, "gross", "Italy", "France")
+  replace psscer = (pil-er_c4)*er_r5 + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c4 & er_c4!=. & inlist(income_type, "gross", "Italy", "France")
+  replace psscer = (pil-er_c5)*er_r6 + er_r5*(er_c5 - er_c4) + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1  if pil>er_c5 & er_c5!=.  & inlist(income_type, "gross", "Italy", "France")
   }
 end
 
 program define convert_ssc_to_household_level
   * Convert variables to household level 
   {
-  bysort ccyy hid: egen hsscee=total(psscee) if income_type != "net"
-  bysort ccyy hid: egen hsscer=total(psscer) if income_type != "net"
+  bysort ccyy hid: egen hsscee=total(psscee)
+  bysort ccyy hid: egen hsscer=total(psscer)
+  bysort ccyy hid: replace hxiti=total(pinctax) if income_type == "net"
   
   *create a dummy variable taking 1 if head of household btw 25 and 59
   gen headactivage=1 if age>24 & age<60 & relation==1000
@@ -65,7 +78,7 @@ program define convert_ssc_to_household_level
   bys ccyy hid: egen hhactivage=total(headactivage)
   
   * Keep only household level SSC and household id and activage dummy
-  drop pid pil pxit pxiti pxits age emp relation headactivage
+  drop pid pil pxit pxiti pxits age emp relation headactivage /* VA PROBABLEMENT PLANTER CAR IL Y A ENCORE PINCTAX ET PTET D'AUTRES */
   drop if hid==.
   duplicates drop
   }
@@ -124,47 +137,6 @@ program define gen_pvars
   convert_ssc_to_household_level
 end
 
-program define FR_gen_pvars
-{
-  * Impute individual level income tax from household level income tax
-  bysort hid: egen hemp = total(emp) , missing // missing option to set a total of all missing values to missing rather than zero.
-  drop pxiti
-  gen pxiti = hxiti/hemp
-  replace pxiti =. if emp!=1
-  **IMPORTANT**Generate Employee Social Security Contributions
-  /*We assume that the original INSEE survey provides information about actual "net" wages in the sense "net of all contributions" and not in the sense of "declared income", which contains non deductible CSG. If not, one should 
-  remove this rate in the excel file and add it manually after we have the gross income*/
-
-  gen psscee=.
-  replace psscee = pil*ee_r1/(1-ee_r1) if pil>0 & pil<=(ee_c1 - ee_r1*ee_c1) 
-  replace psscee = 1/(1-ee_r2)*(ee_r2*(pil - ee_c1) + ee_r1*ee_c1) if pil>(ee_c1 - ee_r1*ee_c1) & pil<=(ee_c2 - ee_r1*ee_c1 - ee_r2*(ee_c2-ee_c1))
-  replace psscee = 1/(1-ee_r3)*(ee_r3*(pil - ee_c2) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1)) if pil>(ee_c2 - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & pil<=(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1)
-  replace psscee = 1/(1-ee_r4)*(ee_r4*(pil - ee_c3) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1) + ee_r3*(ee_c3 - ee_c2)) if pil>(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1)
-**IMPORTANT**Convert French datasets from net to gross
-  replace pil=pil+pxiti+psscee
-  
-  
-  gen_employer_ssc
-  manual_corrections_employer_ssc
-  convert_ssc_to_household_level
-  }
-end
-
-program define NET_gen_pvars
-{
-
-  * Convert variables to household level
-  bysort hid: egen hxiti=total(pinctax)
-  bysort hid: egen hsscee=total(psscee)
-  bysort hid: egen hsscer=total(psscer)
-    *create household activ age dummy*
-  activage_household
-  * Keep only household level SSC and household id
-  keep hid hsscee hsscer hxiti hhactivage
-  drop if hid==.
-  duplicates drop hid, force
-  }
-end
 
 ***************************************************************************
 * Helper Program: Manual corrections
