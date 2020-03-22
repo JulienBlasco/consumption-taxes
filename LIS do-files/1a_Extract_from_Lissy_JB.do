@@ -49,7 +49,7 @@ program define gen_employee_ssc
   replace psscee = 1/(1-ee_r3)*(ee_r3*(pil - ee_c2) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1)) if pil>(ee_c2 - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & pil<=(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & income_type == "France"
   replace psscee = 1/(1-ee_r4)*(ee_r4*(pil - ee_c3) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1) + ee_r3*(ee_c3 - ee_c2)) if pil>(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & income_type == "France"
 **IMPORTANT**Convert French datasets from net to gross
-  replace pil=pil+pxiti+psscee if income_type == "France"
+  replace pil=pil+pxiti+psscee if income_type == "France" /* J'AI UN DOUTE SUR CETTE PARTIE : pourquoi rajouter l'IR aux salaires avant le calcul des cotisations employeur mais pas employé ? */
   }
 end
 
