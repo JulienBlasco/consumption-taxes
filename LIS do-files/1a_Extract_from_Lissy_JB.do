@@ -298,17 +298,6 @@ program define def_tax_and_transfer
   gen inc3_SSEE = marketincome + allpension + transfer - hsscer - hxits /*Inc3 minus ER and EE SSC*/
   gen inc4 = marketincome + allpension + transfer - tax
 
-  * Trim and bottom code
-  // The preceding steps are in the ppp_equiv program
-  * Step 3
-  foreach var in $hvarsflow $hvarsnew {
-  replace `var' = 0 if `var' < 0
-  }
-  * Define the income deciles - Define various deciles for various concepts of income
-  foreach var in $incconcept{
-  xtile decile_`var' = `var' [w=hwgt*nhhmem], nquantiles(10) // already corrected for household size by ppp_equiv
-  xtile hhaa_decile_`var' = `var' [w=hwgt*nhhmem] if hhactivage==1, nquantiles(10) // already corrected for household size by ppp_equiv
-}
 
 end
 
@@ -338,19 +327,6 @@ program define fix_pensions_type3
   gen inc3_SSEE = marketincome + allpension + transfer - hsscer - hxits /*Inc3 minus ER and EE SSC*/
   gen inc4 = marketincome + allpension + transfer - tax
 
-  * Trim and bottom code
-  // The preceding steps are in the ppp_equiv program
-  * Step 3
-  foreach var in $hvarsflow $hvarsnew {
-  replace `var' = 0 if `var' < 0
-  }
-  * Define the income deciles - Define various deciles for various concepts of income
-  foreach var in $incconcept{
-  xtile decile_`var' = `var' [w=hwgt*nhhmem], nquantiles(10) // already corrected for household size by ppp_equiv
-  xtile hhaa_decile_`var' = `var' [w=hwgt*nhhmem] if hhactivage==1, nquantiles(10) // already corrected for household size by ppp_equiv
-}
-
-
 end
 
 ***************************************************************************
@@ -365,8 +341,6 @@ program define FR_def_tax_and_transfer
   gen tax = hxiti + hxits + hsscer + hic_csg_crds + pension_csg_crds
   * For France, incomes are reported net of ssc, but gross of income tax
   gen marketincome = hil + (hic-hicvip) + hsscer + hic_csg_crds + hxits + pension_csg_crds
-
-  inc_and_decile
 
 end
 
