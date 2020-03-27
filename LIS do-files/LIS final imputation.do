@@ -166,7 +166,7 @@ program main_program
 	gen ccyy = ""   
 	foreach ccyy in `ccyylist' {   
 		qui append using $`ccyy'h, generate(appending) nolabel nonotes ///   
-		keep(cname year dhi hmc hmchous hchous nhhmem hhtype ///   
+		keep(dname cname year dhi hmc hmchous hchous nhhmem hhtype ///   
 		hpartner own nhhmem65 nhhmem5 nhhmem17 nearn hwgt)
 		qui replace ccyy = "`ccyy'" if appending == 1   
 		qui drop appending   

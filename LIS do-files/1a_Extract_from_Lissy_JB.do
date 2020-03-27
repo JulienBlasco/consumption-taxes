@@ -339,6 +339,7 @@ program define def_tax_and_transfer
 end
 
 
+
 *********************************************************
 * add income_type as a variable 
 *********************************************************
@@ -362,36 +363,20 @@ foreach ccyy in $datasets {
 
 
 **********************************************************
-* Loop over datasets
+* Add p variables
 **********************************************************
 
-foreach ccyy in $datasets {
-  quietly use $pvars using $`ccyy'p, clear
+  	foreach ccyy in $datasets {   
+		 qui merge m:m dname hid using $`ccyy'p, ///
+			keepusing($pvars) nogenerate keep(master match)
+	}  
+  
+
   
   *************
   * Generate social security variables from person level dataset
   *************
-  local cc : di substr("`ccyy'",1,2)
-  if "`cc'" == "fr" {
-    quietly merge m:1 hid using "$`ccyy'h", keep(match) keepusing(hxiti) nogenerate
-    quietly FR_gen_pvars
-  }
-  else if "`cc'" == "it" {
-    quietly merge m:1 hid using "$`ccyy'h", keep(match) keepusing(hxiti) nogenerate
-    quietly IT_gen_pvars
-  }
-  else if strpos("$net_datasets","`ccyy'") > 0 {
-    quietly NET_gen_pvars
-  }
-  else {
     quietly gen_pvars
-  }
-  
-  
-  *************
-  *  Merge with households variables
-  *************
-  quietly merge 1:1 hid using $`ccyy'h,  nogenerate // keepusing($hvars $hvarsflow)
   
   *************
   * Do some corrections and equivalization
@@ -409,14 +394,7 @@ foreach ccyy in $datasets {
  * Define the different stages of income
  ***********************************
   quietly def_tax_and_transfer
-  if "`cc'" == "fr" {
-    quietly FR_def_tax_and_transfer
-  }
-  foreach certain_ccyy in $fixpensions_datasets3 {
-    quietly fix_pensions_type3 if "`ccyy'" == "`certain_ccyy'"
-  }
 
-   }
  
 program drop _all
 clear all
