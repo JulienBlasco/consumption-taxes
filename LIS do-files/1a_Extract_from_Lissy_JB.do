@@ -30,7 +30,7 @@ program define merge_ssc
 	* Merge labour income variables for gross and mixed datasets
 	merge m:1 dname using "$mydata/vamour/SSC_20180621.dta", keep(match master) nogenerate
 	 * Impute taxes for net datasets
-   nearmrg dname using "$mydata/molcke/net_20161101.dta", nearvar(pil) lower keep(match master) nogenerate
+	nearmrg dname using "$mydata/molcke/net_20161101.dta", nearvar(pil) lower keep(match master) nogenerate
 end
 
 
@@ -397,23 +397,6 @@ program define FR_tax_CSG_CRDS
     drop hil_temp
 end
 
-***************************************************************
-* Program: Correct dhi (disposable household income) for France
-***************************************************************
-
-/* Notes: For France particularly, dhi is provided gross of income taxes, even
-though the income tax variable is available. Ths is because income taxes are
-collected once per year, directly from households. The income tax variable in
-LIS is the amount of the previous year's tax. So it is just a proxy of current
-income tax. Here we compute the dhi net of income tax */
-
-program define correct_dhi
-  gen hxiti_temp = hxiti
- * replace hxiti_temp = 0 if hxiti<0
-  replace hxiti_temp = 0 if hxit==.
-  replace dhi = dhi - hxiti_temp
-end
-
 
 *********************************************************
 * add income_type as a variable 
@@ -473,9 +456,6 @@ foreach ccyy in $datasets {
   * Do some corrections and equivalization
   *************
   quietly missing_values
-  if "`cc'" == "fr" {
-    quietly correct_dhi
-  }
   
     replace hsscer=0 if hsscer<0 // Employer
     replace hsscee=0 if hsscee<0 // Employee
