@@ -264,6 +264,8 @@ program define def_tax_and_transfer
   replace pubpension = pension - hitsap if pubpension==.  /*use pension - hitsap if only hicvip missing*/
   replace pubpension = pension if pubpension==. /*if pension is the only variable not missing, use this as pubpension*/
   
+  replace pubpension = hitsil + hitsup + hitsap if inlist(cname, "United Kingdom", "Ireland")
+  
    *Now we define transfers and pensions. We set to 0 the remaining missing values
   replace pubpension=0 if pubpension==.
   replace hits=0 if hits==.
@@ -276,6 +278,9 @@ program define def_tax_and_transfer
   gen transfer = hits - pubpension
   gen pripension = hicvip
   gen allpension = pension - hitsap
+ 
+ replace allpension = pension if inlist(cname, "United Kingdom", "Ireland")
+ 
  
   *Finally define PIT and social security contribution. Rather use hxit in the income definitions
    * Use the imputed data if employee social security contributions is not available
@@ -291,61 +296,8 @@ program define def_tax_and_transfer
   * are net of employer contributions but gross of employee SSC and income tax.
   replace marketincome = hil + (hic-hicvip) + tax if dname=="it04" | dname=="it08" | dname=="it10" | dname=="it14"
 
-  gen inc1 = marketincome
-  gen inc2 = marketincome + allpension
-  gen inc3 = marketincome + allpension + transfer
-  gen inc3_SSER = marketincome + allpension + transfer - hsscer /*Inc3 minus Employer (ER) social security contributions (SSER)*/
-  gen inc3_SSEE = marketincome + allpension + transfer - hsscer - hxits /*Inc3 minus ER and EE SSC*/
-  gen inc4 = marketincome + allpension + transfer - tax
-
-
-end
-
-
-***************************************************************************
-* Program: Adjustments to pensions for UK and Ireland
-***************************************************************************
-
-/* In the preceding income definitions, UK and Ireland have transfers that
-seem to be too high. We propose moving HITSAP (old-age, disability assistance
-pensions, a subcategory of assistance benefits) out of transfers, and into
-pensions.  */
-
-program define fix_pensions_type3
-  drop pubpension allpension transfer inc1 inc2 inc3 inc4 inc3_SSER inc3_SSEE decile_inc1 decile_inc2 decile_inc3 decile_inc4 decile_inc3_SSER decile_inc3_SSEE hhaa_decile_inc1 hhaa_decile_inc2 hhaa_decile_inc3 hhaa_decile_inc4 hhaa_decile_inc3_SSER hhaa_decile_inc3_SSEE
-  gen pubpension = hitsil + hitsup + hitsap // Added "+hitsap"
-  *gen pripension = hicvip // No change
-  gen allpension = pension // Removed "-hitsap"
-  gen transfer = hits - pubpension
-  *gen tax = hxit + hsscer // No change
-  *gen marketincome = hil + (hic-hicvip) + hsscer // No change
-
-  gen inc1 = marketincome
-  gen inc2 = marketincome + allpension
-  gen inc3 = marketincome + allpension + transfer
-  gen inc3_SSER = marketincome + allpension + transfer - hsscer /*Inc3 minus Employer (ER) social security contributions (SSER)*/
-  gen inc3_SSEE = marketincome + allpension + transfer - hsscer - hxits /*Inc3 minus ER and EE SSC*/
-  gen inc4 = marketincome + allpension + transfer - tax
-
-end
-
-***************************************************************************
-* Program: Adjustments to tax for France
-***************************************************************************
-
-program define FR_def_tax_and_transfer
-  drop tax inc1 inc2 inc3 inc4 inc3_SSER inc3_SSEE  decile_inc1 decile_inc2 decile_inc3 decile_inc4 decile_inc3_SSER decile_inc3_SSEE hhaa_decile_inc1 hhaa_decile_inc2 hhaa_decile_inc3 hhaa_decile_inc4 hhaa_decile_inc3_SSER hhaa_decile_inc3_SSEE marketincome
- * Impute the taxes CSG and CRDS
-  FR_tax_CSG_CRDS
-  * Define the components of the income stages
-  gen tax = hxiti + hxits + hsscer + hic_csg_crds + pension_csg_crds
-  * For France, incomes are reported net of ssc, but gross of income tax
-  gen marketincome = hil + (hic-hicvip) + hsscer + hic_csg_crds + hxits + pension_csg_crds
-
-end
-
-program define FR_tax_CSG_CRDS
-  * Labour income
+   * Impute the taxes CSG and CRDS
+   * Labour income
   // CSG and CRDS on labour income is imputed within Employee SSC
   * Capital income
   gen hic_csg_crds = hic * 0.08 if dname =="fr00"
@@ -359,7 +311,8 @@ program define FR_tax_CSG_CRDS
     replace C = 1 + (nhhmem17 - 2) if nhhmem17>2
     gen familyshare = N + C
     drop N C
-    *Imputation
+	
+     *Imputation
     gen pension_csg_crds = 0
     gen hil_temp=hil-hxiti-hsscee /*On regarde bien le salaire net pour calculer le RFR*/
     replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (6584+2*(familyshare - 1)*1759) & hxit<=0 & dname=="fr00" // 2002 figures deflated to 2000 prices using WDI CPI
@@ -369,6 +322,20 @@ program define FR_tax_CSG_CRDS
     replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (9876+2*(familyshare - 1)*2637) & hxit<=0 & dname=="fr10"
     replace pension_csg_crds = 0.071/(1-0.071)*(hitsil + hitsup) if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (9876+2*(familyshare - 1)*2637) & hxit>0& dname=="fr10"
     drop hil_temp
+  
+  * Define the components of the income stages
+  replace tax = hxiti + hxits + hsscer + hic_csg_crds + pension_csg_crds if income_type == "France"
+  * For France, incomes are reported net of ssc, but gross of income tax
+  replace marketincome = hil + (hic-hicvip) + hsscer + hic_csg_crds + hxits + pension_csg_crds if income_type == "France"
+  
+  gen inc1 = marketincome
+  gen inc2 = marketincome + allpension
+  gen inc3 = marketincome + allpension + transfer
+  gen inc3_SSER = marketincome + allpension + transfer - hsscer /*Inc3 minus Employer (ER) social security contributions (SSER)*/
+  gen inc3_SSEE = marketincome + allpension + transfer - hsscer - hxits /*Inc3 minus ER and EE SSC*/
+  gen inc4 = marketincome + allpension + transfer - tax
+
+
 end
 
 
