@@ -18,7 +18,7 @@
 *	- crossvalidation
 *	- comparison of different models
 * modified 24 February 2020 to add count of hmc imputed in compare
-* modifier 03 April 2020 to add computation of REDINEQ income styles
+* modifier 03 April 2020 to add computation of REDINEQ income styles	
 *******************
 
 quiet {
@@ -133,6 +133,18 @@ global red_net_datasets
 global fixpension_datasets3 ///
 	ie04 ie07 ie10 uk99 uk04 uk07 uk10 uk13
 }
+
+/*********************
+* V. Variables for REDINEQ income *
+**********************/
+
+global pvars "pid hid dname pil pxit pxiti pxits age emp relation"
+global hvars "hid dname nhhmem dhi nhhmem17 nhhmem65 hwgt"
+global hvarsflow "hil hic pension hits hitsil hitsup hitsap hxit hxiti hxits hc hicvip dhi hitsilmip hitsilo hitsilep hitsilwi hitsilepo hitsilepd hitsileps" // Local currency, given in the datasets
+global hvarsnew "hsscer hsscee" // Local currency, imputed
+global hvarsinc "inc1 inc2 inc3 inc3_SSER inc3_SSEE inc4 tax transfer allpension pubpension pripension hssc" // Summation / imputed after PPP conversion
+global incconcept "inc1 inc2 inc3 inc3_SSER inc3_SSEE inc4" /*Concept of income: for the loops*/
+
 
 ************************************   
 *        MAIN PROGRAM              *   
