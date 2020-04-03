@@ -2,8 +2,8 @@
 * Define globals
 *************************************************************
 
-global datasets "at04 at07 at13 au03 au08 au10 ca04 ca07 ca10 ca13 ch00 ch02 ch04 ch07 ch10 ch13 cz02 cz04 cz07 cz10 cz13 de00 de04 de07 de10 de13 de15 dk00 dk04 dk07 dk10 dk13 ee10 ee13 es07 es10 es13 fi00 fi04 fi07 fi10 fi13 fr00 fr05 fr10 gr07 gr10 gr13 ie04 ie07 ie10 il10 is04 is07 is10 it04 it08 it10 it14 jp08 kr06 kr08 kr10 kr12 lu04 lu07 lu10 lu13 nl99 nl04 nl07 nl10 nl13 no00 no04 no07 no10 no13 pl04 pl07 pl10 pl13 pl16 pl99 se00 se05 sk04 sk07 sk10 sk13 uk99 uk04 uk07 uk10 uk13 us00 us04 us07 us10 us13 us16 at00 be00 gr00 hu05 hu07 hu09 hu12 hu99 ie00 lu00 mx00 mx02 mx04 mx08 mx10 mx12 mx98 si10"  /*it00 il12 si12*/ 
-global net_datasets "at00 be00 gr00 hu05 hu07 hu09 hu12 hu99 ie00 lu00 mx00 mx02 mx04 mx08 mx10 mx12 mx98 si10" /*it00*/ // Removed es00 and it98 in this version since they contain dupicates and missing values respectively in pil.
+global redineq_datasets "at04 at07 at13 au03 au08 au10 ca04 ca07 ca10 ca13 ch00 ch02 ch04 ch07 ch10 ch13 cz02 cz04 cz07 cz10 cz13 de00 de04 de07 de10 de13 de15 dk00 dk04 dk07 dk10 dk13 ee10 ee13 es07 es10 es13 fi00 fi04 fi07 fi10 fi13 fr00 fr05 fr10 gr07 gr10 gr13 ie04 ie07 ie10 il10 is04 is07 is10 it04 it08 it10 it14 jp08 kr06 kr08 kr10 kr12 lu04 lu07 lu10 lu13 nl99 nl04 nl07 nl10 nl13 no00 no04 no07 no10 no13 pl04 pl07 pl10 pl13 pl16 pl99 se00 se05 sk04 sk07 sk10 sk13 uk99 uk04 uk07 uk10 uk13 us00 us04 us07 us10 us13 us16 at00 be00 gr00 hu05 hu07 hu09 hu12 hu99 ie00 lu00 mx00 mx02 mx04 mx08 mx10 mx12 mx98 si10"  /*it00 il12 si12*/ 
+global red_net_datasets "at00 be00 gr00 hu05 hu07 hu09 hu12 hu99 ie00 lu00 mx00 mx02 mx04 mx08 mx10 mx12 mx98 si10" /*it00*/ // Removed es00 and it98 in this version since they contain dupicates and missing values respectively in pil.
 global pvars "pid hid dname pil pxit pxiti pxits age emp relation"
 global hvars "hid dname nhhmem dhi nhhmem17 nhhmem65 hwgt"
 global hvarsflow "hil hic pension hits hitsil hitsup hitsap hxit hxiti hxits hc hicvip dhi hitsilmip hitsilo hitsilep hitsilwi hitsilepo hitsilepd hitsileps" // Local currency, given in the datasets
@@ -339,7 +339,7 @@ end
 * add income_type as a variable 
 *********************************************************
 gen income_type = ""
-foreach ccyy in $datasets {
+foreach ccyy in $redineq_datasets {
 	local cc : di substr("`ccyy'",1,2)
 	  if "`cc'" == "fr" {
 		replace income_type = "France"
@@ -347,7 +347,7 @@ foreach ccyy in $datasets {
 	  else if "`cc'" == "it" {
 		replace income_type = "Italy"
 	  }
-	  else if strpos("$net_datasets","`ccyy'") > 0 {
+	  else if strpos("$red_net_datasets","`ccyy'") > 0 {
 		replace income_type = "net"
 	  }
 	  else {
@@ -361,7 +361,7 @@ foreach ccyy in $datasets {
 * Add p variables
 **********************************************************
 
-  	foreach ccyy in $datasets {   
+  	foreach ccyy in $redineq_datasets {   
 		 qui merge m:m dname hid using $`ccyy'p, ///
 			keepusing($pvars) nogenerate keep(master match)
 	}  
