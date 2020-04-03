@@ -47,11 +47,6 @@ program define gen_employee_ssc
   replace psscee = (pil-ee_c4)*ee_r5 + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c4 & ee_c4!=. & inlist(income_type, "gross", "Italy")
   replace psscee = (pil-ee_c5)*ee_r6 + ee_r5*(ee_c5 - ee_c4) + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1  if pil>ee_c5 & ee_c5!=.  & inlist(income_type, "gross", "Italy")
   
-   **IMPORTANT**Convert French datasets from net to gross
-   * Impute individual level income tax from household level income tax
-  bysort ccyy hid: egen hemp = total(emp) , missing // missing option to set a total of all missing values to missing rather than zero.
-  replace pxiti = hxiti/hemp if income_type == "France"
-  replace pxiti =. if emp!=1 & income_type == "France"
   * Impute Employee Social Security Contributions
   /*We assume that the original INSEE survey provides information about actual "net" wages in the sense "net of all contributions" and not in the sense of "declared income", which contains non deductible CSG. If not, one should 
   remove this rate in the excel file and add it manually after we have the gross income*/
@@ -60,7 +55,7 @@ program define gen_employee_ssc
   replace psscee = 1/(1-ee_r3)*(ee_r3*(pil - ee_c2) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1)) if pil>(ee_c2 - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & pil<=(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & income_type == "France"
   replace psscee = 1/(1-ee_r4)*(ee_r4*(pil - ee_c3) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1) + ee_r3*(ee_c3 - ee_c2)) if pil>(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & income_type == "France"
 **IMPORTANT**Convert French datasets from net to gross
-  replace pil=pil+pxiti+psscee if income_type == "France" /* J'AI UN DOUTE SUR CETTE PARTIE : pourquoi rajouter l'IR aux salaires avant le calcul des cotisations employeur mais pas employé ? */
+  replace pil=pil+psscee if income_type == "France"
   }
 end
 
