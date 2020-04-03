@@ -199,7 +199,7 @@ program main_program
 		hpartner own nhhmem65 nhhmem5 nhhmem17 nearn hwgt)
 		qui replace ccyy = "`ccyy'" if appending == 1   
 		qui drop appending   
-	}  
+	}
 
 	qui merge m:1 ccyy using "$mydata/jblasc/18-09-09 availability matrix.dta", ///
 	keepusing(dhi_ccyy hmc_ccyy model1_ccyy model2_ccyy wor_ccyy rich_ccyy nearn)
@@ -211,7 +211,13 @@ program main_program
 	itrc_carey_wor itrc_euro_wor itrc_ours_wor oecd_prop_wor_def ///
 	oecd_P31CP041 oecd_P31CP042 oecd_income_S14 oecd_income_S14_S15)  
 	qui drop if _merge==2  
+	
+	di "************ BEGIN SSC COMPUTATION ****************"  
+	di "* " c(current_time)
 
+	quiet ssc_impute `ccyylist'
+	
+	
 	di "************ BEGIN PREPROCESSING ****************"  
 	di "* " c(current_time)
 
@@ -262,7 +268,20 @@ program main_program
 	end   
  // end main_program
 
- 
+***********************************
+*       SSC COMPUTATION      *
+***********************************
+program ssc_impute 
+	syntax namelist
+   	foreach ccyy in $redineq_datasets {   
+		if strpos("`namelist'", "`ccyy'" ) {
+			qui merge m:m dname hid using $`ccyy'p, ///
+				keepusing($pvars) nogenerate keep(master match)
+		}  
+	}
+end
+	
+	
 ************************************   
 *        PREPROCESSING             *   
 ************************************  
