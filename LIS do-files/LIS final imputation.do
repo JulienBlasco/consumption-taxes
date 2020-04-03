@@ -615,6 +615,102 @@ end
 } // end preprocessing
 
 
+**************************************************
+* Program: Define taxes and transfer variables
+**************************************************
+
+program define def_tax_and_transfer
+  gen pubpension = hitsil + hitsup /*Use conventional definition: hitsil + hitsup if nothing missing. Recall that hitsil or hitsup may have been "enriched" by their components but there are still missing values left */
+  * if hitsil or hitsup is missing (=> previous formula generates a missing value), use the negative definition of pubpension*/
+ 
+  replace pubpension= pension - hicvip - hitsap if pubpension==. /*Recall: pension = hitsil + hitsup + hicvip + hitsap: if hicvip and hitsap are defined, hitsil + hitsup can be defined by the residual*/
+  replace pubpension = pension - hicvip if pubpension==.  /*use pension - hicvip if only hitsap missing*/
+  replace pubpension = pension - hitsap if pubpension==.  /*use pension - hitsap if only hicvip missing*/
+  replace pubpension = pension if pubpension==. /*if pension is the only variable not missing, use this as pubpension*/
+  
+  replace pubpension = hitsil + hitsup + hitsap if inlist(cname, "United Kingdom", "Ireland")
+  
+   *Now we define transfers and pensions. We set to 0 the remaining missing values
+  replace pubpension=0 if pubpension==.
+  replace hits=0 if hits==.
+  replace hicvip=0 if hicvip==.
+  replace hitsil=0 if hitsil==.
+  replace hitsap=0 if hitsap==.
+  replace hitsup=0 if hitsup==.
+  replace pension=0 if pension==.
+
+  gen transfer = hits - pubpension
+  gen pripension = hicvip
+  gen allpension = pension - hitsap
+ 
+ replace allpension = pension if inlist(cname, "United Kingdom", "Ireland")
+ 
+ 
+  *Finally define PIT and social security contribution. Rather use hxit in the income definitions
+   * Use the imputed data if employee social security contributions is not available
+  replace hxits=hsscee if hxits==.
+  replace hxiti=hxit - hxits if hxiti==.
+  replace hxit = hxiti + hxits if hxit==.
+
+  gen tax = hxit + hsscer
+  gen hssc = hxits + hsscer
+  gen marketincome = hil + (hic-hicvip) + hsscer
+  
+  * Italy is reported net of both SSC contributions and income tax while the gross datasets 
+  * are net of employer contributions but gross of employee SSC and income tax.
+  replace marketincome = hil + (hic-hicvip) + tax if dname=="it04" | dname=="it08" | dname=="it10" | dname=="it14"
+
+   * Impute the taxes CSG and CRDS
+   * Labour income
+  // CSG and CRDS on labour income is imputed within Employee SSC
+  * Capital income
+  gen hic_csg_crds = hic * 0.08 if dname =="fr00"
+  replace hic_csg_crds = hic * 0.087 if dname =="fr05"
+  replace hic_csg_crds = hic * 0.087  if dname =="fr10"
+  * Pensions
+    *Family share
+    gen N = (nhhmem - nhhmem17)
+    replace N = 2 + ((nhhmem - nhhmem17)-2) / 2 if (nhhmem - nhhmem17)>2
+    gen C = nhhmem17 / 2
+    replace C = 1 + (nhhmem17 - 2) if nhhmem17>2
+    gen familyshare = N + C
+    drop N C
+     *Imputation
+    gen pension_csg_crds = 0
+    gen hil_temp=hil-hxiti-hsscee /*On regarde bien le salaire net pour calculer le RFR*/ // si c'est le RFR je pense qu'il y a une erreur : hil est déjà net de cotises et le RFR n'est pas net d'IR
+    replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) ///
+		if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (6584+2*(familyshare - 1)*1759) & hxit<=0 & dname=="fr00" // 2002 figures deflated to 2000 prices using WDI CPI
+    replace pension_csg_crds = 0.067/(1-0.067)*(hitsil + hitsup) ///
+		if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (6584+2*(familyshare - 1)*1759) & hxit>0 & dname=="fr00" // 2002 figures deflated to 2000 prices using WDI CPI
+	
+    replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) ///
+		if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (7165+2*(familyshare - 1)*1914) & hxit<=0 & dname=="fr05"
+    replace pension_csg_crds = 0.071/(1-0.071)*(hitsil + hitsup) ///
+		if ((hil_temp/(1-0.024*0.97)+ hitsil + hitsup)*0.9 + hic) >  (7165+2*(familyshare - 1)*1914) & hxit>0 & dname=="fr05"
+	
+    replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) ///
+		if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (9876+2*(familyshare - 1)*2637) & hxit<=0 & dname=="fr10"
+    replace pension_csg_crds = 0.071/(1-0.071)*(hitsil + hitsup) ///
+		if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (9876+2*(familyshare - 1)*2637) & hxit>0& dname=="fr10"
+    drop hil_temp
+  
+  * Define the components of the income stages
+  replace tax = hxiti + hxits + hsscer + hic_csg_crds + pension_csg_crds if income_type == "France"
+  * For France, incomes are reported net of ssc, but gross of income tax
+  replace marketincome = hil + (hic-hicvip) + hsscer + hic_csg_crds + hxits + pension_csg_crds if income_type == "France"
+  
+  gen inc1 = marketincome
+  gen inc2 = marketincome + allpension
+  gen inc3 = marketincome + allpension + transfer
+  gen inc3_SSER = marketincome + allpension + transfer - hsscer /*Inc3 minus Employer (ER) social security contributions (SSER)*/
+  gen inc3_SSEE = marketincome + allpension + transfer - hsscer - hxits /*Inc3 minus ER and EE SSC*/
+  gen inc4 = marketincome + allpension + transfer - tax
+
+
+end
+
+
+
 **************************************
 *      IMPUTATION OF CONSUMPTION     *
 **************************************
