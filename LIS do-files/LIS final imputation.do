@@ -18,6 +18,7 @@
 *	- crossvalidation
 *	- comparison of different models
 * modified 24 February 2020 to add count of hmc imputed in compare
+* modifier 03 April 2020 to add computation of REDINEQ income styles
 *******************
 
 quiet {
