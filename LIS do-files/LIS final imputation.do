@@ -273,12 +273,45 @@ program main_program
 ***********************************
 program ssc_impute 
 	syntax namelist
+	local redineq_inlist
    	foreach ccyy in $redineq_datasets {   
 		if strpos("`namelist'", "`ccyy'" ) {
-			qui merge m:m dname hid using $`ccyy'p, ///
-				keepusing($pvars) nogenerate keep(master match)
-		}  
+			local redineq_inlist `redineq_inlist' `ccyy'
+			}
+		}
+	
+	foreach ccyy in `redineq_inlist' {
+		qui merge m:m dname hid using $`ccyy'p, ///
+			keepusing($pvars) nogenerate keep(master match)
 	}
+	
+	gen income_type = ""
+	foreach ccyy in `redineq_inlist' {
+		local cc : di substr("`ccyy'",1,2)
+		  if "`cc'" == "fr" {
+			replace income_type = "France"
+		  }
+		  else if "`cc'" == "it" {
+			replace income_type = "Italy"
+		  }
+		  else if strpos("$red_net_datasets","`ccyy'") > 0 {
+			replace income_type = "net"
+		  }
+		  else {
+			replace income_type = "gross"
+		  }
+	
+	*************
+	* Generate social security variables from person level dataset
+	*************
+	merge_ssc
+	gen_employee_ssc
+	manual_corrections_employee_ssc
+	gen_employer_ssc
+	manual_corrections_employer_ssc
+	convert_ssc_to_household_level
+	missing_values
+	
 end
 	
 	
@@ -324,12 +357,15 @@ program preprocessing
 	 rename hchous hchous_old
 	 gen hchous = max(1, hchous_old) if !mi(hchous_old)
 	 
+    replace hsscer=0 if hsscer<0 // Employer
+    replace hsscee=0 if hsscee<0 // Employee
+	 
 	 /* equivalise */   
-	 foreach var in dhi hmc hmchous hchous {   
+	 foreach var in dhi hmc hmchous hchous $hvarsflow $hvarsnew {   
 	 replace `var' = `var'/(nhhmem^0.5)   
 	 }   
 	  
-	  
+	  /* variables for regression model */
 	 foreach var in hmc dhi hmchous hchous {   
 	 gen `var'_median = .
 		foreach ccyy in `namelist' {
@@ -355,10 +391,15 @@ program preprocessing
 	 }   
 	  
 	 gen single_senior = nhhmem65*nhhmem == 1  
-	   
 	 gen dhipov_ind = (dhi_medianized<0.6)
-	 
 	 gen log_dhi_med_shifted = log_dhi_medianized -log(0.6)
+	 
+	 *********************************** 
+	 * Define the different stages of income
+	 * we'll see if this has to go inside preprocessing
+	 * or creation of variables
+	 ***********************************
+	quietly def_tax_and_transfer
   
 end   
      
