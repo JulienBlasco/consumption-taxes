@@ -306,16 +306,23 @@ program define def_tax_and_transfer
     replace C = 1 + (nhhmem17 - 2) if nhhmem17>2
     gen familyshare = N + C
     drop N C
-	
      *Imputation
     gen pension_csg_crds = 0
-    gen hil_temp=hil-hxiti-hsscee /*On regarde bien le salaire net pour calculer le RFR*/
-    replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (6584+2*(familyshare - 1)*1759) & hxit<=0 & dname=="fr00" // 2002 figures deflated to 2000 prices using WDI CPI
-    replace pension_csg_crds = 0.067/(1-0.067)*(hitsil + hitsup) if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (6584+2*(familyshare - 1)*1759) & hxit>0 & dname=="fr00" // 2002 figures deflated to 2000 prices using WDI CPI
-    replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (7165+2*(familyshare - 1)*1914) & hxit<=0 & dname=="fr05"
-    replace pension_csg_crds = 0.071/(1-0.071)*(hitsil + hitsup) if ((hil_temp/(1-0.024*0.97)+ hitsil + hitsup)*0.9 + hic) >  (7165+2*(familyshare - 1)*1914) & hxit>0 & dname=="fr05"
-    replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (9876+2*(familyshare - 1)*2637) & hxit<=0 & dname=="fr10"
-    replace pension_csg_crds = 0.071/(1-0.071)*(hitsil + hitsup) if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (9876+2*(familyshare - 1)*2637) & hxit>0& dname=="fr10"
+    gen hil_temp=hil-hxiti-hsscee /*On regarde bien le salaire net pour calculer le RFR*/ // si c'est le RFR je pense qu'il y a une erreur : hil est déjà net de cotises et le RFR n'est pas net d'IR
+    replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) ///
+		if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (6584+2*(familyshare - 1)*1759) & hxit<=0 & dname=="fr00" // 2002 figures deflated to 2000 prices using WDI CPI
+    replace pension_csg_crds = 0.067/(1-0.067)*(hitsil + hitsup) ///
+		if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (6584+2*(familyshare - 1)*1759) & hxit>0 & dname=="fr00" // 2002 figures deflated to 2000 prices using WDI CPI
+	
+    replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) ///
+		if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (7165+2*(familyshare - 1)*1914) & hxit<=0 & dname=="fr05"
+    replace pension_csg_crds = 0.071/(1-0.071)*(hitsil + hitsup) ///
+		if ((hil_temp/(1-0.024*0.97)+ hitsil + hitsup)*0.9 + hic) >  (7165+2*(familyshare - 1)*1914) & hxit>0 & dname=="fr05"
+	
+    replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) ///
+		if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (9876+2*(familyshare - 1)*2637) & hxit<=0 & dname=="fr10"
+    replace pension_csg_crds = 0.071/(1-0.071)*(hitsil + hitsup) ///
+		if ((hil_temp/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (9876+2*(familyshare - 1)*2637) & hxit>0& dname=="fr10"
     drop hil_temp
   
   * Define the components of the income stages
