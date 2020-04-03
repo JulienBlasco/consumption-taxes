@@ -195,8 +195,9 @@ program main_program
 	gen ccyy = ""   
 	foreach ccyy in `ccyylist' {   
 		qui append using $`ccyy'h, generate(appending) nolabel nonotes ///   
-		keep(dname cname year dhi hmc hmchous hchous nhhmem hhtype ///   
-		hpartner own nhhmem65 nhhmem5 nhhmem17 nearn hwgt)
+		keep(dname hid cname year dhi hmc hmchous hchous nhhmem hhtype ///   
+		hpartner own nhhmem65 nhhmem5 nhhmem17 nearn hwgt ///
+		$hvars $hvarsflow)
 		qui replace ccyy = "`ccyy'" if appending == 1   
 		qui drop appending   
 	}
@@ -311,10 +312,218 @@ program ssc_impute
 	manual_corrections_employer_ssc
 	convert_ssc_to_household_level
 	missing_values
-	
 end
 	
+program define merge_ssc
+	* Merge labour income variables for gross and mixed datasets
+	merge m:1 dname using "$mydata/vamour/SSC_20180621.dta", keep(match master) nogenerate
+	 * Impute taxes for net datasets
+	nearmrg dname using "$mydata/molcke/net_20161101.dta", nearvar(pil) lower keep(match master) nogenerate
+end
+
+program define gen_employee_ssc
+	* Generate Employee Social Security Contributions	
+	{
+	**IMPORTANT**Convert Italian datasets from net to gross
+	replace pil=pil+pxit if income_type == "Italy"
+
+	replace psscee = pil*ee_r1 if inlist(income_type, "gross", "Italy")
+	replace psscee = (pil-ee_c1)*ee_r2 + ee_r1*ee_c1  if pil>ee_c1 & ee_c1!=. & inlist(income_type, "gross", "Italy")
+	replace psscee = (pil-ee_c2)*ee_r3 + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c2 & ee_c2!=. & inlist(income_type, "gross", "Italy")
+	replace psscee = (pil-ee_c3)*ee_r4 + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c3 & ee_c3!=. & inlist(income_type, "gross", "Italy")
+	replace psscee = (pil-ee_c4)*ee_r5 + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c4 & ee_c4!=. & inlist(income_type, "gross", "Italy")
+	replace psscee = (pil-ee_c5)*ee_r6 + ee_r5*(ee_c5 - ee_c4) + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1  if pil>ee_c5 & ee_c5!=.  & inlist(income_type, "gross", "Italy")
 	
+	**IMPORTANT**Convert French datasets from net to gross
+	* Impute Employee Social Security Contributions then sum with pil
+	/*We assume that the original INSEE survey provides information about actual "net" wages in the sense "net of all contributions" and not in the sense of "declared income", which contains non deductible CSG. If not, one should 
+	remove this rate in the excel file and add it manually after we have the gross income*/
+	replace psscee = pil*ee_r1/(1-ee_r1) if pil>0 & pil<=(ee_c1 - ee_r1*ee_c1) & income_type == "France"
+	replace psscee = 1/(1-ee_r2)*(ee_r2*(pil - ee_c1) + ee_r1*ee_c1) if pil>(ee_c1 - ee_r1*ee_c1) & pil<=(ee_c2 - ee_r1*ee_c1 - ee_r2*(ee_c2-ee_c1)) & income_type == "France"
+	replace psscee = 1/(1-ee_r3)*(ee_r3*(pil - ee_c2) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1)) if pil>(ee_c2 - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & pil<=(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & income_type == "France"
+	replace psscee = 1/(1-ee_r4)*(ee_r4*(pil - ee_c3) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1) + ee_r3*(ee_c3 - ee_c2)) if pil>(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & income_type == "France"
+	
+	replace pil=pil+psscee if income_type == "France"
+	}
+end
+
+program define manual_corrections_employee_ssc
+	* Manual corrections for certain datasets (Employee Social Security Contributions)
+	{
+	*Belgium 2000 BE00
+	replace psscee=psscee-2600 if pil>34000 & pil<=42500 & dname=="be00"
+	replace psscee=psscee-(2600-0.4*(pil-42500)) if pil>42500 & pil<=4900 & dname=="be00"
+	replace psscee=psscee+0.09*hil if hil>750000 & hil<=850000 & dname=="be00"
+	replace psscee=psscee+9000+0.013*hil if hil>850000 & hil<=2426924 & dname=="be00"
+	replace psscee=psscee+29500 if hil>2426924 & dname=="be00"
+	*Denmark 2007 DK07
+	replace psscee=psscee+8052+975.6 if pil>0 & dname=="dk07"
+	*Denmark 2010 DK10
+	replace psscee=psscee+10244 if pil>0 & dname=="dk10"
+	*Greece 2000 GR00
+	replace psscee=0.159*6783000 if pil>6783000 & age>29 & dname=="gr00" //it would be betzter if I used year of birth
+	*Greece 2004 GR04
+	replace psscee=0.16*24699 if pil>24699 & age>33 & dname=="gr04"
+	*Greece 2007 GR07
+	replace psscee=0.16*27780 if pil>27780  & age>36 & dname=="gr07"
+	*Greece 2010 GR10
+	replace psscee=0.16*29187 if pil>29187  & age>39 & dname=="gr10"
+	*Iceland 2007 IS07
+	replace psscee=6314 if pil>ee_c1 & dname=="is07" //Should there also be an age restriction like in 2010?
+	*Iceland 2010 IS10
+	replace psscee=8400+17200 if pil>ee_c1 & age>=16 & age<=70 & dname=="is10"
+	}
+end
+
+
+program define gen_employer_ssc
+  * Generate Employer Social Security Contributions
+	{
+	gen psscer=.
+	replace psscer = pil*er_r1 if inlist(income_type, "gross", "Italy", "France")
+	replace psscer = (pil-er_c1)*er_r2 + er_r1*er_c1  if pil>er_c1 & er_c1!=. & inlist(income_type, "gross", "Italy", "France")
+	replace psscer = (pil-er_c2)*er_r3 + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c2 & er_c2!=. & inlist(income_type, "gross", "Italy", "France")
+	replace psscer = (pil-er_c3)*er_r4 + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c3 & er_c3!=. & inlist(income_type, "gross", "Italy", "France")
+	replace psscer = (pil-er_c4)*er_r5 + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c4 & er_c4!=. & inlist(income_type, "gross", "Italy", "France")
+	replace psscer = (pil-er_c5)*er_r6 + er_r5*(er_c5 - er_c4) + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1  if pil>er_c5 & er_c5!=.  & inlist(income_type, "gross", "Italy", "France")
+	}
+end
+
+program define manual_corrections_employer_ssc
+	* Manual corrections for certain datasets (Employer Social Security Contributions)
+	{
+	*Germany 2004 de04
+	replace psscer = 0.25*pil if pil<4800 & dname=="de04"
+	replace psscer = 0.25*pil if pil<4800 & dname=="de07"
+	*Germany 2010 de10 
+	replace psscer = 0.30*pil if pil<4800 & dname=="de10" 
+	*Germany 2013 de13 *Seems to be now 450/month : http://www.bmas.de/EN/Our-Topics/Social-Security/450-euro-mini-jobs-marginal-employment.html
+	replace psscer = 0.30*pil if pil<5400 & dname=="de13" 
+	*Germany 2015 de15 (VA)
+	replace psscer = 0.30*pil if pil<5400 & dname=="de15"
+	*Denmark dk
+	replace psscer = psscer +  1789 if pil>0 & dname=="dk00" 
+	replace psscer = psscer +  1789 if pil>0 & dname=="dk04"
+	replace psscer = psscer +  1951.2 if pil>0 & dname=="dk07"
+	replace psscer = psscer + 2160 if pil>0 & dname=="dk10"
+	replace psscer = psscer + 2160 if pil>0 & dname=="dk13"
+	*Estonia 2010 ee10
+	replace psscer = psscer + 17832 if pil>0 & dname=="ee10"
+	*Hungary 2005 hu05
+	replace psscer = psscer + 3450*10 + 1950*2 if pil>0 & dname=="hu05"
+	*Hungary 2007 2009 hu07 hu09 
+	replace psscer = psscer + 1950*12 if pil>0 & dname=="hu07"
+	replace psscer = psscer + 1950*12 if pil>0 & dname=="hu09"
+	*Ireland 2000 ie00
+	replace psscer=pil*.085 if  pil<14560 & dname=="ie00" // I could have easily included these changes for Ireland in the rates and ceilings.
+	*Ireland 2004 ie04
+	replace psscer=pil*.085 if  pil<18512 & dname=="ie04"
+	*Ireland 2007 ie07
+	replace psscer=pil*.085 if  pil<18512 & dname=="ie07"
+	*Ireland 2010 ie10
+	replace psscer=pil*.085 if  pil<18512 & dname=="ie10"
+	*Korea 2012 kr12
+	replace psscer=0.045*240000*12+0.0308995*280000*12+(0.008+0.0177)*pil if pil>0 & pil<240000*12 & dname=="kr12"
+	replace psscer=0.0308995*280000*12+(0.045+0.008+0.0177)*pil if pil>240000*12 & pil<280000*12 & dname=="kr12"
+	*France 2000 fr00 (measured in Francs, not Euros)
+	replace psscer=psscer-(0.182*pil) if pil<=83898 & dname=="fr00"
+	replace psscer=psscer-(0.55*(111584.34-pil)) if pil>83898 & pil<=111584.34 & dname=="fr00" 
+	*France 2005 fr05
+	replace psscer=psscer-((0.26/0.6)*((24692.8/pil)-1)*pil) if pil>15433 & pil<24692.8 & dname=="fr05" //I am not sure I have this adjustment correct.
+	*France 2010 fr10
+	replace psscer=psscer-((0.26/0.6)*((25800.32/pil)-1)*pil) if pil>16125 & pil<25800.32 & dname=="fr10"
+	*Mexico 2000 mx00
+	replace psscer=psscer + 0.152*35.12*365 if pil>0 & dname=="mx00"
+	replace psscer=psscer + 0.0502*(pil-3*35.12*365) if pil>3*35.12*365 & dname=="mx00"
+	*Mexico 2002 mx02
+	replace psscer=psscer + 0.165*39.74*365 if pil>0 & dname=="mx02"
+	replace psscer=psscer + 0.0404*(pil-3*39.74*365) if pil>3*39.74*365 & dname=="mx02"
+	*Mexico 2004 mx04
+	replace psscer=psscer + 0.178*45.24*365 if pil>0 & dname=="mx04"
+	replace psscer=psscer + 0.0306*(pil-3*45.24*365) if pil>3*45.24*365 & dname=="mx04"
+	*Mexico 2008 mx08
+	replace psscer=psscer + 0.204*52.59*365 if pil>0 & dname=="mx08"
+	replace psscer=psscer + 0.011*(pil-3*52.59*365) if pil>3*52.59*365 & dname=="mx08"
+	*Mexico 2010 mx10
+	replace psscer=psscer + 0.204*57.46*365 if pil>0 & dname=="mx10"
+	replace psscer=psscer + 0.011*(pil-3*57.46*365) if pil>3*57.46*365 & pil<25*57.46*365 & dname=="mx10"
+	replace psscer=psscer + 0.011*((25-3)*57.46*365)	 if pil>25*57.46*365 & dname=="mx10"
+	*Mexico 2012 mx12 VA
+	replace psscer=psscer + 0.204*62.33*365 if pil>0 & dname=="mx10"
+	replace psscer=psscer + 0.011*(pil-3*62.33*365) if pil>3*62.33*365 & pil<25*62.33*365 & dname=="mx10"
+	replace psscer=psscer + 0.011*((25-3)*62.33*365)	 if pil>25*62.33*365 & dname=="mx10"
+	*Netherlands 1999 nl99
+	replace psscer=psscer + 0.0585*pil  if pil>0 & pil<54810 & dname=="nl99"
+	replace psscer=psscer + 0.0585*54810  if pil>0 & pil<64300 & dname=="nl99"
+	*Netherlands 2004 nl04
+	replace psscer=psscer + 0.0675*pil  if pil>0 & pil<29493 & dname=="nl04"
+	replace psscer=psscer + 0.0675*29493  if pil>0 & pil<32600 & dname=="nl04"
+	}
+end
+
+program define convert_ssc_to_household_level
+  * Convert variables to household level 
+  {
+  bysort ccyy hid: egen hsscee=total(psscee)
+  bysort ccyy hid: egen hsscer=total(psscer)
+  bysort ccyy hid: replace hxiti=total(pinctax) if income_type == "net"
+  
+  *create a dummy variable taking 1 if head of household btw 25 and 59
+  gen headactivage=1 if age>24 & age<60 & relation==1000
+  replace headactivage=0 if headactivage!=1
+  bys ccyy hid: egen hhactivage=total(headactivage)
+  
+  * Keep only household level SSC and household id and activage dummy
+  drop pid pil pxit pxiti pxits age emp relation headactivage psscee psscer pinctax
+  drop if hid==.
+  duplicates drop
+  }
+end
+
+program define missing_values
+/*Here we replace missing values of aggregates by the sum of values of the subvariables if it brings extra information*/
+	{
+	egen hitsilep2=rowtotal(hitsilepo hitsilepd hitsileps)
+	replace hitsilep=hitsilep2 if hitsilep==. & hitsilep2 !=0
+
+	egen hitsil2=rowtotal(hitsilmip hitsilo hitsilep hitsilwi)  
+	replace hitsil=hitsil2 if hitsil==. & hitsil2 !=0
+
+	egen hitsis2=rowtotal(hitsissi hitsisma hitsiswi hitsisun) 
+	replace hitsis=hitsis2 if hitsis==. &	 hitsis !=0
+
+	egen hitsup2=rowtotal(hitsupo hitsupd hitsups)
+	replace hitsup=hitsup2 if hitsup==. & hitsup2 !=0
+
+	egen hitsufa2=rowtotal(hitsufaca hitsufaam hitsufacc)
+	replace hitsufa = hitsufa2 if hitsufa==. & hitsufa !=0
+
+	egen hitsu2=rowtotal(hitsup hitsuun hitsudi hitsufa hitsued)
+	replace hitsu=hitsu2 if hitsu==. & hitsu2 !=0
+
+	egen hitsap2=rowtotal(hitsapo hitsapd hitsaps) 
+	replace hitsap=hitsap2 if hitsap==. & hitsap2 !=0
+
+	egen hitsa2=rowtotal(hitsagen hitsap hitsaun hitsafa hitsaed hitsaho hitsahe hitsafo hitsame)
+	replace hitsa=hitsa2 if hitsa==. & hitsa2 !=0
+
+	egen hits2=rowtotal(hitsi hitsil hitsis hitsu hitsa)
+	replace hits=hits2 if hits==. & hits2 !=0
+
+	egen pension2=rowtotal(hitsil hitsup hitsap hicvip)
+	replace pension=pension2 if pension==. & pension2 !=0 /*A priori pension is always defined so this should have no impact...*/
+
+	egen hicid2=rowtotal(hicidi hicidd)
+	replace hicid=hicid2 if hicid==.
+
+	egen hicren2=rowtotal(hicrenr hicrenl hicrenm)
+	replace hicren=hicren2 if hicren==.
+
+	egen hic2=rowtotal(hicid hicren hicroy)
+	replace hic=hic2 if hic==.  
+	}
+end
+
 ************************************   
 *        PREPROCESSING             *   
 ************************************  
@@ -397,7 +606,7 @@ program preprocessing
 	 *********************************** 
 	 * Define the different stages of income
 	 * we'll see if this has to go inside preprocessing
-	 * or creation of variables
+	 * or creation of variables	
 	 ***********************************
 	quietly def_tax_and_transfer
   
