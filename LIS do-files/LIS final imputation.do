@@ -286,20 +286,20 @@ program ssc_impute
 			keepusing($pvars) nogenerate keep(master match)
 	}
 	
-	gen income_type = ""
+	gen incometype = ""
 	foreach ccyy in `redineq_inlist' {
 		local cc : di substr("`ccyy'",1,2)
 		  if "`cc'" == "fr" {
-			replace income_type = "France"
+			replace incometype = "France"
 		  }
 		  else if "`cc'" == "it" {
-			replace income_type = "Italy"
+			replace incometype = "Italy"
 		  }
 		  else if strpos("$red_net_datasets","`ccyy'") > 0 {
-			replace income_type = "net"
+			replace incometype = "net"
 		  }
 		  else {
-			replace income_type = "gross"
+			replace incometype = "gross"
 		  }
 	
 	*************
@@ -325,25 +325,25 @@ program define gen_employee_ssc
 	* Generate Employee Social Security Contributions	
 	{
 	**IMPORTANT**Convert Italian datasets from net to gross
-	replace pil=pil+pxit if income_type == "Italy"
+	replace pil=pil+pxit if incometype == "Italy"
 
-	replace psscee = pil*ee_r1 if inlist(income_type, "gross", "Italy")
-	replace psscee = (pil-ee_c1)*ee_r2 + ee_r1*ee_c1  if pil>ee_c1 & ee_c1!=. & inlist(income_type, "gross", "Italy")
-	replace psscee = (pil-ee_c2)*ee_r3 + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c2 & ee_c2!=. & inlist(income_type, "gross", "Italy")
-	replace psscee = (pil-ee_c3)*ee_r4 + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c3 & ee_c3!=. & inlist(income_type, "gross", "Italy")
-	replace psscee = (pil-ee_c4)*ee_r5 + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c4 & ee_c4!=. & inlist(income_type, "gross", "Italy")
-	replace psscee = (pil-ee_c5)*ee_r6 + ee_r5*(ee_c5 - ee_c4) + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1  if pil>ee_c5 & ee_c5!=.  & inlist(income_type, "gross", "Italy")
+	replace psscee = pil*ee_r1 if inlist(incometype, "gross", "Italy")
+	replace psscee = (pil-ee_c1)*ee_r2 + ee_r1*ee_c1  if pil>ee_c1 & ee_c1!=. & inlist(incometype, "gross", "Italy")
+	replace psscee = (pil-ee_c2)*ee_r3 + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c2 & ee_c2!=. & inlist(incometype, "gross", "Italy")
+	replace psscee = (pil-ee_c3)*ee_r4 + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c3 & ee_c3!=. & inlist(incometype, "gross", "Italy")
+	replace psscee = (pil-ee_c4)*ee_r5 + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c4 & ee_c4!=. & inlist(incometype, "gross", "Italy")
+	replace psscee = (pil-ee_c5)*ee_r6 + ee_r5*(ee_c5 - ee_c4) + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1  if pil>ee_c5 & ee_c5!=.  & inlist(incometype, "gross", "Italy")
 	
 	**IMPORTANT**Convert French datasets from net to gross
 	* Impute Employee Social Security Contributions then sum with pil
 	/*We assume that the original INSEE survey provides information about actual "net" wages in the sense "net of all contributions" and not in the sense of "declared income", which contains non deductible CSG. If not, one should 
 	remove this rate in the excel file and add it manually after we have the gross income*/
-	replace psscee = pil*ee_r1/(1-ee_r1) if pil>0 & pil<=(ee_c1 - ee_r1*ee_c1) & income_type == "France"
-	replace psscee = 1/(1-ee_r2)*(ee_r2*(pil - ee_c1) + ee_r1*ee_c1) if pil>(ee_c1 - ee_r1*ee_c1) & pil<=(ee_c2 - ee_r1*ee_c1 - ee_r2*(ee_c2-ee_c1)) & income_type == "France"
-	replace psscee = 1/(1-ee_r3)*(ee_r3*(pil - ee_c2) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1)) if pil>(ee_c2 - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & pil<=(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & income_type == "France"
-	replace psscee = 1/(1-ee_r4)*(ee_r4*(pil - ee_c3) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1) + ee_r3*(ee_c3 - ee_c2)) if pil>(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & income_type == "France"
+	replace psscee = pil*ee_r1/(1-ee_r1) if pil>0 & pil<=(ee_c1 - ee_r1*ee_c1) & incometype == "France"
+	replace psscee = 1/(1-ee_r2)*(ee_r2*(pil - ee_c1) + ee_r1*ee_c1) if pil>(ee_c1 - ee_r1*ee_c1) & pil<=(ee_c2 - ee_r1*ee_c1 - ee_r2*(ee_c2-ee_c1)) & incometype == "France"
+	replace psscee = 1/(1-ee_r3)*(ee_r3*(pil - ee_c2) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1)) if pil>(ee_c2 - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & pil<=(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & incometype == "France"
+	replace psscee = 1/(1-ee_r4)*(ee_r4*(pil - ee_c3) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1) + ee_r3*(ee_c3 - ee_c2)) if pil>(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & incometype == "France"
 	
-	replace pil=pil+psscee if income_type == "France"
+	replace pil=pil+psscee if incometype == "France"
 	}
 end
 
@@ -380,12 +380,12 @@ program define gen_employer_ssc
   * Generate Employer Social Security Contributions
 	{
 	gen psscer=.
-	replace psscer = pil*er_r1 if inlist(income_type, "gross", "Italy", "France")
-	replace psscer = (pil-er_c1)*er_r2 + er_r1*er_c1  if pil>er_c1 & er_c1!=. & inlist(income_type, "gross", "Italy", "France")
-	replace psscer = (pil-er_c2)*er_r3 + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c2 & er_c2!=. & inlist(income_type, "gross", "Italy", "France")
-	replace psscer = (pil-er_c3)*er_r4 + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c3 & er_c3!=. & inlist(income_type, "gross", "Italy", "France")
-	replace psscer = (pil-er_c4)*er_r5 + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c4 & er_c4!=. & inlist(income_type, "gross", "Italy", "France")
-	replace psscer = (pil-er_c5)*er_r6 + er_r5*(er_c5 - er_c4) + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1  if pil>er_c5 & er_c5!=.  & inlist(income_type, "gross", "Italy", "France")
+	replace psscer = pil*er_r1 if inlist(incometype, "gross", "Italy", "France")
+	replace psscer = (pil-er_c1)*er_r2 + er_r1*er_c1  if pil>er_c1 & er_c1!=. & inlist(incometype, "gross", "Italy", "France")
+	replace psscer = (pil-er_c2)*er_r3 + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c2 & er_c2!=. & inlist(incometype, "gross", "Italy", "France")
+	replace psscer = (pil-er_c3)*er_r4 + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c3 & er_c3!=. & inlist(incometype, "gross", "Italy", "France")
+	replace psscer = (pil-er_c4)*er_r5 + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c4 & er_c4!=. & inlist(incometype, "gross", "Italy", "France")
+	replace psscer = (pil-er_c5)*er_r6 + er_r5*(er_c5 - er_c4) + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1  if pil>er_c5 & er_c5!=.  & inlist(incometype, "gross", "Italy", "France")
 	}
 end
 
@@ -466,7 +466,7 @@ program define convert_ssc_to_household_level
   {
   bysort ccyy hid: egen hsscee=total(psscee)
   bysort ccyy hid: egen hsscer=total(psscer)
-  bysort ccyy hid: replace hxiti=total(pinctax) if income_type == "net"
+  bysort ccyy hid: replace hxiti=total(pinctax) if incometype == "net"
   
   *create a dummy variable taking 1 if head of household btw 25 and 59
   gen headactivage=1 if age>24 & age<60 & relation==1000
@@ -695,9 +695,9 @@ program define def_tax_and_transfer
     drop hil_temp
   
   * Define the components of the income stages
-  replace tax = hxiti + hxits + hsscer + hic_csg_crds + pension_csg_crds if income_type == "France"
+  replace tax = hxiti + hxits + hsscer + hic_csg_crds + pension_csg_crds if incometype == "France"
   * For France, incomes are reported net of ssc, but gross of income tax
-  replace marketincome = hil + (hic-hicvip) + hsscer + hic_csg_crds + hxits + pension_csg_crds if income_type == "France"
+  replace marketincome = hil + (hic-hicvip) + hsscer + hic_csg_crds + hxits + pension_csg_crds if incometype == "France"
   
   gen inc1 = marketincome
   gen inc2 = marketincome + allpension
