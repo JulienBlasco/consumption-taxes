@@ -127,7 +127,7 @@ global redineq_datasets ///
 	us07 us10 us13 us16 at00 be00 gr00 hu05 hu07 hu09 hu12 hu99 ie00 lu00 mx00 mx02 mx04 mx08 ///
 	mx10 mx12 mx98 si10  /* it00 il12 si12*/ 
 	
-global red_net_datasets 
+global red_net_datasets ///
 	at00 be00 gr00 hu05 hu07 hu09 hu12 hu99 ie00 lu00 mx00 mx02 mx04 mx08 mx10 mx12 mx98 si10 ///
 	/*it00*/ // Removed es00 and it98 in this version since they contain dupicates and missing values respectively in pil.
 
@@ -141,7 +141,11 @@ global fixpension_datasets3 ///
 
 global pvars "pid hid dname pil pxit pxiti pxits age emp relation"
 global hvars "hid dname nhhmem dhi nhhmem17 nhhmem65 hwgt"
-global hvarsflow "hil hic pension hits hitsil hitsup hitsap hxit hxiti hxits hc hicvip dhi hitsilmip hitsilo hitsilep hitsilwi hitsilepo hitsilepd hitsileps" // Local currency, given in the datasets
+global hvarsflow ///
+	dhi hc hic hicvip hil hits hitsap hitsil hitsilep hitsilepd hitsilepo hitsileps hitsilmip hitsilo hitsilwi hitsisma ///
+	hitsissi hitsisun hitsiswi hitsup hxit hxiti hxits pension  hicid hicidd hicidi hicren hicrenl hicrenm hicrenr ///
+	hicroy hitsa hitsaed hitsafa hitsafo hitsagen hitsahe hitsaho hitsame hitsapd hitsapo hitsaps hitsaun ///
+	hitsi hitsis hitsu hitsudi hitsued hitsufa hitsufaam hitsufaca hitsufacc hitsupd hitsupo hitsups hitsuun // Local currency, given in the datasets
 global hvarsnew "hsscer hsscee" // Local currency, imputed
 global hvarsinc "inc1 inc2 inc3 inc3_SSER inc3_SSEE inc4 tax transfer allpension pubpension pripension hssc" // Summation / imputed after PPP conversion
 global incconcept "inc1 inc2 inc3 inc3_SSER inc3_SSEE inc4" /*Concept of income: for the loops*/
@@ -216,7 +220,7 @@ program main_program
 	di "************ BEGIN SSC COMPUTATION ****************"  
 	di "* " c(current_time)
 
-	quiet ssc_impute `ccyylist'
+	ssc_impute `ccyylist'
 	
 	
 	di "************ BEGIN PREPROCESSING ****************"  
@@ -286,21 +290,10 @@ program ssc_impute
 			keepusing($pvars) nogenerate keep(master match)
 	}
 	
-	gen incometype = ""
-	foreach ccyy in `redineq_inlist' {
-		local cc : di substr("`ccyy'",1,2)
-		  if "`cc'" == "fr" {
-			replace incometype = "France"
-		  }
-		  else if "`cc'" == "it" {
-			replace incometype = "Italy"
-		  }
-		  else if strpos("$red_net_datasets","`ccyy'") > 0 {
-			replace incometype = "net"
-		  }
-		  else {
-			replace incometype = "gross"
-		  }
+	gen incometype = "gross"
+	replace incometype = "France" if substr(ccyy,1,2) =="fr"
+	replace incometype = "Italy" if substr(ccyy,1,2) =="it"
+	replace incometype = "net" if strpos("$red_net_datasets",ccyy) > 0
 	
 	*************
 	* Generate social security variables from person level dataset
@@ -315,18 +308,22 @@ program ssc_impute
 end
 	
 program define merge_ssc
-	* Merge labour income variables for gross and mixed datasets
+	di "* Merge labour income variables for gross and mixed datasets"
 	merge m:1 dname using "$mydata/vamour/SSC_20180621.dta", keep(match master) nogenerate
-	 * Impute taxes for net datasets
-	nearmrg dname using "$mydata/molcke/net_20161101.dta", nearvar(pil) lower keep(match master) nogenerate
+	 * Impute taxes for net datasets THIS IS NOT SUPPORTED YET
+	* nearmrg dname pil using "$mydata/molcke/net_20161101.dta", `option1'`option2'("m:m") nearvar(pil) lower keep(match master) nogenerate
 end
 
 program define gen_employee_ssc
-	* Generate Employee Social Security Contributions	
+	di "* Generate Employee Social Security Contributions"
 	{
 	**IMPORTANT**Convert Italian datasets from net to gross
 	replace pil=pil+pxit if incometype == "Italy"
 
+	capture confirm variable psscer
+	if _rc { 
+		gen psscee=.
+	}
 	replace psscee = pil*ee_r1 if inlist(incometype, "gross", "Italy")
 	replace psscee = (pil-ee_c1)*ee_r2 + ee_r1*ee_c1  if pil>ee_c1 & ee_c1!=. & inlist(incometype, "gross", "Italy")
 	replace psscee = (pil-ee_c2)*ee_r3 + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c2 & ee_c2!=. & inlist(incometype, "gross", "Italy")
@@ -348,7 +345,7 @@ program define gen_employee_ssc
 end
 
 program define manual_corrections_employee_ssc
-	* Manual corrections for certain datasets (Employee Social Security Contributions)
+	di "* Manual corrections for certain datasets (Employee Social Security Contributions)"
 	{
 	*Belgium 2000 BE00
 	replace psscee=psscee-2600 if pil>34000 & pil<=42500 & dname=="be00"
@@ -377,9 +374,12 @@ end
 
 
 program define gen_employer_ssc
-  * Generate Employer Social Security Contributions
+  di "* Generate Employer Social Security Contributions"
 	{
-	gen psscer=.
+	capture confirm variable psscer
+	if _rc { 
+		gen psscer=.
+	}
 	replace psscer = pil*er_r1 if inlist(incometype, "gross", "Italy", "France")
 	replace psscer = (pil-er_c1)*er_r2 + er_r1*er_c1  if pil>er_c1 & er_c1!=. & inlist(incometype, "gross", "Italy", "France")
 	replace psscer = (pil-er_c2)*er_r3 + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c2 & er_c2!=. & inlist(incometype, "gross", "Italy", "France")
@@ -390,7 +390,7 @@ program define gen_employer_ssc
 end
 
 program define manual_corrections_employer_ssc
-	* Manual corrections for certain datasets (Employer Social Security Contributions)
+	di "* Manual corrections for certain datasets (Employer Social Security Contributions)"
 	{
 	*Germany 2004 de04
 	replace psscer = 0.25*pil if pil<4800 & dname=="de04"
@@ -462,11 +462,13 @@ program define manual_corrections_employer_ssc
 end
 
 program define convert_ssc_to_household_level
-  * Convert variables to household level 
+  di "* Convert variables to household level"
   {
   bysort ccyy hid: egen hsscee=total(psscee)
   bysort ccyy hid: egen hsscer=total(psscer)
-  bysort ccyy hid: replace hxiti=total(pinctax) if incometype == "net"
+  // bysort ccyy hid: egen hxiti_temp=total(pinctax) if incometype == "net" NOT SUPPORTED
+  // replace hxiti = hxiti_temp if incometype == "net"
+  // drop hxiti_temp
   
   *create a dummy variable taking 1 if head of household btw 25 and 59
   gen headactivage=1 if age>24 & age<60 & relation==1000
@@ -474,14 +476,14 @@ program define convert_ssc_to_household_level
   bys ccyy hid: egen hhactivage=total(headactivage)
   
   * Keep only household level SSC and household id and activage dummy
-  drop pid pil pxit pxiti pxits age emp relation headactivage psscee psscer pinctax
+  drop pid pil pxit pxiti pxits age emp relation headactivage psscee psscer // pinctax NOT SUPPORTED
   drop if hid==.
   duplicates drop
   }
 end
 
 program define missing_values
-/*Here we replace missing values of aggregates by the sum of values of the subvariables if it brings extra information*/
+	di "*Here we replace missing values of aggregates by the sum of values of the subvariables if it brings extra information"
 	{
 	egen hitsilep2=rowtotal(hitsilepo hitsilepd hitsileps)
 	replace hitsilep=hitsilep2 if hitsilep==. & hitsilep2 !=0
@@ -1048,4 +1050,4 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, runmodel(02_08_2019_V6) summaries compare   
+main_program $ccyy_to_imput, runmodel(02_08_2019_V6) summaries model(0) test
