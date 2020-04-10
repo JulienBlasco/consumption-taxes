@@ -55,7 +55,8 @@ global sumondhivars_obs 									///
 // Gini indices
 global sumonvarvars_obs 								///
 	/* inc_5_carey 		inc_5_euro 	*/	inc_5_ours 		///  
-	/* inc_5_carey_wor 	inc_5_euro_wor */	inc_5_ours_wor  
+	/* inc_5_carey_wor 	inc_5_euro_wor */	inc_5_ours_wor  ///
+	inc1 inc2 inc3 inc4
 
 
 * II. b) Predicted (imputed) variables *
