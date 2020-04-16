@@ -953,6 +953,8 @@ preserve
  /* display header */   
  di "ccyy" _continue   
   
+  di ", scope" _continue
+  
  foreach variable in `summeanvars' {   
 	 di ",`variable'_mean" _continue   
  }   
@@ -971,6 +973,9 @@ preserve
    
  foreach ccyy of local namelist {  
 	 di "`ccyy'" _continue   
+	  
+	 quiet sum scope [aw=hwgt*nhhmem] if ccyy=="`ccyy'", meanonly  
+	 di "," r(mean) _continue
 	  
 	 foreach variable in `summeanvars' {   
 		 quiet sum `variable' [aw=hwgt*nhhmem] if ccyy=="`ccyy'" & scope, meanonly  
