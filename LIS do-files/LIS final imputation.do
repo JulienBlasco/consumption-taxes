@@ -953,7 +953,7 @@ preserve
  /* display header */   
  di "ccyy" _continue   
   
-  di ", scope" _continue
+  di ",scope" _continue
   
  foreach variable in `summeanvars' {   
 	 di ",`variable'_mean" _continue   
