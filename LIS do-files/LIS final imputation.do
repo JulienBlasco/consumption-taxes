@@ -43,7 +43,8 @@ global depvars 										///
 // means
 global summeanvars_obs 											///
 	hmc	dhi	hmchous	hchous 										///
-	hmc_wor_scaled		hmc_scaled			
+	hmc_wor_scaled		hmc_scaled			///
+	inc1 inc2 inc3 inc4
 
 // concentration indices
 global sumondhivars_obs 									///
