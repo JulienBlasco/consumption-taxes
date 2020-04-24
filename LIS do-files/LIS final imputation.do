@@ -21,6 +21,8 @@
 * modifier 03 April 2020 to add computation of REDINEQ income styles	
 *******************
 
+clear
+
 quiet {
 /********************************
 * DEFINITION OF MACRO VARIABLES *
@@ -278,6 +280,7 @@ program main_program
 ***********************************
 *       SSC COMPUTATION      *
 ***********************************
+capture program drop ssc_impute
 program ssc_impute 
 	syntax namelist
 	local redineq_inlist
@@ -311,6 +314,7 @@ program ssc_impute
 	missing_values
 end
 	
+capture program drop merge_ssc
 program define merge_ssc
 	di "* Merge labour income variables for gross and mixed datasets"
 	merge m:1 dname using "$mydata/vamour/SSC_20180621.dta", keep(match master) nogenerate
@@ -318,6 +322,7 @@ program define merge_ssc
 	* nearmrg dname pil using "$mydata/molcke/net_20161101.dta", `option1'`option2'("m:m") nearvar(pil) lower keep(match master) nogenerate
 end
 
+capture program drop gen_employee_ssc
 program define gen_employee_ssc
 	di "* Generate Employee Social Security Contributions"
 	{
@@ -348,6 +353,7 @@ program define gen_employee_ssc
 	}
 end
 
+capture program drop manual_corrections_employee_ssc
 program define manual_corrections_employee_ssc
 	di "* Manual corrections for certain datasets (Employee Social Security Contributions)"
 	{
@@ -377,6 +383,7 @@ program define manual_corrections_employee_ssc
 end
 
 
+capture program drop gen_employer_ssc
 program define gen_employer_ssc
   di "* Generate Employer Social Security Contributions"
 	{
@@ -393,6 +400,7 @@ program define gen_employer_ssc
 	}
 end
 
+capture program drop manual_corrections_employer_ssc
 program define manual_corrections_employer_ssc
 	di "* Manual corrections for certain datasets (Employer Social Security Contributions)"
 	{
@@ -465,6 +473,7 @@ program define manual_corrections_employer_ssc
 	}
 end
 
+capture program drop convert_ssc_to_household_level
 program define convert_ssc_to_household_level
   di "* Convert variables to household level"
   {
@@ -486,6 +495,7 @@ program define convert_ssc_to_household_level
   }
 end
 
+capture program drop missing_values
 program define missing_values
 	di "*Here we replace missing values of aggregates by the sum of values of the subvariables if it brings extra information"
 	{
@@ -625,6 +635,7 @@ end
 * Program: Define taxes and transfer variables
 **************************************************
 
+capture program drop def_tax_and_transfer
 program define def_tax_and_transfer
   gen pubpension = hitsil + hitsup /*Use conventional definition: hitsil + hitsup if nothing missing. Recall that hitsil or hitsup may have been "enriched" by their components but there are still missing values left */
   * if hitsil or hitsup is missing (=> previous formula generates a missing value), use the negative definition of pubpension*/
@@ -719,6 +730,7 @@ end
 *      IMPUTATION OF CONSUMPTION     *
 **************************************
 {
+capture program drop consumption_imputation
 program consumption_imputation
 	syntax , model(integer) [crossvalid(string) savemodel(string) runmodel(string)]
 	
@@ -805,6 +817,7 @@ program consumption_imputation
 *      CREATION OF VARIABLES         *
 **************************************
 {
+capture program drop variables_creation
 program variables_creation
 	syntax [, extreme_gap(real 0)]
 	
