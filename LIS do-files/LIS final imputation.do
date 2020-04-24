@@ -1072,4 +1072,4 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, runmodel(02_08_2019_V6) summaries model(0) test
+main_program $ccyy_to_imput, runmodel(24_04_2020) summaries model(0) test
