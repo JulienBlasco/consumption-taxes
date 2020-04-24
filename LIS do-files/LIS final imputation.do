@@ -289,7 +289,9 @@ program ssc_impute
 	
 	foreach ccyy in `redineq_inlist' {
 		qui merge m:m dname hid using $`ccyy'p, ///
-			keepusing($pvars) nogenerate keep(master match)
+		update keepusing($pvars) nogenerate ///
+		assert(master match match_update) ///
+		keep(master match match_update)
 	}
 	
 	gen incometype = "gross"
