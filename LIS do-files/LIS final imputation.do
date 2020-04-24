@@ -214,6 +214,8 @@ program main_program
 	keepusing(dhi_ccyy hmc_ccyy model1_ccyy model2_ccyy wor_ccyy rich_ccyy nearn)
 	qui drop if _merge==2
 	qui drop _merge
+	
+	replace model2_ccyy = model2_ccyy * nearn
 
 	qui merge m:1 cname year using $mydata/jblasc/18-08-31_itrcs_scalings.dta, ///  
 	keepusing(itrc_carey itrc_euro itrc_ours oecd_prop_wor oecd_prop ///  
@@ -563,7 +565,7 @@ program preprocessing
 	 gen hmc_obs 		= hmc_ccyy		& !mi(hmc)
 	 gen model0_obs		= 1
 	 gen model1_obs 	= model1_ccyy 	& !mi(dhi, nhhmem, hpartner)
-	 gen model2_obs 	= model2_ccyy 	& model1_obs & !mi(hchous, own, nhhmem65)
+	 gen model2_obs 	= model2_ccyy 	& model1_obs & !mi(hchous, own, nhhmem65, nearn)
 	 gen wor_obs 		= wor_ccyy 		& !mi(hmchous)
 	 
 	 replace dhi_obs = 0 if dhi <= 0 
@@ -603,12 +605,12 @@ program preprocessing
 	   
 	 foreach var in nhhmem {   
 	 gen `var'_top = `var'   
-	 replace `var'_top = 6 if `var'>6   
+	 replace `var'_top = 6 if `var'>6 & !mi(`var')
 	 }   
 	  
 	 foreach var in nhhmem65 nhhmem5 nhhmem17 nearn {   
 	 gen `var'_top = `var'   
-	 replace `var'_top = 2 if `var'>2   
+	 replace `var'_top = 2 if `var'>2 & !mi(`var')
 	 }   
 	  
 	 foreach var in hpartner own {   
