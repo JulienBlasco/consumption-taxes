@@ -215,7 +215,7 @@ program main_program
 	qui drop if _merge==2
 	qui drop _merge
 	
-	replace model2_ccyy = model2_ccyy * nearn
+	qui replace model2_ccyy = model2_ccyy * nearn
 
 	qui merge m:1 cname year using $mydata/jblasc/18-08-31_itrcs_scalings.dta, ///  
 	keepusing(itrc_carey itrc_euro itrc_ours oecd_prop_wor oecd_prop ///  
@@ -226,7 +226,7 @@ program main_program
 	di "************ BEGIN SSC COMPUTATION ****************"  
 	di "* " c(current_time)
 
-	ssc_impute `ccyylist'
+	`quiet' ssc_impute `ccyylist'
 	
 	
 	di "************ BEGIN PREPROCESSING ****************"  
@@ -319,7 +319,7 @@ end
 capture program drop merge_ssc
 program define merge_ssc
 	di "* Merge labour income variables for gross and mixed datasets"
-	merge m:1 dname using "$mydata/vamour/SSC_20180621.dta", keep(match master) nogenerate
+	quiet merge m:1 dname using "$mydata/vamour/SSC_20180621.dta", keep(match master) nogenerate
 	 * Impute taxes for net datasets THIS IS NOT SUPPORTED YET
 	* nearmrg dname pil using "$mydata/molcke/net_20161101.dta", `option1'`option2'("m:m") nearvar(pil) lower keep(match master) nogenerate
 end
@@ -358,7 +358,7 @@ end
 capture program drop manual_corrections_employee_ssc
 program define manual_corrections_employee_ssc
 	di "* Manual corrections for certain datasets (Employee Social Security Contributions)"
-	{
+	quiet {
 	*Belgium 2000 BE00
 	replace psscee=psscee-2600 if pil>34000 & pil<=42500 & dname=="be00"
 	replace psscee=psscee-(2600-0.4*(pil-42500)) if pil>42500 & pil<=4900 & dname=="be00"
@@ -388,7 +388,7 @@ end
 capture program drop gen_employer_ssc
 program define gen_employer_ssc
   di "* Generate Employer Social Security Contributions"
-	{
+	quiet {
 	capture confirm variable psscer
 	if _rc { 
 		gen psscer=.
@@ -405,7 +405,7 @@ end
 capture program drop manual_corrections_employer_ssc
 program define manual_corrections_employer_ssc
 	di "* Manual corrections for certain datasets (Employer Social Security Contributions)"
-	{
+	quiet {
 	*Germany 2004 de04
 	replace psscer = 0.25*pil if pil<4800 & dname=="de04"
 	replace psscer = 0.25*pil if pil<4800 & dname=="de07"
@@ -500,7 +500,7 @@ end
 capture program drop missing_values
 program define missing_values
 	di "*Here we replace missing values of aggregates by the sum of values of the subvariables if it brings extra information"
-	{
+	quiet {
 	egen hitsilep2=rowtotal(hitsilepo hitsilepd hitsileps)
 	replace hitsilep=hitsilep2 if hitsilep==. & hitsilep2 !=0
 
