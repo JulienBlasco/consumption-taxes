@@ -571,13 +571,19 @@ program preprocessing
 	 replace dhi_obs = 0 if dhi <= 0 
 	 
 	 // scope: dhi available + model variables available + same obs that in regression
-	 gen scope = dhi_obs & model`model'_obs & !(hmc_ccyy & mi(hmc))
-	 gen scope_regression = dhi_obs & model`model'_obs & hmc_obs & rich_ccyy
-	 gen scope_hmc = scope & !mi(hmc)
+	 foreach m in 0 1 2 {
+		 gen scope`m' = dhi_obs & model`m'_obs & !(hmc_ccyy & mi(hmc))
+		 gen scope_regression`m' = dhi_obs & model`m'_obs & hmc_obs & rich_ccyy
+		 gen scope_hmc`m' = scope`m' & !mi(hmc)
+		 
+		 egen nb_scope`m' 			= sum(scope`m')
+		 egen nb_scope_regress`m'  = sum(scope_regression`m')
+	 }
 	 
-	 egen nb_scope 			= sum(scope)
-	 egen nb_scope_regress  = sum(scope_regression)
-	 
+	gen scope = scope`model'
+	gen scope_regression = scope_regression`model'
+	gen scope_hmc = scope_hmc`model'
+		 
 	 rename hmc hmc_old
 	 gen hmc = max(1, hmc_old) if !mi(hmc_old)
 	 
@@ -596,7 +602,7 @@ program preprocessing
 	 foreach var in hmc dhi hmchous hchous {   
 	 gen `var'_median = .
 		foreach ccyy in `namelist' {
-			quiet sum `var' [w=hwgt*nhhmem] if ccyy == "`ccyy'" & scope, de 
+			quiet sum `var' [w=hwgt*nhhmem] if ccyy == "`ccyy'", de 
 			replace `var'_median = r(p50) if ccyy == "`ccyy'"
 		} 
 	 gen `var'_medianized = `var'/`var'_median   
@@ -742,46 +748,65 @@ program consumption_imputation
 	}
 	else {
 		if (`model'==0) | ("`savemodel'" != "") {
-			noisily glm hmc_medianized c.log_dhi_medianized [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)
+			noisily glm hmc_medianized c.log_dhi_medianized [aw=hwgt*nhhmem]  if scope_regression0 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)
 			if (`model'==0) {
 				estimates store themodel
 			}
 			if ("`savemodel'" != "") {
 				estimates save "$mydata/jblasc/estimation_models/`savemodel'", replace
 			}
+			
+			local no_regress = e(N)
+			if (nb_scope_regress0 != `no_regress') {
+				noisily display as error "__________REGRESSION SCOPE PROBLEM__________"
+				noisily display as error nb_scope_regress0
+				noisily display as error `no_regress'
+				exit
+				}
+			
 		}
 		if (`model'==1) | ("`savemodel'" != "") {
 			noisily glm hmc_medianized c.log_dhi_medianized ///
 			c.log_dhi_med_shifted#i.dhipov_ind   ///   
-			i.nhhmem_top i.hpartner_agg [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
+			i.nhhmem_top i.hpartner_agg [aw=hwgt*nhhmem]  if scope_regression1 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
 			if (`model'==1) {
 				estimates store themodel
 			}
 			if ("`savemodel'" != "") {
 				estimates save "$mydata/jblasc/estimation_models/`savemodel'", append
 			}
+			
+			local no_regress = e(N)
+			if (nb_scope_regress1 != `no_regress') {
+				noisily display as error "__________REGRESSION SCOPE PROBLEM__________"
+				noisily display as error nb_scope_regress1
+				noisily display as error `no_regress'
+				exit
+				}
+			
 		}
 		if (`model'==2) | ("`savemodel'" != "") {
 			noisily glm hmc_medianized c.log_dhi_medianized ///
 			c.log_dhi_med_shifted#i.dhipov_ind  log_hchous_medianized ///   
-			$depvars [aw=hwgt*nhhmem]  if scope_regression & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
+			$depvars [aw=hwgt*nhhmem]  if scope_regression2 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
 			if (`model'==2) {
 				estimates store themodel
 			}
 			if ("`savemodel'" != "") {
 				estimates save "$mydata/jblasc/estimation_models/`savemodel'", append
 			}
+			
+			local no_regress = e(N)
+			if (nb_scope_regress2 != `no_regress') {
+				noisily display as error "__________REGRESSION SCOPE PROBLEM__________"
+				noisily display as error nb_scope_regress2
+				noisily display as error `no_regress'
+				exit
+				}
+			
 		}
 		
 		estimates restore themodel
-		
-		local no_regress = e(N)
-		if (nb_scope_regress != `no_regress') {
-			noisily display as error "__________REGRESSION SCOPE PROBLEM__________"
-			noisily display as error nb_scope_regress
-			noisily display as error `no_regress'
-			exit
-			}
 		
 	}
 
@@ -803,7 +828,7 @@ program consumption_imputation
 		quiet count if !mi(hmc_medianized_predict)
 		local no_imput = r(N)
 		
-		if (nb_scope != `no_imput') {
+		if (nb_scope`model' != `no_imput') {
 			noisily display as error "__________IMPUTATION SCOPE PROBLEM__________"
 			noisily display as error nb_scope
 			noisily display as error `no_imput'
@@ -1072,4 +1097,4 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, runmodel(24_04_2020) summaries model(0) test
+main_program $ccyy_to_imput, savemodel(24_04_2022) model(2) test
