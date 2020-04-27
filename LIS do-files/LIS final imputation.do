@@ -742,8 +742,8 @@ program consumption_imputation
 	syntax , model(integer) [crossvalid(string) savemodel(string) runmodel(string)]
 	
 	if ("`runmodel'" != "") {
-		local model = `model' + 1
-		estimates use "$mydata/jblasc/estimation_models/`runmodel'", number(`model')
+		local number = `model' + 1
+		estimates use "$mydata/jblasc/estimation_models/`runmodel'", number(`number')
 	}
 	else {
 		if (`model'==0) | ("`savemodel'" != "") {
@@ -829,7 +829,7 @@ program consumption_imputation
 		
 		if (nb_scope`model' != `no_imput') {
 			noisily display as error "__________IMPUTATION SCOPE PROBLEM__________"
-			noisily display as error nb_scope
+			noisily display as error nb_scope`model'
 			noisily display as error `no_imput'
 			exit
 			}
@@ -1096,4 +1096,4 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, savemodel(24_04_2022) model(2) test
+main_program $ccyy_to_imput, runmodel(24_04_2022) model(2) test
