@@ -21,8 +21,6 @@
 * modifier 03 April 2020 to add computation of REDINEQ income styles	
 *******************
 
-clear
-
 quiet {
 /********************************
 * DEFINITION OF MACRO VARIABLES *
@@ -165,7 +163,8 @@ capture program drop main_program
 program main_program   
 	syntax namelist, model(integer) [ test quiet quantiles(integer 0) summaries crossvalid savemodel(string) runmodel(string) compare extreme_gap(real 0)]   
 
-
+	clear
+	
 	di "************ BEGIN MAIN PROGRAM ****************"  
 	di "* " c(current_time)  
 
