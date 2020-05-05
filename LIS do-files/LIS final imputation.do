@@ -209,14 +209,14 @@ program main_program
 		qui drop appending   
 	}
 
-	qui merge m:1 ccyy using "$mydata/jblasc/18-09-09 availability matrix.dta", ///
+	qui merge m:1 ccyy using "${mydata}jblasc/18-09-09 availability matrix.dta", ///
 	keepusing(dhi_ccyy hmc_ccyy model1_ccyy model2_ccyy wor_ccyy rich_ccyy nearn)
 	qui drop if _merge==2
 	qui drop _merge
 	
 	qui replace model2_ccyy = model2_ccyy * nearn
 
-	qui merge m:1 cname year using $mydata/jblasc/18-08-31_itrcs_scalings.dta, ///  
+	qui merge m:1 cname year using "${mydata}jblasc/18-08-31_itrcs_scalings.dta", ///  
 	keepusing(itrc_carey itrc_euro itrc_ours oecd_prop_wor oecd_prop ///  
 	itrc_carey_wor itrc_euro_wor itrc_ours_wor oecd_prop_wor_def ///
 	oecd_P31CP041 oecd_P31CP042 oecd_income_S14 oecd_income_S14_S15)  
@@ -318,7 +318,7 @@ end
 capture program drop merge_ssc
 program define merge_ssc
 	di "* Merge labour income variables for gross and mixed datasets"
-	quiet merge m:1 dname using "$mydata/vamour/SSC_20180621.dta", keep(match master) nogenerate
+	quiet merge m:1 dname using "${mydata}vamour/SSC_20180621.dta", keep(match master) nogenerate
 	 * Impute taxes for net datasets THIS IS NOT SUPPORTED YET
 	* nearmrg dname pil using "$mydata/molcke/net_20161101.dta", `option1'`option2'("m:m") nearvar(pil) lower keep(match master) nogenerate
 end
@@ -743,7 +743,7 @@ program consumption_imputation
 	
 	if ("`runmodel'" != "") {
 		local number = `model' + 1
-		estimates use "$mydata/jblasc/estimation_models/`runmodel'", number(`number')
+		estimates use "${mydata}jblasc/estimation_models/`runmodel'", number(`number')
 	}
 	else {
 		if (`model'==0) | ("`savemodel'" != "") {
@@ -752,7 +752,7 @@ program consumption_imputation
 				estimates store themodel
 			}
 			if ("`savemodel'" != "") {
-				estimates save "$mydata/jblasc/estimation_models/`savemodel'", replace
+				estimates save "${mydata}jblasc/estimation_models/`savemodel'", replace
 			}
 			
 			local no_regress = e(N)
@@ -772,7 +772,7 @@ program consumption_imputation
 				estimates store themodel
 			}
 			if ("`savemodel'" != "") {
-				estimates save "$mydata/jblasc/estimation_models/`savemodel'", append
+				estimates save "${mydata}jblasc/estimation_models/`savemodel'", append
 			}
 			
 			local no_regress = e(N)
@@ -792,7 +792,7 @@ program consumption_imputation
 				estimates store themodel
 			}
 			if ("`savemodel'" != "") {
-				estimates save "$mydata/jblasc/estimation_models/`savemodel'", append
+				estimates save "${mydata}jblasc/estimation_models/`savemodel'", append
 			}
 			
 			local no_regress = e(N)
@@ -1074,7 +1074,7 @@ global quvars $quvars_obs $quvars_pred
   
 forvalues i = 0(1)2 {
 	local model = `i' + 1
-	estimates use "$mydata/jblasc/estimation_models/`runmodel'", number(`model')
+	estimates use "${mydata}jblasc/estimation_models/`runmodel'", number(`model')
 	predict hmc_medianized_predict`i'
 }
   

@@ -1,6 +1,6 @@
 cd "D:\19-08-21 Datasets V6\"
 
-global mydata "./DTA/LOCAL_datasets"
+global mydata "./DTA/LOCAL_datasets/"
 
 global au10h ".\DTA\LOCAL_datasets\au10ih.dta"
 global au10p ".\DTA\LOCAL_datasets\au10ip.dta"
