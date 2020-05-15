@@ -1097,4 +1097,4 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, runmodel(24_04_2022) model(2) test
+main_program $ccyy_to_imput, savemodel(15_05_2020) model(0) test
