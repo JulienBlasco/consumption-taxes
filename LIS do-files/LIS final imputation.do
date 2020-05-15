@@ -747,7 +747,8 @@ program consumption_imputation
 	}
 	else {
 		if (`model'==0) | ("`savemodel'" != "") {
-			noisily glm hmc_medianized c.log_dhi_medianized [aw=hwgt*nhhmem]  if scope_regression0 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)
+			noisily glm hmc_medianized c.log_dhi_medianized c.log_dhi_med_shifted#i.dhipov_ind [aw=hwgt*nhhmem] ///
+				if scope_regression0 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)
 			if (`model'==0) {
 				estimates store themodel
 			}
@@ -766,8 +767,8 @@ program consumption_imputation
 		}
 		if (`model'==1) | ("`savemodel'" != "") {
 			noisily glm hmc_medianized c.log_dhi_medianized ///
-			c.log_dhi_med_shifted#i.dhipov_ind   ///   
-			i.nhhmem_top i.hpartner_agg [aw=hwgt*nhhmem]  if scope_regression1 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
+				c.log_dhi_med_shifted#i.dhipov_ind i.nhhmem_top i.hpartner_agg [aw=hwgt*nhhmem]  ///
+				if scope_regression1 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
 			if (`model'==1) {
 				estimates store themodel
 			}
@@ -786,8 +787,8 @@ program consumption_imputation
 		}
 		if (`model'==2) | ("`savemodel'" != "") {
 			noisily glm hmc_medianized c.log_dhi_medianized ///
-			c.log_dhi_med_shifted#i.dhipov_ind  log_hchous_medianized ///   
-			$depvars [aw=hwgt*nhhmem]  if scope_regression2 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
+				c.log_dhi_med_shifted#i.dhipov_ind  log_hchous_medianized ///   
+				$depvars [aw=hwgt*nhhmem]  if scope_regression2 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
 			if (`model'==2) {
 				estimates store themodel
 			}
