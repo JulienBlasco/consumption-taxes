@@ -86,7 +86,7 @@ forvalues i = 1(1)2 {
 }
 
 forvalues i = 1(1)3 {
-	rename inc`i'_conc_inc`i' Gini_inc`i'`
+	rename inc`i'_conc_inc`i' Gini_inc`i'
 }
 
 // generate apc

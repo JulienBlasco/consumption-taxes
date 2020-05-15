@@ -137,13 +137,13 @@ us10	0.34185302	0.48930527
 
 merge 1:1 ccyy using "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\redistribution_data.dta"
 
-label variable inc2_gini "Market Income (Four Levers)"
-label variable inc3_gini "Gross Income (Four Levers)"
+label variable Gini_inc2 "Market Income (Four Levers)"
+label variable Gini_inc3 "Gross Income (Four Levers)"
 label variable Gini_pre "Disposable Income"
 label variable Gini_ours_pred "Post-Tax Income"
 
-graph dot (asis) inc2_gini inc3_gini Gini_pre Gini_ours_pred if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
-& !mi(G_diff_ours_pred) & !mi(inc2_gini), over(cname, sort(Gini_pre) descending) ///
+graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_ours_pred if Gini_pre < 0.4 & (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
+& !mi(G_diff_ours_pred) & !mi(Gini_inc2), over(ccyy_f, sort(Gini_pre) descending) ///
 marker(1, msymbol(square)) marker(2, msymbol(triangle)) marker(4, msymbol(lgx))
 
 gen effet_TVA = Gini_ours_pred - Gini_pre
