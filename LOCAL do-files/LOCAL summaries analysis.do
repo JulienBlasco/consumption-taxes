@@ -1,50 +1,22 @@
 /* CHANGE DIRECTORY */
-cd "G:"
+cd "D:"
 
-use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\02_08_2019_V6 mod2 summaries.dta", clear
+use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\24_04_2022 summaries model 2.dta", clear
 
 // see if scaling is effective
 twoway (scatter apc_lis oecd_prop, mlabel(ccyy)) || (function y=x, range(oecd_prop))
 
-// compare average taxation in LIS and macro
-gen global_tax_rate_ours_pred = tax_eff_ours_pred_mean / dhi_mean
-gen global_tax_rate_ours = tax_eff_ours_mean/dhi_mean
-gen macro_global_tax_rate_ours_pred = oecd_prop * itrc_ours
-gen macro_global_tax_rate_ours = oecd_prop * itrc_ours
-
 twoway (scatter global_tax_rate_ours macro_global_tax_rate_ours, ///
-mlabel(ccyy)) || (function y=x, range(macro_global_tax_rate_ours ))
-
-rename RS_ours_pred RS_ours_pred1 
-rename G_diff_ours_pred G_diff_ours_pred1
-gen kak_pred = hmc_pred_scaled_conc_dhi -Gini_pre
-rename kak_pred kak_pred1
-keep ccyy RS_ours_pred1 G_diff_ours_pred1 kak_pred1 
-
-graph dot (asis) kak_pred kak_pred1 kak_ours if year>2000&!mi(kak_ours), ///
-			over(ccyy, sort(kak_ours))
-
+mlabel(ccyy)) || (function y=x, range(macro_global_tax_rate_ours ))			
+			
+			
 // plot indicators of redistribution and progressivity
-graph dot (asis) RS_ours_pred RS_ours_pred1 RS_ours if year>2000&!mi(RS_ours), ///
+graph dot (asis) RS_ours_pred RS_ours if year>2000&!mi(RS_ours), ///
 			over(ccyy, sort(RS_ours))
-
-graph dot (mean) G_diff_ours_pred G_diff_ours_pred1 G_diff_ours if cname=="United Kingdom", ///
-			over(year, sort(RS_ours))
 			
-graph dot (mean) G_diff_ours_pred G_diff_ours_pred1 G_diff_ours if !mi(G_diff_ours), ///
-			over(cname, sort(G_diff_ours))
-			
-gen diff1 = abs(G_diff_ours_pred1 - G_diff_ours)
-gen diff2 = abs(G_diff_ours_pred - G_diff_ours)
-
-graph dot (mean) diff1 diff2 if !mi(G_diff_ours), ///
-			over(cname, sort(G_diff_ours))
-
 graph dot (mean) G_diff_ours_pred G_diff_ours if !mi(G_diff_ours), ///
 			over(cname, sort(G_diff_ours))
-			
-graph dot (asis) G_diff_ours_pred G_diff_ours_pred1 G_diff_ours if year>2000&!mi(G_diff_ours), ///
-			over(ccyy, sort(RS_ours))
+
 			
 // plot indicators of redistribution and progressivity
 graph dot (asis) G_diff_ours_pred G_diff_ours_wor_pred if year==2010&!mi(RS_ours_pred), ///

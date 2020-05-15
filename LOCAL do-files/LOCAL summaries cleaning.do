@@ -4,10 +4,10 @@
 
 /* CHANGE DIRECTORY */
 cd "D:"
-cd "/BLASCOLIEPP\Code\19-08-21 Datasets V6\"
+cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6\"
 
 // choose file
-local filename "02_08_2019_V6 mod2 summaries"
+local filename "24_04_2022 summaries model 2"
 
 import delimited "./CSV/`filename'.csv", clear 
 
@@ -22,9 +22,6 @@ merge m:1 cname year using ".\Itrcs scalings\18-08-31_itrcs_scalings.dta", ///
 				  itrc_carey_wor itrc_euro_wor itrc_ours_wor)
 drop if _merge == 2
 drop _merge
-
-// rename variables
-
 
 // change order of variables
 order ccyy cname year, first
@@ -102,6 +99,12 @@ egen last_year_obs_m = max(year)  if !mi(hmc_scaled_mean), by(cname)
 egen last_year_obs = max(last_year_obs_m), by(cname)
 drop last_year_obs_m
 gen the_year_obs = (!mi(last_year_obs) & year==last_year_obs) | (mi(last_year_obs) & year==last_year)
+
+// macro global rates should be the same as global rates
+gen global_tax_rate_ours_pred = tax_eff_ours_pred_mean / dhi_mean
+gen global_tax_rate_ours = tax_eff_ours_mean/dhi_mean
+gen macro_global_tax_rate_ours_pred = oecd_prop * itrc_ours
+gen macro_global_tax_rate_ours = oecd_prop * itrc_ours
 
 tostring year, gen(year_s)
 gen ccyy_f = cname + " (" + year_s + ")"
