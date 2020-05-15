@@ -161,7 +161,8 @@ global incconcept "inc1 inc2 inc3 inc3_SSER inc3_SSEE inc4" /*Concept of income:
 and makes a call to csv_percentiles once for each file */   
 capture program drop main_program   
 program main_program   
-	syntax namelist, model(integer) [ test quiet quantiles(integer 0) summaries crossvalid savemodel(string) runmodel(string) compare extreme_gap(real 0)]   
+	syntax namelist, model(integer) ///
+		[ test quiet quantiles(integer 0) summaries crossvalid savemodel(string) runmodel(string) compare extreme_gap(real 0)]   
 
 	clear
 	
@@ -338,17 +339,23 @@ program define gen_employee_ssc
 	replace psscee = (pil-ee_c1)*ee_r2 + ee_r1*ee_c1  if pil>ee_c1 & ee_c1!=. & inlist(incometype, "gross", "Italy")
 	replace psscee = (pil-ee_c2)*ee_r3 + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c2 & ee_c2!=. & inlist(incometype, "gross", "Italy")
 	replace psscee = (pil-ee_c3)*ee_r4 + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c3 & ee_c3!=. & inlist(incometype, "gross", "Italy")
-	replace psscee = (pil-ee_c4)*ee_r5 + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c4 & ee_c4!=. & inlist(incometype, "gross", "Italy")
-	replace psscee = (pil-ee_c5)*ee_r6 + ee_r5*(ee_c5 - ee_c4) + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1  if pil>ee_c5 & ee_c5!=.  & inlist(incometype, "gross", "Italy")
+	replace psscee = (pil-ee_c4)*ee_r5 + ee_r4*(ee_c4 - ee_c3) + ee_r3*(ee_c3 - ee_c2) ///
+		+ ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1 if pil>ee_c4 & ee_c4!=. & inlist(incometype, "gross", "Italy")
+	replace psscee = (pil-ee_c5)*ee_r6 + ee_r5*(ee_c5 - ee_c4) + ee_r4*(ee_c4 - ee_c3) ///
+		+ ee_r3*(ee_c3 - ee_c2) + ee_r2*(ee_c2 - ee_c1) + ee_r1*ee_c1  if pil>ee_c5 & ee_c5!=.  & inlist(incometype, "gross", "Italy")
 	
 	**IMPORTANT**Convert French datasets from net to gross
 	* Impute Employee Social Security Contributions then sum with pil
-	/*We assume that the original INSEE survey provides information about actual "net" wages in the sense "net of all contributions" and not in the sense of "declared income", which contains non deductible CSG. If not, one should 
+	/*We assume that the original INSEE survey provides information about actual "net" wages in the sense 
+	"net of all contributions" and not in the sense of "declared income", which contains non deductible CSG. If not, one should 
 	remove this rate in the excel file and add it manually after we have the gross income*/
 	replace psscee = pil*ee_r1/(1-ee_r1) if pil>0 & pil<=(ee_c1 - ee_r1*ee_c1) & incometype == "France"
-	replace psscee = 1/(1-ee_r2)*(ee_r2*(pil - ee_c1) + ee_r1*ee_c1) if pil>(ee_c1 - ee_r1*ee_c1) & pil<=(ee_c2 - ee_r1*ee_c1 - ee_r2*(ee_c2-ee_c1)) & incometype == "France"
-	replace psscee = 1/(1-ee_r3)*(ee_r3*(pil - ee_c2) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1)) if pil>(ee_c2 - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & pil<=(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & incometype == "France"
-	replace psscee = 1/(1-ee_r4)*(ee_r4*(pil - ee_c3) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1) + ee_r3*(ee_c3 - ee_c2)) if pil>(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & incometype == "France"
+	replace psscee = 1/(1-ee_r2)*(ee_r2*(pil - ee_c1) + ee_r1*ee_c1) ///
+		if pil>(ee_c1 - ee_r1*ee_c1) & pil<=(ee_c2 - ee_r1*ee_c1 - ee_r2*(ee_c2-ee_c1)) & incometype == "France"
+	replace psscee = 1/(1-ee_r3)*(ee_r3*(pil - ee_c2) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1)) ///
+		if pil>(ee_c2 - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & pil<=(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & incometype == "France"
+	replace psscee = 1/(1-ee_r4)*(ee_r4*(pil - ee_c3) + ee_r1*ee_c1 + ee_r2*(ee_c2-ee_c1) + ee_r3*(ee_c3 - ee_c2))///
+		if pil>(ee_c3 - ee_r3*(ee_c3-ee_c2) - ee_r2*(ee_c2-ee_c1) - ee_r1*ee_c1) & incometype == "France"
 	
 	replace pil=pil+psscee if incometype == "France"
 	}
@@ -394,10 +401,14 @@ program define gen_employer_ssc
 	}
 	replace psscer = pil*er_r1 if inlist(incometype, "gross", "Italy", "France")
 	replace psscer = (pil-er_c1)*er_r2 + er_r1*er_c1  if pil>er_c1 & er_c1!=. & inlist(incometype, "gross", "Italy", "France")
-	replace psscer = (pil-er_c2)*er_r3 + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c2 & er_c2!=. & inlist(incometype, "gross", "Italy", "France")
-	replace psscer = (pil-er_c3)*er_r4 + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c3 & er_c3!=. & inlist(incometype, "gross", "Italy", "France")
-	replace psscer = (pil-er_c4)*er_r5 + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 if pil>er_c4 & er_c4!=. & inlist(incometype, "gross", "Italy", "France")
-	replace psscer = (pil-er_c5)*er_r6 + er_r5*(er_c5 - er_c4) + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1  if pil>er_c5 & er_c5!=.  & inlist(incometype, "gross", "Italy", "France")
+	replace psscer = (pil-er_c2)*er_r3 + er_r2*(er_c2 - er_c1) + er_r1*er_c1 ///
+		if pil>er_c2 & er_c2!=. & inlist(incometype, "gross", "Italy", "France")
+	replace psscer = (pil-er_c3)*er_r4 + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 ///
+		if pil>er_c3 & er_c3!=. & inlist(incometype, "gross", "Italy", "France")
+	replace psscer = (pil-er_c4)*er_r5 + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1 ///
+		if pil>er_c4 & er_c4!=. & inlist(incometype, "gross", "Italy", "France")
+	replace psscer = (pil-er_c5)*er_r6 + er_r5*(er_c5 - er_c4) + er_r4*(er_c4 - er_c3) + er_r3*(er_c3 - er_c2) + er_r2*(er_c2 - er_c1) + er_r1*er_c1  ///
+		if pil>er_c5 & er_c5!=.  & inlist(incometype, "gross", "Italy", "France")
 	}
 end
 
@@ -644,10 +655,12 @@ end
 
 capture program drop def_tax_and_transfer
 program define def_tax_and_transfer
-  gen pubpension = hitsil + hitsup /*Use conventional definition: hitsil + hitsup if nothing missing. Recall that hitsil or hitsup may have been "enriched" by their components but there are still missing values left */
+  gen pubpension = hitsil + hitsup /*Use conventional definition: hitsil + hitsup if nothing missing. 
+				Recall that hitsil or hitsup may have been "enriched" by their components but there are still missing values left */
   * if hitsil or hitsup is missing (=> previous formula generates a missing value), use the negative definition of pubpension*/
  
-  replace pubpension= pension - hicvip - hitsap if pubpension==. /*Recall: pension = hitsil + hitsup + hicvip + hitsap: if hicvip and hitsap are defined, hitsil + hitsup can be defined by the residual*/
+  replace pubpension= pension - hicvip - hitsap if pubpension==. /*Recall: pension = hitsil + hitsup + hicvip + hitsap: 
+																					if hicvip and hitsap are defined, hitsil + hitsup can be defined by the residual*/
   replace pubpension = pension - hicvip if pubpension==.  /*use pension - hicvip if only hitsap missing*/
   replace pubpension = pension - hitsap if pubpension==.  /*use pension - hitsap if only hicvip missing*/
   replace pubpension = pension if pubpension==. /*if pension is the only variable not missing, use this as pubpension*/
@@ -701,10 +714,10 @@ program define def_tax_and_transfer
     drop N C
      *Imputation
     gen pension_csg_crds = 0
-    replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) ///
-		if ((hil/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (6584+2*(familyshare - 1)*1759) & hxit<=0 & dname=="fr00" // 2002 figures deflated to 2000 prices using WDI CPI
-    replace pension_csg_crds = 0.067/(1-0.067)*(hitsil + hitsup) ///
-		if ((hil/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (6584+2*(familyshare - 1)*1759) & hxit>0 & dname=="fr00" // 2002 figures deflated to 2000 prices using WDI CPI
+    replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) /// 2002 figures deflated to 2000 prices using WDI CPI
+		if ((hil/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (6584+2*(familyshare - 1)*1759) & hxit<=0 & dname=="fr00"
+    replace pension_csg_crds = 0.067/(1-0.067)*(hitsil + hitsup) /// 2002 figures deflated to 2000 prices using WDI CPI
+		if ((hil/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (6584+2*(familyshare - 1)*1759) & hxit>0 & dname=="fr00" 
 	
     replace pension_csg_crds = 0.043/(1-0.043)*(hitsil + hitsup) ///
 		if ((hil/(1-0.024*0.97) + hitsil + hitsup)*0.9 + hic) > (7165+2*(familyshare - 1)*1914) & hxit<=0 & dname=="fr05"
