@@ -85,6 +85,9 @@ forvalues i = 1(1)2 {
 	local _pred _pred
 }
 
+forvalues i = 1(1)3 {
+	rename inc`i'_conc_inc`i' Gini_inc`i'`
+}
 
 // generate apc
 gen apc_lis_wor = hmc_wor_scaled_mean/dhi_mean

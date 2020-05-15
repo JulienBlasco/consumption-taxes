@@ -33,7 +33,7 @@ twoway 	(scatter kak_pred G_diff_ours_pred, msize(small) mlabel(cname)) ///
 			if !mi(G_diff_ours_pred)&year==2004&ccyy!="uk04"
 			
 // plot progressivity VS redistribution
-twoway 	(scatter kak_ours G_diff_ours, msize(small) mlabel(ccyy)) ///
+twoway 	(scatter kak G_diff_ours, msize(small) mlabel(ccyy)) ///
 		|| (scatter kak_pred G_diff_ours_pred, msize(small) mlabel(ccyy)) ///
 	//	|| (lfit kak_ours_pred G_diff_ours_pred) ///
 			if !mi(G_diff_ours)
@@ -44,8 +44,8 @@ twoway 	(scatter global_tax_rate_ours_pred G_diff_ours_pred, msize(small) mlabel
 			if year==2004&!mi(RS_ours_pred)
 
 // plot average tax rate VS progressivity
-twoway 	(scatter global_tax_rate_ours_pred kak_ours_pred, msize(small) mlabel(ccyy)) ///
-		|| (lfit global_tax_rate_ours_pred kak_ours_pred) ///
+twoway 	(scatter global_tax_rate_ours_pred kak_pred, msize(small) mlabel(ccyy)) ///
+		|| (lfit global_tax_rate_ours_pred kak_pred) ///
 			if year==2004&!mi(RS_ours_pred)&ccyy!="uk04"
 
 **** lets find the corrupted hmchous and hchous ****
@@ -80,11 +80,11 @@ twoway (scatter RS_calcule_ours RS_ours, mlabel(ccyy)) (function y=x, range(RS_o
 // 25/01/2019 pays sur la map des RS et itrc
 gen pos_kak = -kak
 twoway scatter RS_ours pos_kak  if !mi(kak)&!mi(RS_ours)&the_year_obs, mlabel(ccyy ) ///
-|| function vat_10 = 0.1/0.9*x, range(0 0.2) ///
-|| function vat_15 = 0.15/0.85*x, range(0 0.2) ///
-|| function vat_20 = 0.20/0.8*x, range(0 0.2) ///
-|| function vat_25 = 0.25/0.75*x, range(0 0.2) ///
-|| function vat_30 = 0.3/0.7*x, range(0 0.2)
+	|| function vat_10 = 0.1/0.9*x, range(0 0.2) ///
+	|| function vat_15 = 0.15/0.85*x, range(0 0.2) ///
+	|| function vat_20 = 0.20/0.8*x, range(0 0.2) ///
+	|| function vat_25 = 0.25/0.75*x, range(0 0.2) ///
+	|| function vat_30 = 0.3/0.7*x, range(0 0.2)
 
 * dot graph redistribution
 graph dot (asis) G_diff_ours_pred if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
