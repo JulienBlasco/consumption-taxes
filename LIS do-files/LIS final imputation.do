@@ -42,7 +42,7 @@ global depvars 										///
 
 // means
 global summeanvars_obs 											///
-	hmc	dhi	hmchous	hchous 										///
+	hmc	dhi	hmchous	hchous 	hitp									///
 	hmc_wor_scaled		hmc_scaled			///
 	inc1 inc2 inc3 inc4
 
@@ -147,7 +147,7 @@ global hvarsflow ///
 	dhi hc hic hicvip hil hits hitsap hitsil hitsilep hitsilepd hitsilepo hitsileps hitsilmip hitsilo hitsilwi hitsisma ///
 	hitsissi hitsisun hitsiswi hitsup hxit hxiti hxits pension  hicid hicidd hicidi hicren hicrenl hicrenm hicrenr ///
 	hicroy hitsa hitsaed hitsafa hitsafo hitsagen hitsahe hitsaho hitsame hitsapd hitsapo hitsaps hitsaun ///
-	hitsi hitsis hitsu hitsudi hitsued hitsufa hitsufaam hitsufaca hitsufacc hitsupd hitsupo hitsups hitsuun // Local currency, given in the datasets
+	hitsi hitsis hitsu hitsudi hitsued hitsufa hitsufaam hitsufaca hitsufacc hitsupd hitsupo hitsups hitsuun hitp // Local currency, given in the datasets
 global hvarsnew "hsscer hsscee" // Local currency, imputed
 global hvarsinc "inc1 inc2 inc3 inc3_SSER inc3_SSEE inc4 tax transfer allpension pubpension pripension hssc" // Summation / imputed after PPP conversion
 global incconcept "inc1 inc2 inc3 inc3_SSER inc3_SSEE inc4" /*Concept of income: for the loops*/
@@ -1110,4 +1110,4 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, savemodel(15_05_2020) model(0) test
+main_program $ccyy_to_imput, runmodel(15_05_2020) model(0) test
