@@ -1,7 +1,7 @@
 /* CHANGE DIRECTORY */
 cd "D:"
 
-use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\24_04_2022 summaries model 2.dta", clear
+use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\15_05_2020 mod0 summaries consistent inc5", clear
 
 // see if scaling is effective
 twoway (scatter apc_lis oecd_prop, mlabel(ccyy)) || (function y=x, range(oecd_prop))
@@ -135,7 +135,10 @@ us10	0.34185302	0.48930527
 
 /* __________________________________________*/
 
-merge 1:1 ccyy using "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\redistribution_data.dta"
+*merge 1:1 ccyy using "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\redistribution_data.dta"
+
+rename Gini_pre Gini_dhi
+rename inc4_conc_inc4 Gini_pre
 
 label variable Gini_inc2 "Market Income (Four Levers)"
 label variable Gini_inc3 "Gross Income (Four Levers)"
@@ -147,9 +150,12 @@ graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_ours_pred if Gini_pre < 0.4 &
 marker(1, msymbol(square)) marker(2, msymbol(triangle)) marker(4, msymbol(lgx))
 
 gen effet_TVA = Gini_ours_pred - Gini_pre
-gen effet_taxes = inc3_gini - Gini_pre
-gen effet_transfers = inc2_gini - inc3_gini
-gen effet_redistribution = Gini_pre - inc2_gini
+gen effet_taxes = Gini_inc3 - Gini_pre
+gen effet_transfers = Gini_inc2 - Gini_inc3
+gen effet_redistribution = Gini_inc2 - Gini_pre
+
+gen TVA_sur_directe = effet_TVA/effet_redistribution
+gen TVA_sur_impots = effet_TVA/effet_taxes
 
 *twoway graph redis itrc
 twoway (scatter effet_TVA itrc_ours if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
