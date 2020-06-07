@@ -739,11 +739,11 @@ program define def_tax_and_transfer
   replace marketincome = hil + (hic-hicvip) + hsscer + hic_csg_crds + hxits + pension_csg_crds if incometype == "France"
   
   gen inc1 = marketincome
-  gen inc2 = marketincome + allpension
-  gen inc3 = marketincome + allpension + transfer
-  gen inc3_SSER = marketincome + allpension + transfer - hsscer /*Inc3 minus Employer (ER) social security contributions (SSER)*/
-  gen inc3_SSEE = marketincome + allpension + transfer - hsscer - hxits /*Inc3 minus ER and EE SSC*/
-  gen inc4 = marketincome + allpension + transfer - tax
+  gen inc2 = marketincome + allpension + hitp // added 07/05/2020 --> private transfers included from inc2
+  gen inc3 = marketincome + allpension + hitp + transfer
+  gen inc3_SSER = marketincome + allpension + hitp + transfer - hsscer /*Inc3 minus Employer (ER) social security contributions (SSER)*/
+  gen inc3_SSEE = marketincome + allpension + hitp + transfer - hsscer - hxits /*Inc3 minus ER and EE SSC*/
+  gen inc4 = marketincome + allpension + hitp + transfer - tax
 
 
 end
