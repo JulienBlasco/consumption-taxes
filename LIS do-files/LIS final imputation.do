@@ -605,8 +605,12 @@ program preprocessing
 	 
 	 /* equivalise */   
 	 foreach var in dhi hmc hmchous hchous $hvarsflow $hvarsnew {   
-	 replace `var' = `var'/(nhhmem^0.5)   
+	 capture gen `var'_equiv = `var'/(nhhmem^0.5)   
 	 }   
+	 foreach var in dhi hmc hmchous hchous $hvarsflow $hvarsnew {   
+	 replace `var' = `var'_equiv
+	 }   
+	 
 	  
 	  /* variables for regression model */
 	 foreach var in hmc dhi hmchous hchous {   
