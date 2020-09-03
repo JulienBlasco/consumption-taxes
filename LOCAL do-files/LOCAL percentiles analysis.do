@@ -1,6 +1,7 @@
 /* CHANGE DIRECTORY */
-cd "E:"
+cd "D:"
 
+*use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\18-11-19 cross-validation qu100.dta", clear
 use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\18-11-19 cross-validation qu100.dta", clear
 
 append using "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\18-09-29 qu100 V5 mod2 za12.dta"
@@ -67,6 +68,7 @@ twoway (line global_rate_ours_predde13 quantile if global_rate_ours_predde13<0.4
 (line global_rate_ours_predfr10 quantile if global_rate_ours_predfr10<0.4) ///
 (line global_rate_ours_predus13 quantile if global_rate_ours_predus13<0.4) ///
 (line global_rate_ours_preddk04 quantile if global_rate_ours_preddk04<0.4)
+*save "D:\BLASCOLIEPP\Notes\2020-09 Export Israel\Figure3_blasczemguil_2020.dta"
 restore
 
 * compare actual and estimated propensities

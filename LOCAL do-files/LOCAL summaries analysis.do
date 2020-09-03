@@ -146,8 +146,14 @@ label variable Gini_pre "Disposable Income"
 label variable Gini_ours_pred "Post-Tax Income"
 
 graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_ours_pred if Gini_pre < 0.4 & (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
-& !mi(G_diff_ours_pred) & !mi(Gini_inc2), over(ccyy_f, sort(Gini_pre) descending) ///
+& !mi(G_diff_ours_pred) & !mi(Gini_inc2) , over(ccyy_f, sort(Gini_pre) descending) ///
 marker(1, msymbol(square)) marker(2, msymbol(triangle)) marker(4, msymbol(lgx))
+
+preserve
+keep if ((year==2010 & ccyy != "uk10" & ccyy != "za10" ) |ccyy=="dk04"|ccyy=="uk13") & !mi(G_diff_ours_pred) 
+keep  ccyy_f Gini_inc2 Gini_inc3 Gini_pre Gini_ours_pred
+*save "D:\BLASCOLIEPP\Notes\2020-09 Export Israel\Figure4_blasczemguil_2020.dta"
+restore
 
 gen effet_TVA = Gini_ours_pred - Gini_pre
 gen effet_taxes = Gini_inc3 - Gini_pre
