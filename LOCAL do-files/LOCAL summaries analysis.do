@@ -1,7 +1,8 @@
 /* CHANGE DIRECTORY */
 cd "D:"
 
-use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\15_05_2020 mod0 summaries consistent inc5", clear
+use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\2020_05_15 mod0 summaries consistent inc5", clear
+*use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\2018_09_14 summaries V5 mod2", clear
 
 // see if scaling is effective
 twoway (scatter apc_lis oecd_prop, mlabel(ccyy)) || (function y=x, range(oecd_prop))
@@ -145,14 +146,27 @@ label variable Gini_inc3 "Gross Income (Four Levers)"
 label variable Gini_pre "Disposable Income"
 label variable Gini_ours_pred "Post-Tax Income"
 
-graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_ours_pred if Gini_pre < 0.4 & (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
-& !mi(G_diff_ours_pred) & !mi(Gini_inc2) , over(ccyy_f, sort(Gini_pre) descending) ///
+graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_ours_pred if (year==2010) ///
+& !mi(G_diff_ours_pred) & !mi(Gini_inc2) , over(cname, sort(Gini_pre) descending) ///
+marker(1, msymbol(square)) marker(2, msymbol(triangle)) marker(4, msymbol(lgx))
+
+graph dot (asis) inc2_gini inc3_gini Gini_pre Gini_ours_pred if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
+& !mi(effet_TVA) & !mi(inc2_gini) , over(cname, sort(Gini_pre) descending) ///
 marker(1, msymbol(square)) marker(2, msymbol(triangle)) marker(4, msymbol(lgx))
 
 preserve
-keep if ((year==2010 & ccyy != "uk10" & ccyy != "za10" ) |ccyy=="dk04"|ccyy=="uk13") & !mi(G_diff_ours_pred) 
-keep  ccyy_f Gini_inc2 Gini_inc3 Gini_pre Gini_ours_pred
-*save "D:\BLASCOLIEPP\Notes\2020-09 Export Israel\Figure4_blasczemguil_2020.dta"
+use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\2018_09_14 summaries V5 mod2", clear
+merge 1:1 ccyy using "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\redistribution_data.dta"
+gen effet_TVA = Gini_ours_pred - Gini_pre
+keep if ((year==2010|ccyy=="dk04"|ccyy=="uk13") & !mi(effet_TVA) & !mi(inc2_gini) )
+keep  cname year inc2_gini inc3_gini Gini_pre Gini_ours_pred
+rename inc2_gini market_income
+rename inc3_gini gross_income
+rename Gini_pre disposable_income
+rename Gini_ours_pred post_tax_income
+clist
+save "D:\BLASCOLIEPP\Notes\2020-09 Export Israel\Redistribution_blasczemguil_2020.dta", replace
+export delimited using "E:\Notes\2020-09 Export Israel\Redistribution_blasczemguil_2020.csv", replace
 restore
 
 gen effet_TVA = Gini_ours_pred - Gini_pre
@@ -163,9 +177,20 @@ gen effet_redistribution = Gini_inc2 - Gini_pre
 gen TVA_sur_directe = effet_TVA/effet_redistribution
 gen TVA_sur_impots = effet_TVA/effet_taxes
 
+graph dot (asis) effet_TVA if !mi(effet_TVA) & (year==2010|ccyy=="dk04"|ccyy=="uk13"), ///
+	over(ccyy_f, sort(effet_TVA) descending)
+
+preserve
+keep if !mi(effet_TVA) & (year==2010|ccyy=="dk04"|ccyy=="uk13")
+keep  cname year effet_TVA
+clist
+save "D:\BLASCOLIEPP\Notes\2020-09 Export Israel\VAT_effect_blasczemguil_2020.dta", replace
+export delimited using "E:\Notes\2020-09 Export Israel\VAT_effect_blasczemguil_2020.csv", replace
+restore
+	
 *twoway graph redis itrc
 twoway (scatter effet_TVA itrc_ours if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
-& !mi(G_diff_ours_pred) & !mi(inc2_gini), mlabel("cname") ) || (lfit effet_TVA itrc_ours, yscale(range(0 0.025))) 
+& !mi(G_diff_ours_pred) & !mi(Gini_inc2), mlabel("cname") ) || (lfit effet_TVA itrc_ours, yscale(range(0 0.025))) 
 
 twoway (scatter redistrib1 itrc_ours if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
 & !mi(G_diff_ours_pred), mlabel("cname")) || (scatter redistrib2 itrc_ours if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
