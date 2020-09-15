@@ -590,9 +590,16 @@ program preprocessing
 		 egen nb_scope_regress`m'  = sum(scope_regression`m')
 	 }
 	 
-	gen scope = scope`model'
-	gen scope_regression = scope_regression`model'
-	gen scope_hmc = scope_hmc`model'
+	 if (`model' == 10)  {
+			gen scope = scope0
+			gen scope_regression = scope_regression0
+			gen scope_hmc = scope_hmc0
+	 }
+	 else {
+	 	gen scope = scope`model'
+		gen scope_regression = scope_regression`model'
+		gen scope_hmc = scope_hmc`model'
+	 }
 		 
 	 rename hmc hmc_old
 	 gen hmc = max(1, hmc_old) if !mi(hmc_old)
@@ -769,16 +776,27 @@ program consumption_imputation
 	syntax , model(integer) [crossvalid(string) savemodel(string) runmodel(string)]
 	
 	if ("`runmodel'" != "") {
-		local number = `model' + 1
-		estimates use "${mydata}jblasc/estimation_models/`runmodel'", number(`number')
+		if (`model' == 10) {
+			estimates use "${mydata}jblasc/estimation_models/`runmodel'", number(1)
+			estimates store themodel0
+			
+			estimates use "${mydata}jblasc/estimation_models/`runmodel'", number(2)
+			estimates store themodel1
+			
+			estimates use "${mydata}jblasc/estimation_models/`runmodel'", number(3)
+			estimates store themodel2
+		}
+		else {
+			local number = `model' + 1
+			estimates use "${mydata}jblasc/estimation_models/`runmodel'", number(`number')
+			}
 	}
 	else {
-		if (`model'==0) | ("`savemodel'" != "") {
+		if (`model'==0) | ("`savemodel'" != "") | (`model' == 10) {
 			noisily glm hmc_medianized c.log_dhi_medianized c.log_dhi_med_shifted#i.dhipov_ind [aw=hwgt*nhhmem] ///
 				if scope_regression0 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)
-			if (`model'==0) {
-				estimates store themodel
-			}
+			estimates store themodel0
+			
 			if ("`savemodel'" != "") {
 				estimates save "${mydata}jblasc/estimation_models/`savemodel'", replace
 			}
@@ -792,13 +810,12 @@ program consumption_imputation
 				}
 			
 		}
-		if (`model'==1) | ("`savemodel'" != "") {
+		if (`model'==1) | ("`savemodel'" != "") | (`model' == 10) {
 			noisily glm hmc_medianized c.log_dhi_medianized ///
 				c.log_dhi_med_shifted#i.dhipov_ind i.nhhmem_top i.hpartner_agg [aw=hwgt*nhhmem]  ///
 				if scope_regression1 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
-			if (`model'==1) {
-				estimates store themodel
-			}
+			estimates store themodel1
+			
 			if ("`savemodel'" != "") {
 				estimates save "${mydata}jblasc/estimation_models/`savemodel'", append
 			}
@@ -812,13 +829,12 @@ program consumption_imputation
 				}
 			
 		}
-		if (`model'==2) | ("`savemodel'" != "") {
+		if (`model'==2) | ("`savemodel'" != "") | (`model' == 10) {
 			noisily glm hmc_medianized c.log_dhi_medianized ///
 				c.log_dhi_med_shifted#i.dhipov_ind  log_hchous_medianized ///   
 				$depvars [aw=hwgt*nhhmem]  if scope_regression2 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
-			if (`model'==2) {
-				estimates store themodel
-			}
+			estimates store themodel2
+			
 			if ("`savemodel'" != "") {
 				estimates save "${mydata}jblasc/estimation_models/`savemodel'", append
 			}
@@ -833,12 +849,12 @@ program consumption_imputation
 			
 		}
 		
-		estimates restore themodel
-		
 	}
 
 	
 	if ("`crossvalid'" != "") { 
+		estimates restore themodel`model'
+	
 		predict temp_pred if scope & substr(ccyy, 1,2) == substr("`crossvalid'", 1,2)
 		capture confirm variable hmc_medianized_predict
 		if (!_rc) {
@@ -850,16 +866,38 @@ program consumption_imputation
 		drop temp_pred
 	}
 	else {
+		if (`model' != 10) {
+		estimates restore themodel`model'
 		
-		predict hmc_medianized_predict if scope
-		quiet count if !mi(hmc_medianized_predict)
-		local no_imput = r(N)
-		
-		if (nb_scope`model' != `no_imput') {
-			noisily display as error "__________IMPUTATION SCOPE PROBLEM__________"
-			noisily display as error nb_scope`model'
-			noisily display as error `no_imput'
-			exit
+			predict hmc_medianized_predict if scope
+			quiet count if !mi(hmc_medianized_predict)
+			local no_imput = r(N)
+			
+			if (nb_scope`model' != `no_imput') {
+				noisily display as error "__________IMPUTATION SCOPE PROBLEM__________"
+				noisily display as error nb_scope`model'
+				noisily display as error `no_imput'
+				exit
+				}
+			}
+			else {
+				 forvalues j = 0(1)2 {   
+					estimates restore themodel`j'
+					
+					predict hmc_medianized_predict`j' if scope`j'
+					quiet count if !mi(hmc_medianized_predict`j')
+					local no_imput = r(N)
+					
+					if (nb_scope`j' != `no_imput') {
+						noisily display as error "__________IMPUTATION SCOPE PROBLEM__________"
+						noisily display as error nb_scope`j'
+						noisily display as error `no_imput'
+						exit
+						}
+				 }
+				 gen hmc_medianized_predict = hmc_medianized_predict2
+				 replace hmc_medianized_predict = hmc_medianized_predict1 if !(scope2)
+				 replace hmc_medianized_predict = hmc_medianized_predict0 if !(scope1)
 			}
 	}
 		 
@@ -1124,4 +1162,4 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, runmodel(15_05_2020) model(0) quantiles(10) test
+main_program $ccyy_to_imput, runmodel(15_05_2020) model(10) quantiles(10) test
