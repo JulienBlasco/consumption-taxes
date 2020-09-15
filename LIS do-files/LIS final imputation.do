@@ -633,9 +633,19 @@ program preprocessing
 	 replace `var'_top = 2 if `var'>2 & !mi(`var')
 	 }   
 	  
-	 foreach var in hpartner own {   
+	 foreach var in hpartner {   
 	 gen `var'_agg = int(`var'/100)   
 	 }   
+	  
+	 gen own_agg = own
+	 replace own_agg = 1 if own != 210 & own != 212
+	 
+	 regress hmchous c.hchous#i.own_agg, noconstant
+	 predict hmchous_pred
+	 
+	 replace hmchous = hmchous_pred if mi(hmchous)
+	 * US exception: hmchous nonmissing but always equal to zero ;
+	 replace hmchous = hmchous_pred if cname == "United States"
 	  
 	 gen single_senior = nhhmem65*nhhmem == 1  
 	 gen dhipov_ind = (dhi_medianized<0.6)
@@ -1114,4 +1124,4 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, runmodel(15_05_2020) model(0) test
+main_program $ccyy_to_imput, runmodel(15_05_2020) model(0) quantiles(10) test
