@@ -215,7 +215,7 @@ program main_program
 	qui drop if _merge==2
 	qui drop _merge
 	
-	qui replace model2_ccyy = model2_ccyy * nearn
+	qui replace model2_ccyy = model2_ccyy * !mi(nearn)
 
 	qui merge m:1 cname year using "${mydata}jblasc/18-08-31_itrcs_scalings.dta", ///  
 	keepusing(itrc_carey itrc_euro itrc_ours oecd_prop_wor oecd_prop ///  
