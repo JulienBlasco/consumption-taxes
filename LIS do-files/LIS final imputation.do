@@ -1165,4 +1165,8 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, runmodel(15_05_2020) model(10) quantiles(10) test
+main_program $ccyy_to_imput, savemodel(18_09_2020) model(0) test
+
+table ccyy scope_regression0
+table ccyy scope_regression1
+table ccyy scope_regression2
