@@ -896,8 +896,11 @@ program consumption_imputation
 						}
 				 }
 				 gen hmc_medianized_predict = hmc_medianized_predict2
+				 gen prediction_indicator = 2
 				 replace hmc_medianized_predict = hmc_medianized_predict1 if !(scope2)
+				 replace prediction_indicator = 1 if !(scope2)
 				 replace hmc_medianized_predict = hmc_medianized_predict0 if !(scope1)
+				 replace prediction_indicator = 0 if !(scope1)
 			}
 	}
 		 
