@@ -812,8 +812,8 @@ program consumption_imputation
 		}
 		if (`model'==1) | ("`savemodel'" != "") | (`model' == 10) {
 			noisily glm hmc_medianized c.log_dhi_medianized ///
-				c.log_dhi_med_shifted#i.dhipov_ind i.nhhmem_top i.hpartner_agg [aw=hwgt*nhhmem]  ///
-				if scope_regression1 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
+				c.log_dhi_med_shifted#i.dhipov_ind  log_hchous_medianized i.nhhmem_top i.hpartner_agg i.own_agg ///   
+				 [aw=hwgt*nhhmem]  if scope_regression2 & substr(ccyy, 1,2) != substr("`crossvalid'", 1,2), link(log)  
 			estimates store themodel1
 			
 			if ("`savemodel'" != "") {
@@ -821,9 +821,9 @@ program consumption_imputation
 			}
 			
 			local no_regress = e(N)
-			if (nb_scope_regress1 != `no_regress') {
+			if (nb_scope_regress2 != `no_regress') {
 				noisily display as error "__________REGRESSION SCOPE PROBLEM__________"
-				noisily display as error nb_scope_regress1
+				noisily display as error nb_scope_regress2
 				noisily display as error `no_regress'
 				exit
 				}
@@ -1165,7 +1165,7 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, savemodel(18_09_2020) model(0) test
+main_program $ccyy_to_imput, savemodel(18_09_2020_COMPDEPVARS) model(2) test
 
 table ccyy scope_regression0
 table ccyy scope_regression1
