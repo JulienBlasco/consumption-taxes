@@ -2,9 +2,9 @@
 cd "D:"
 
 *use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\18-11-19 cross-validation qu100.dta", clear
-use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\18-11-19 cross-validation qu100.dta", clear
+use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\2019_08_02_V6 mod2 qu100.dta", clear
 
-append using "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\18-09-29 qu100 V5 mod2 za12.dta"
+*append using "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\18-09-29 qu100 V5 mod2 za12.dta"
 
 sort ccyy quantile
 
