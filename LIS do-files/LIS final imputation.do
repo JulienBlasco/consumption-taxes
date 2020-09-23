@@ -803,6 +803,7 @@ program consumption_imputation
 		else {
 			local number = `model' + 1
 			estimates use "${mydata}jblasc/estimation_models/`runmodel'", number(`number')
+			estimates store themodel`model'
 			}
 	}
 	else {
