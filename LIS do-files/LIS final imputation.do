@@ -226,7 +226,7 @@ program main_program
 	qui drop _merge
 
 	
-	foreach ccyy in $datasets_w_hchous {
+	qui foreach ccyy in $datasets_w_hchous {
 		replace model2_ccyy = 1 if ccyy == "`ccyy'"
 	}
 	
@@ -1038,9 +1038,13 @@ preserve
  }
  
  drop if to_output == 0
+ drop to_output
  
  }
  
+ l, compress abbreviate(32) noobs table clean
+ 
+ /*
   /* display header */   
  di "quantile,ccyy" _continue   
  foreach variable of local varlist {   
@@ -1057,6 +1061,8 @@ preserve
 	 }  
 	 di   
  }  
+ 
+ */
     
 end   
 } // end display_percentiles
@@ -1180,7 +1186,7 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, savemodel(21_09_2020) model(0) test
+main_program $ccyy_to_imput, runmodel(21_09_2020) model(0) test quantiles(10) quiet
 
 table ccyy scope_regression0
 table ccyy scope_regression1
