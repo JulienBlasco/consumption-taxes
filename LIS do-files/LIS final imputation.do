@@ -1071,6 +1071,29 @@ end
 *          DISPLAY_SUMMARIES          *   
 ***************************************   
 { 
+capture program drop oneccyy_summary   
+program oneccyy_summary   
+	egen mean_scope = wtmean(scope),  weight(hwgt*nhhmem) 
+
+	foreach variable in $summeanvars {   
+		egen mean_`variable'= wtmean(`variable') if scope,  weight(hwgt*nhhmem) 
+	 }
+
+	capture qui sgini $sumondhivars [aw=hwgt*nhhmem] if scope, sortvar(dhi)  
+	mat conc_dhi_ = r(coeffs)
+	svmat conc_dhi_, names( matcol )
+
+	capture qui sgini $sumonvarvars [aw=hwgt*nhhmem] if scope,
+	mat gini_ = r(coeffs)
+	svmat gini_, names( matcol )
+
+	capture qui sgini dhi [aw=hwgt*nhhmem] if scope_hmc, sortvar(dhi) 
+	gen gini_dhi_scope_hmc = r(coeff)
+
+	keep if _n == 1
+	keep ccyy mean_* conc_dhi_* gini_*
+ end
+ 
 /* This program computes summaries and outputs a CSV */   
 capture program drop display_summaries   
 program display_summaries   
@@ -1081,54 +1104,21 @@ preserve
  di "************ BEGIN DISPLAY_SUMMARIES ****************"  
  di "* " c(current_time)  
 
- 
- /* display header */   
- di "ccyy" _continue   
-  
-  di ",scope" _continue
-  
- foreach variable in `summeanvars' {   
-	 di ",`variable'_mean" _continue   
- }   
-   
- foreach variable in `sumondhivars' {   
-	 di ",`variable'_conc_dhi" _continue   
- }   
-  
- foreach variable in `sumonvarvars' {   
-	 di ",`variable'_conc_`variable'" _continue   
- }
- 
- di ",gini_dhi_scope_hmc" _continue
- 
- di   
-   
- foreach ccyy of local namelist {  
-	 di "`ccyy'" _continue   
-	  
-	 quiet sum scope [aw=hwgt*nhhmem] if ccyy=="`ccyy'", meanonly  
-	 di "," r(mean) _continue
-	  
-	 foreach variable in `summeanvars' {   
-		 quiet sum `variable' [aw=hwgt*nhhmem] if ccyy=="`ccyy'" & scope, meanonly  
-		 di "," r(mean) _continue   
-	 }   
-	  
-	 foreach variable in `sumondhivars' {  
-		 capture qui sgini `variable' [aw=hwgt*nhhmem] if ccyy=="`ccyy'" & scope, sortvar(dhi)   
-		 di "," r(coeff) _continue   
-	 }   
-	  
-	 foreach variable in `sumonvarvars' {   
-		 capture qui sgini `variable' [aw=hwgt*nhhmem] if ccyy=="`ccyy'" & scope, sortvar(`variable')   
-		 di "," r(coeff) _continue   
-	 }    
-	 
-	 capture qui sgini dhi [aw=hwgt*nhhmem] if ccyy=="`ccyy'" & scope_hmc, sortvar(dhi)   
-	 di "," r(coeff) _continue 
-	 
-	 di
- }  
+  qui local first = 1
+  foreach ccyy of local namelist {
+	  qui drop if ccyy != "`ccyy'"
+	  qui oneccyy_summary
+	  if (`first' == 1) {
+		l, compress abbreviate(32) noobs table clean
+	  }
+	  else {
+		l, compress abbreviate(32) noobs table clean noheader
+	  }
+	  qui local first = 0
+	  qui restore
+	  qui preserve
+  }
+
 end   
 } // end display_summaries
 
@@ -1186,7 +1176,8 @@ end
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, runmodel(21_09_2020) model(0) test quantiles(10) quiet
+main_program $ccyy_to_imput, runmodel(21_09_2020) model(0) test summaries
+
 
 table ccyy scope_regression0
 table ccyy scope_regression1
