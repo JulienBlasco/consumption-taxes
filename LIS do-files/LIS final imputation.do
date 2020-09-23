@@ -287,6 +287,16 @@ program main_program
 	display_summaries `ccyylist', summeanvars($summeanvars) sumondhivars($sumondhivars) sumonvarvars($sumonvarvars)
 	}  
 
+	if (`model'==10) {
+		table ccyy prediction_indicator
+	}
+	
+	if ("`runmodel'"=="") {
+		table ccyy scope_regression0
+		table ccyy scope_regression1
+		table ccyy scope_regression2
+	}
+	
 	di "************** End of program : ************"  
 	di c(current_time)  
 
@@ -1079,19 +1089,61 @@ program oneccyy_summary
 		egen mean_`variable'= wtmean(`variable') if scope,  weight(hwgt*nhhmem) 
 	 }
 
-	capture qui sgini $sumondhivars [aw=hwgt*nhhmem] if scope, sortvar(dhi)  
-	mat conc_dhi_ = r(coeffs)
-	svmat conc_dhi_, names( matcol )
+	 foreach variable in $sumondhivars $sumonvarvars {
+		qui sum `variable', de
+		if (r(N) == 0) {
+			qui replace `variable' = 0
+		}
+	 }
+	 
+	qui sum scope, de
+	if (r(max) > 0) {
+		capture qui sgini $sumondhivars [aw=hwgt*nhhmem] if scope, sortvar(dhi)  
+		mat conc_dhi_ = r(coeffs)
+		svmat conc_dhi_, names( matcol )
 
-	capture qui sgini $sumonvarvars [aw=hwgt*nhhmem] if scope,
-	mat gini_ = r(coeffs)
-	svmat gini_, names( matcol )
+		capture confirm variable conc_dhi_c1
+		if !_rc {
+				noisily display as error "__________PB CALCUL CONC_DHI__________"
+				noisily display as error ccyy
+				exit
+		}
+		
+		capture qui sgini $sumonvarvars [aw=hwgt*nhhmem] if scope,
+		mat gini_ = r(coeffs)
+		svmat gini_, names( matcol)
 
-	capture qui sgini dhi [aw=hwgt*nhhmem] if scope_hmc, sortvar(dhi) 
-	gen gini_dhi_scope_hmc = r(coeff)
+		capture confirm variable gini_c1
+		if !_rc {
+				noisily display as error "__________PB CALCUL SGINI__________"
+				noisily display as error ccyy
+				exit
+		}
+		
+		capture qui sgini dhi [aw=hwgt*nhhmem] if scope_hmc, sortvar(dhi) 
+		gen gini_dhi_scope_hmc = r(coeff)
+	}
+	
+	foreach variable in $sumondhivars {
+		capture confirm variable conc_dhi_`variable'
+		if _rc { 
+			gen conc_dhi_`variable'=.
+		}
+	}
+		
+	foreach variable in $sumonvarvars {
+		capture confirm variable gini_`variable'
+		if _rc { 
+			gen gini_`variable'=.
+		}
+	}
 
 	keep if _n == 1
 	keep ccyy mean_* conc_dhi_* gini_*
+
+	order _all, alphabetic
+	order ccyy
+	
  end
  
 /* This program computes summaries and outputs a CSV */   
@@ -1177,8 +1229,3 @@ end
 ***************************************/   
    
 main_program $ccyy_to_imput, runmodel(21_09_2020) model(0) test summaries
-
-
-table ccyy scope_regression0
-table ccyy scope_regression1
-table ccyy scope_regression2
