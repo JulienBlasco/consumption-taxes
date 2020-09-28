@@ -84,6 +84,15 @@ global summeanvars $summeanvars_obs $summeanvars_pred
 global sumondhivars $sumondhivars_obs $sumondhivars_pred
 global sumonvarvars $sumonvarvars_obs $sumonvarvars_pred
 		
+		
+/*****************************************
+* IIbis. variables to check availability *
+*****************************************/
+global availvars ///
+	hmc 	hmc_wor 	hmc_wor_scaled 	hmc_scaled ///
+	tax_eff_ours	tax_eff_ours_wor	inc_5_ours	inc_5_ours_wor ///
+	inc1 inc2 inc3 inc4 inc_5_ours_pred inc_5_ours_wor_pred
+		
 /******************************************
 * III. variables in the quantiles dataset *
 ******************************************/
@@ -172,7 +181,7 @@ and makes a call to csv_percentiles once for each file */
 capture program drop main_program   
 program main_program   
 	syntax namelist, model(integer) ///
-		[ test quiet quantiles(integer 0) summaries crossvalid savemodel(string) runmodel(string) compare extreme_gap(real 0)]   
+		[ test quiet quantiles(integer 0) summaries availability crossvalid savemodel(string) runmodel(string) compare extreme_gap(real 0)]   
 
 	clear
 	
@@ -183,6 +192,7 @@ program main_program
 	di "on a test == `test'"  
 	di "on a quantiles == `quantiles'"  
 	di "on a summaries == `summaries'"  
+	di "on a availability == `availability'"
 	di "on a obs == `obs'"  
 	di "on a crossvalid == `crossvalid'"
 	di "on a savemodel == `savemodel'"
@@ -271,7 +281,7 @@ program main_program
 			`quiet' consumption_imputation , model(`model') savemodel("`savemodel'") runmodel("`runmodel'")
 		}
 		
-		if (`quantiles'!=0) | ("`summaries'"!="") {
+		if (`quantiles'!=0) | ("`summaries'"!="") | ("`availability'" == "availability") {
 		di "----------- variables creation ------------"  
 		di "- " c(current_time) 
 		quiet variables_creation , extreme_gap(`extreme_gap')
@@ -287,6 +297,10 @@ program main_program
 	display_summaries `ccyylist', summeanvars($summeanvars) sumondhivars($sumondhivars) sumonvarvars($sumonvarvars)
 	}  
 
+	if ("`availability'" == "availability") {
+	display_availability
+	}
+	
 	if (`model'==10) {
 		table ccyy prediction_indicator
 	}
@@ -1224,8 +1238,34 @@ end
 } // end compare_models
 }
 
+***************************************   
+*          DISPLAY_AVAILABILITY          *   
+***************************************   
+{ 
+
+/* This program computes summaries and outputs a CSV */   
+capture program drop display_availability   
+program display_availability   
+	qui preserve
+
+ di "************ BEGIN DISPLAY_AVAILABILITY ****************"  
+ di "* " c(current_time)  
+
+	foreach variable of global availvars {
+		gen av_`variable' = !mi(`variable')
+	}
+	
+	qui collapse av_* if scope, by(ccyy)
+	
+	l, compress abbreviate(32) noobs table clean
+ 
+	qui restore
+ end
+ 
+ }
+
 /***************************************   
 * Call function on desired datasets    
 ***************************************/   
    
-main_program $ccyy_to_imput, runmodel(21_09_2020) model(0) test summaries
+main_program $ccyy_to_imput, runmodel(21_09_2020) model(0) test availability
