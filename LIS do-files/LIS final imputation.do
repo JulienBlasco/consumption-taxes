@@ -184,6 +184,7 @@ program main_program
 		[ test quiet quantiles(integer 0) summaries availability crossvalid savemodel(string) runmodel(string) compare extreme_gap(real 0)]   
 
 	clear
+	set varabbrev off, permanent
 	
 	di "************ BEGIN MAIN PROGRAM ****************"  
 	di "* " c(current_time)  
@@ -1267,5 +1268,5 @@ program display_availability
 /***************************************   
 * Call function on desired datasets    
 ***************************************/   
-   
+
 main_program $ccyy_to_imput, runmodel(21_09_2020) model(0) test availability
