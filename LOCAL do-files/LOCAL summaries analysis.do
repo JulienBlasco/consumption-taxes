@@ -1,8 +1,9 @@
 /* CHANGE DIRECTORY */
 cd "D:"
 
-use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\2020_05_15 mod0 summaries consistent inc5", clear
+*use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\2020_05_15 mod0 summaries consistent inc5", clear
 *use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\2018_09_14 summaries V5 mod2", clear
+use "\BLASCOLIEPP\Code\19-08-21 Datasets V6\DTA\2020_09_21 summaries mod10 VIP", clear
 
 // see if scaling is effective
 twoway (scatter apc_lis oecd_prop, mlabel(ccyy)) || (function y=x, range(oecd_prop))
@@ -141,13 +142,13 @@ us10	0.34185302	0.48930527
 rename Gini_pre Gini_dhi
 rename inc4_conc_inc4 Gini_pre
 
-label variable Gini_inc2 "Market Income (Four Levers)"
-label variable Gini_inc3 "Gross Income (Four Levers)"
-label variable Gini_pre "Disposable Income"
+label variable Gini_inc2 "Market Income"
+label variable Gini_inc3 "Gross Income"
+label variable gini_inc4 "Disposable Income"
 label variable Gini_ours_pred "Post-Tax Income"
 
-graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_ours_pred if (year==2010) ///
-& !mi(G_diff_ours_pred) & !mi(Gini_inc2) , over(cname, sort(Gini_pre) descending) ///
+graph dot (asis) Gini_inc2 Gini_inc3 gini_inc4 Gini_ours_wor_pred if (year==2010|ccyy=="dk04")  &  cname != "Mexico" & cname != "South Africa"  & cname != "Slovenia" & cname != "Switzerland" ///
+, over(ccyy_f, sort(gini_inc4) descending) ///
 marker(1, msymbol(square)) marker(2, msymbol(triangle)) marker(4, msymbol(lgx))
 
 graph dot (asis) inc2_gini inc3_gini Gini_pre Gini_ours_pred if (year==2010|ccyy=="dk04"|ccyy=="uk13") ///
