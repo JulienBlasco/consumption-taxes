@@ -7,7 +7,8 @@ cd "D:"
 cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6\"
 
 // choose file
-local filename "2020_09_21 summaries mod10"
+*local filename "2020_09_21 summaries mod10"
+local filename "2020_09_21 summaries mod1"
 
 import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
 drop v1 v39
