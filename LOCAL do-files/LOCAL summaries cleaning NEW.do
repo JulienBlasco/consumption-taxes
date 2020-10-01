@@ -7,7 +7,7 @@ cd "D:"
 cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6\"
 
 // choose file
-local filename "2020_09_21 summaries mod10 VIP"
+local filename "2020_09_21 summaries mod10"
 
 import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
 drop v1 v39
@@ -53,15 +53,15 @@ forvalues j = 1(1)2 {
 local _wor
 forvalues j = 1(1)2 {
 	foreach def in /* carey euro */ ours {
-		gen G_diff_`def'`_wor'_pred = gini_inc_5_`def'`_wor'_pred - gini_dhi
-		gen RS_`def'`_wor'_pred = gini_inc_5_`def'`_wor'_pred - gini_dhi
+		gen G_diff_`def'`_wor'_pred = gini_inc_5_`def'`_wor'_pred - conc_dhi_dhi
+		gen RS_`def'`_wor'_pred = gini_inc_5_`def'`_wor'_pred - conc_dhi_dhi
 	}
 	local _wor _wor
 }
 
 
-gen kak_pred 	= conc_dhi_hmc_medianized_predict - gini_dhi
-gen kak_wor_pred = conc_dhi_hmc_wor_pred - gini_dhi
+gen kak_pred 	= conc_dhi_hmc_medianized_predict - conc_dhi_dhi
+gen kak_wor_pred = conc_dhi_hmc_wor_pred - conc_dhi_dhi
 
 // drop intermediary variables
 capture drop prop_scaled_mean prop_wor_scaled_mean ///
@@ -74,8 +74,7 @@ tax_eff_euro_wor_pred_conc_dhi tax_eff_ours_wor_pred_conc_dhi
 
 // rename Gini indices
 
-gen Gini_pre = gini_inc4
-replace Gini_pre = gini_dhi_scope_hmc if !mi(gini_dhi_scope_hmc)
+gen Gini_pre = conc_dhi_dhi
 
 local _pred
 forvalues i = 1(1)2 {
