@@ -1,12 +1,12 @@
 /* CHANGE DIRECTORY */
 cd "D:"
-capture noisily cd "\BLASCOLIEPP\Code\19-07-13 Datasets V6"
+capture noisily cd "D:\BLASCOLIEPP\Code\19-07-13 Datasets V6"
 
 set varabbrev off, permanent
 
 // choose file
-local filename "2020_09_21 qu100 mod10 4s4"
-local mod "mod10"
+local filename "2020_09_21 qu100 mod1 4s4"
+local mod "mod1"
 //
 
 import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
