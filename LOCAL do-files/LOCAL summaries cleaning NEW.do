@@ -7,8 +7,8 @@ cd "D:"
 cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6\"
 
 // choose file
-*local filename "2020_09_21 summaries mod10"
-local filename "2020_09_21 summaries mod1"
+local filename "2020_09_21 summaries mod10"
+*local filename "2020_09_21 summaries mod1"
 
 import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
 drop v1 v39
@@ -45,7 +45,7 @@ local _wor
 forvalues j = 1(1)2 {
 	foreach def in /* carey euro */ ours {
 		gen G_diff_`def'`_wor' = gini_inc_5_`def'`_wor' - gini_dhi_scope_hmc
-		gen RS_`def'`_wor' = gini_inc_5_`def'`_wor' - gini_dhi_scope_hmc
+		gen RS_`def'`_wor' = conc_dhi_inc_5_`def'`_wor' - gini_dhi_scope_hmc
 	}
 	gen kak`_wor' = conc_dhi_hmc`_wor' - gini_dhi_scope_hmc
 	local _wor _wor
@@ -55,7 +55,7 @@ local _wor
 forvalues j = 1(1)2 {
 	foreach def in /* carey euro */ ours {
 		gen G_diff_`def'`_wor'_pred = gini_inc_5_`def'`_wor'_pred - conc_dhi_dhi
-		gen RS_`def'`_wor'_pred = gini_inc_5_`def'`_wor'_pred - conc_dhi_dhi
+		gen RS_`def'`_wor'_pred =conc_dhi_inc_5_`def'`_wor'_pred - conc_dhi_dhi
 	}
 	local _wor _wor
 }
