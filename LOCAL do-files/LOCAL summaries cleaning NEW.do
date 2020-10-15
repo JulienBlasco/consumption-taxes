@@ -7,7 +7,7 @@ cd "D:"
 cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6\"
 
 // choose file
-local filename "2020_09_21 summaries mod10"
+local filename "2020_09_21 summaries mod1v2"
 *local filename "2020_09_21 summaries mod1"
 
 import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
@@ -24,6 +24,13 @@ merge m:1 cname year using ".\Itrcs scalings\18-08-31_itrcs_scalings.dta", ///
 				  itrc_carey_wor itrc_euro_wor itrc_ours_wor)
 drop if _merge == 2
 drop _merge
+
+// replace 0 with .
+ds mean_*
+local varlist = r(varlist)
+foreach var of local varlist {
+	replace `var' = . if `var' == 0
+}
 
 // change order of variables
 order ccyy cname year, first

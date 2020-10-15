@@ -640,6 +640,8 @@ program preprocessing
 		gen scope_hmc = scope_hmc`model'
 	 }
 		 
+	gen modelfinal = `model'
+		 
 	 rename hmc hmc_old
 	 gen hmc = max(1, hmc_old) if !mi(hmc_old)
 	 
@@ -1099,18 +1101,11 @@ end
 capture program drop oneccyy_summary   
 program oneccyy_summary   
 	egen mean_scope = wtmean(scope),  weight(hwgt*nhhmem) 
-
+	
 	foreach variable in $summeanvars {   
 		egen mean_`variable'= wtmean(`variable') if scope,  weight(hwgt*nhhmem) 
 	 }
 
-	 foreach variable in $sumondhivars $sumonvarvars {
-		qui sum `variable', de
-		if (r(N) == 0) {
-			qui replace `variable' = 0
-		}
-	 }
-	 
 	qui sum scope, de
 	if (r(max) > 0) {
 		capture qui sgini $sumondhivars [aw=hwgt*nhhmem] if scope, sortvar(dhi)  
@@ -1166,14 +1161,44 @@ capture program drop display_summaries
 program display_summaries   
  syntax namelist, [summeanvars(namelist) sumondhivars(namelist) sumonvarvars(namelist)]
 
-preserve
-
  di "************ BEGIN DISPLAY_SUMMARIES ****************"  
  di "* " c(current_time)  
+
+preserve
 
   qui local first = 1
   foreach ccyy of local namelist {
 	  qui drop if ccyy != "`ccyy'"
+	  
+	  qui gen fourlevers = 0
+		qui foreach ccyy of global redineq_datasets {
+			replace fourlevers = 1 if ccyy == "`ccyy'"
+		}
+		qui replace fourlevers = 0 if inlist(ccyy, "at00", "be00", "gr00", "hu05", "hu07", "hu09", "hu12", "hu99", "ie00") ///
+			| inlist(ccyy, "lu00", "mx00", "mx02", "mx04", "mx08", "mx10", "mx12", "mx98", "si10")
+		qui replace fourlevers = 0 if inlist(ccyy, "kr06", "jp08", "is04") | inlist(cname, "Poland", "Switzerland")
+
+		qui foreach var4L in inc1 inc2 inc3 {
+			replace `var4L' = . if fourlevers != 1
+		}
+		
+		qui replace scope = scope & !mi(inc1, inc2, inc3) if fourlevers==1
+	  
+	  if modelfinal == 2 | modelfinal == 10 {
+		qui replace scope = scope & !mi(hmchous) if wor_ccyy
+	  }
+	  
+	  
+	  // NETTOYAGE DU SCOPE
+	  qui foreach var in $summeanvars $sumondhivars $sumonvarvars {
+		count if mi(`var') & scope
+		if r(N) > 0 {
+			replace `var' = 0
+		}
+	  }
+	  
+	  keep $summeanvars $sumondhivars $sumonvarvars hwgt nhhmem scope scope_hmc dhi ccyy 
+	  
 	  qui oneccyy_summary
 	  if (`first' == 1) {
 		l, compress abbreviate(32) noobs table clean
@@ -1269,4 +1294,4 @@ program display_availability
 * Call function on desired datasets    
 ***************************************/   
 
-main_program $ccyy_to_imput, runmodel(21_09_2020) model(0) test availability
+main_program $ccyy_to_imput, runmodel(21_09_2020) model(10) 
