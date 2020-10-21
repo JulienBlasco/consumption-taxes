@@ -7,7 +7,7 @@ Our project is currently published in the LIS Working Paper Series. You may cite
 > Blasco J., Guillaud E., Zemmour M. (2019) ["Consumption Taxes and Income Inequality: An International Perspective with Microsimulation"](http://www.lisdatacenter.org/wps/liswps/785.pdf), _LIS Working Paper Series_, No. 785.
 
 You are free to use the datasets we provide here, but please cite them as:
-> Blasco J., Guillaud E., Zemmour M., [_Consumption Taxes Data_](http://julienblasco.github.io/consumption-taxes), October 2020.
+> Blasco J., Guillaud E., Zemmour M., _Consumption Taxes Data_, http://julienblasco.github.io/consumption-taxes, October 2020.
 
 
 ## Data
