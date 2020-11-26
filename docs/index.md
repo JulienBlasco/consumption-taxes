@@ -14,12 +14,12 @@ You are free to use the datasets we provide here, but please cite them as:
 ### Aggregated indicators (Gini coefficients, global tax ratios, etc.)
 You can download here the Stata files (.dta) containing the latest indicators obtained with our microsimulation method.
 - Core model (82 country-years): [ConsumptionTaxes_indicators_coremodel.dta](https://github.com/JulienBlasco/consumption-taxes/blob/master/DTA/ConsumptionTaxes_indicators_coremodel.dta?raw=true "ConsumptionTaxes_indicators_coremodel.dta")
-- Extended model (126 country-years): [ConsumptionTaxes_indicators_xtnddmodel](https://github.com/JulienBlasco/consumption-taxes/raw/master/DTA/ConsumptionTaxes_indicators_xtnddmodel.dta "ConsumptionTaxes_indicators_xtnddmodel")
+- Lighter model (126 country-years): [ConsumptionTaxes_indicators_xtnddmodel](https://github.com/JulienBlasco/consumption-taxes/raw/master/DTA/ConsumptionTaxes_indicators_xtnddmodel.dta "ConsumptionTaxes_indicators_xtnddmodel")
 
 ### Percentiles
 You can download here the Stata files (.dta) containing the variables obtained with our microsimulation method, broken down in percentiles of disposable income. Please note that these data are mainly for graphing purposes, not detailed analysis at the percentile level.
 - Core model (82 country-years): [ConsumptionTaxes_percentiles_coremodel](https://github.com/JulienBlasco/consumption-taxes/raw/master/DTA/ConsumptionTaxes_percentiles_coremodel.dta "ConsumptionTaxes_percentiles_coremodel")
-- Extended model (126 country-years): [ConsumptionTaxes_percentiles_xtnddmodel](https://github.com/JulienBlasco/consumption-taxes/raw/master/DTA/ConsumptionTaxes_percentiles_xtnddmodel.dta "ConsumptionTaxes_percentiles_xtnddmodel")
+- Lighter model (126 country-years): [ConsumptionTaxes_percentiles_xtnddmodel](https://github.com/JulienBlasco/consumption-taxes/raw/master/DTA/ConsumptionTaxes_percentiles_xtnddmodel.dta "ConsumptionTaxes_percentiles_xtnddmodel")
 
 ### Effective tax rates on consumption
 The following dataset contains the implicit tax rates on consumption computed in our project with OECD National Accounts data: [18-07-27 OECD_itrcs.dta](https://github.com/JulienBlasco/consumption-taxes/raw/master/Itrcs%20scalings/Implicit%20tax%20rates/DTA/18-07-27%20OECD_itrcs.dta)
