@@ -12,7 +12,7 @@ You are free to use the datasets we provide here, but please cite them as:
 ## Data
 Our data is hosted on Zenodo.org under the following Digital Object Identifier (click the badge below to access):
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4291984.svg)](https://doi.org/10.5281/zenodo.4291984)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4291983.svg)](https://doi.org/10.5281/zenodo.4291983)
 
 There are 5 different files available to download:
 ### Aggregated indicators (Gini coefficients, global tax ratios, etc.)
