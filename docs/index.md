@@ -26,7 +26,7 @@ These are the Stata files containing the variables obtained with our microsimula
 - Lighter model (126 country-years): `ConsumptionTaxes_percentiles_xtnddmodel.dta`
 
 ### Effective tax rates on consumption
-The following dataset contains the implicit tax rates on consumption computed in our project with OECD National Accounts data: `18-07-27 OECD_itrcs.dta`
+The following dataset contains the implicit tax rates on consumption computed in our project with National Accounts data: `18-07-27 OECD_itrcs.dta`
 
 ## Sources
 
