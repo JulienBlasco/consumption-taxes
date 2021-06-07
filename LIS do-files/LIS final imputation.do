@@ -958,6 +958,14 @@ capture program drop variables_creation
 program variables_creation
 	syntax [, extreme_gap(real 0)]
 	
+	 // define quintile of income
+	egen dhi_percentile = xtile(dhi) if scope, by(ccyy) nquantiles(100) weights(hwgt*nhhmem)  
+	   
+	foreach def in carey euro ours { 
+		replace itrc_`def' = itrc_`def' + `extreme_gap' * (dhi_percentile-50)/100
+		replace itrc_`def'_wor = itrc_`def'_wor + `extreme_gap' * (dhi_percentile-50)/100
+		}
+	
 	 // compute scaled variables, propensities, tax rates, etc.  
 	   
 	 egen dhi_mean = wtmean(dhi) if scope,  by(ccyy)  weight(hwgt*nhhmem) 
@@ -976,15 +984,7 @@ program variables_creation
 	 egen hmc_wor_mean = wtmean(hmc_wor) if scope, by(ccyy)  weight(hwgt*nhhmem) 
 	 gen hmc_wor_scaled = oecd_prop_wor * (dhi_mean/hmc_wor_mean) * hmc_wor  
 	 gen prop_wor_scaled = hmc_wor_scaled/dhi  
-	   
-	 // define quintile of income
-	egen dhi_percentile = xtile(dhi) if scope, by(ccyy) nquantiles(100) weights(hwgt*nhhmem)  
-	   
-	foreach def in carey euro ours { 
-		replace itrc_`def' = itrc_`def' + `extreme_gap' * (dhi_percentile-50)/100
-		replace itrc_`def'_wor = itrc_`def'_wor + `extreme_gap' * (dhi_percentile-50)/100
-		}
-		
+	   	
 	 foreach def in carey euro ours {   
 	 gen tax_eff_`def'_wor = hmc_wor_scaled * itrc_`def'_wor  
 	 gen tax_rate_`def'_wor = tax_eff_`def'_wor/dhi  
