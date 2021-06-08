@@ -4,11 +4,10 @@
 
 /* CHANGE DIRECTORY */
 cd "D:"
-cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6\"
+cd "\BLASCOLIEPP\Code\21-03 Datasets V7 (JPubEc Resubmit)\"
 
 // choose file
-local filename "2020_09_21 summaries mod1v2"
-*local filename "2020_09_21 summaries mod1"
+local filename "2021_06_07_centralccyy_summaries_egap2"
 
 import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
 drop v1 v39
@@ -96,7 +95,7 @@ forvalues i = 1(1)2 {
 	local _pred _pred
 }
 
-forvalues i = 1(1)3 {
+forvalues i = 1(1)3 {  
 	rename gini_inc`i' Gini_inc`i'
 }
 
