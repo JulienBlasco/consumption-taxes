@@ -2,7 +2,6 @@
 cd "D:"
 capture noisily cd "\BLASCOLIEPP\Code\21-03 Datasets V7 (JPubEc Resubmit)"
 
-
 /*
 use "DTA\2018_11_19 cross-validation qu100.dta", clear
 rename quantile dhi_quantiles
@@ -18,11 +17,10 @@ append using ".\DTA\2020_09_21 qu100 mod10 4s4.dta"
 merge m:1 ccyy using ".\DTA\LOCAL_datasets\jblasc\18-09-09 availability matrix.dta", ///
 	keep(master match) nogenerate
 
-cd "\BLASCOLIEPP\Notes\2021-03 Resubmit JPubEc\Imputation conso\Réponse\images"
+cd "\BLASCOLIEPP\Notes\2021-03 Resubmit JPubEc\Réponse"
 	
 sort cname year dhi_quantiles
 drop if substr(ccyy, 1, 2) == "cn"
-drop if mi(hmc_scaled_q)
 
 egen hmc_mediane = median(hmc_q), by(ccyy)
 gen hmc_medianized_q = hmc_q/hmc_mediane
@@ -42,9 +40,15 @@ foreach var in dhi hmc_medianized hmc_medianized_predict inc_5_ours inc_5_ours_p
 	gen T10_B50_`var' = T10_`var'/B50_`var'
 }
 
+gen prog1050 = (T10_hmc_medianized/T10_dhi)/(B50_hmc_medianized/B50_dhi)-1
+gen prog1050_predict = (T10_hmc_medianized_predict/T10_dhi) ///
+	/(B50_hmc_medianized_predict/B50_dhi)-1
+
 foreach n in q d m {
 	gen relerror_`n' = 100*(hmc_medianized_predict_`n'/hmc_medianized_`n'-1)
 }
+
+gen error_prog = 100*(prog1050_predict/prog1050-1)
 
 gen diff_pred = T10_B50_inc_5_ours_pred - T10_B50_dhi
 gen diff = T10_B50_inc_5_ours- T10_B50_dhi
@@ -53,8 +57,14 @@ gen diff = T10_B50_inc_5_ours- T10_B50_dhi
 
 twoway (connected relerror_d decile) || (line relerror_m decile, lpattern(dash)) ///
 	if !mi(hmc_medianized_q) & year == max_year_obs, by(ccyy_f)
+graph export images/deciles_impute_obs.eps, as(eps) preview (off) replace
 
+twoway line hmc_medianized_predict_d hmc_medianized_d decile ///
+	if !mi(hmc_medianized_q) & model2_ccyy & rich_ccyy  & year == max_year_obs, by(ccyy_f)
 
+table cname model2_ccyy rich_ccyy if !mi(relerror_d)
+summar relerror_q if !mi(relerror_d), de
+summar relerror_d if !mi(relerror_d) & model2_ccyy & !rich_ccyy, de
 
 preserve
 keep if !mi(hmc_medianized_q) & year == max_year_obs
@@ -64,17 +74,32 @@ reshape wide hmc_medianized_predict_d hmc_medianized_d relerror_d, ///
 	i(ccyy_f) j(decile)
 mkmat relerror_d* relerror_m, ///
 	matrix(deciles_impute_obs) rownames(ccyy_f) nchar(25)
-frmttable using deciles_impute_obs_brut.tex, statmat(deciles_impute_obs) ///
+frmttable using tables/deciles_impute_obs_brut.tex, statmat(deciles_impute_obs) ///
 	sdec(1) varlabels tex fragment nocenter replace ///
 	ctitles("" "D1" "D2" "D3" "D4" "D5" "D6" "D7" "D8" "D9" "D10" "Mean")
-filefilter deciles_impute_obs_brut.tex deciles_impute_obs.tex, ///
+filefilter tables/deciles_impute_obs_brut.tex tables/deciles_impute_obs.tex, ///
 	from("\BS_") to(" ") replace
 restore
 
 
-
-
 // T10 sur B50
+sum error_prog if model2_ccyy & rich_ccyy, de
+preserve
+keep if !mi(error_prog)
+duplicates drop ccyy_f error_prog, force
+list ccyy_f error_prog if model2_ccyy & rich_ccyy, clean
+list ccyy_f error_prog if model2_ccyy & !rich_ccyy, clean
+list ccyy_f error_prog if rich_ccyy, clean
+list ccyy_f error_prog if !rich_ccyy, clean
+
+
+graph dot (first) error_prog ///
+	if model2_ccyy & rich_ccyy  & year == max_year_obs, ///
+	over(ccyy_f, sort(error_prog)) nofill
+graph dot (first) prog1050* ///
+	if !mi(hmc_medianized_q) & year == max_year_obs, ///
+	over(ccyy_f, sort(prog1050))
+
 graph dot (first) T10_B50_hmc* ///
 	if !mi(hmc_medianized_q) & year == max_year_obs, ///
 	over(ccyy_f, sort(T10_B50_hmc_medianized))

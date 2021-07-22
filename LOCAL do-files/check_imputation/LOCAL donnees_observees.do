@@ -19,7 +19,7 @@ gen prop_q = hmc_q/dhi_q
 
 sort cname year dhi_quantiles
 
-cd "E:\Notes\2021-03 Resubmit JPubEc\Imputation conso\Réponse\images"
+cd "E:\Notes\2021-03 Resubmit JPubEc\Réponse"
 	
 // propensions à consommer brutes
 preserve 
@@ -28,7 +28,7 @@ twoway line prop_q global_prop_q dhi_quantiles, by(cname) ///
 	legend(order(1 "Unscaled" 2 "Scaled with NA"))
 restore
 
-graph export prop_brutes.eps, as(eps) preview (off) replace
+graph export images/prop_brutes.eps, as(eps) preview (off) replace
 
 // coefficients de recalage compta nat
 preserve
@@ -43,7 +43,7 @@ twoway (connected val_* year, msize(small ..)), ///
 	by(stat, yrescale legend(span position(3))) legend(cols(1))
 restore
 	
-graph export coefficients_recalage.eps, as(eps) preview (off) replace
+graph export images/coefficients_recalage.eps, as(eps) preview (off) replace
 
 // nombre de centiles en dessous de 1
 preserve
@@ -61,10 +61,10 @@ duplicates drop
 
 mkmat share_regular global_share_regular, ///
 	matrix(share_regular) rownames(ccyy_f) nchar(25)
-frmttable using propensity_lower_one_brut.tex, statmat(share_regular) ///
+frmttable using tables/propensity_lower_one_brut.tex, statmat(share_regular) ///
 	sdec(0) varlabels tex fragment nocenter replace ///
 	ctitles("" "Unscaled" "Scaled with NA\textsuperscript{1}")
-filefilter propensity_lower_one_brut.tex propensity_lower_one.tex, ///
+filefilter tables/propensity_lower_one_brut.tex tables/propensity_lower_one.tex, ///
 	from("\BS_") to(" ") replace
 restore
 
