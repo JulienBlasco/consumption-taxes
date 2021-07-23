@@ -1,5 +1,5 @@
-use "E:\Code\21-03 Datasets V7 (JPubEc Resubmit)\DTA\comparaison_euromod\comparaison_euromod.dta", clear
-cd "E:\Notes\2021-03 Resubmit JPubEc\Réponse"
+use "G:\DTA\comparaison_euromod\comparaison_euromod.dta", clear
+cd "N:\Réponse"
 
 // taux d'effort par décile
 twoway line tax_prop tax_prop_ours decile_num ///
@@ -8,20 +8,19 @@ twoway line tax_prop tax_prop_ours decile_num ///
 		
 graph export images/taux_effort_central.eps, as(eps) preview (off) replace
 
-twoway line tax_prop rescaled_tax_prop_ours decile_num ///
+twoway (line tax_prop rescaled_tax_prop_ours decile_num) || (scatteri 0 5, msymbol(none)) ///
 	if decile_num != 11 & tax_prop_ours < 0.4 & central, ///
-	by(ccyy_f etude) yscale(range(0 0.1))
+	by(ccyy_f etude, rescale) legend(order(1 2))
 		
 graph export images/taux_effort_central_rescaled.eps, as(eps) preview (off) replace
 
 // différences de niveau
 graph dot (asis) effective_tax* if central & decile_num == 11, ///
-	over(ccyy_f, sort(effective_taxrate_ours)) nofill
+	over(ccyy_f, sort(effective_taxrate_ours)) nofill	
 	
 graph export images/eff_taxrate_central.eps, as(eps) preview (off) replace
 
 	
-
 // rapport interdécile des taux d'effort
 preserve
 keep ccyy_f cname year tax_prop* decile_num etude central
@@ -44,9 +43,11 @@ mkmat ecart_D5_D1 ecart_ours_D5_D1 ecart_D10_D5 ecart_ours_D10_D5 ///
 
 frmttable using tables/interdeciles2.tex, statmat(interdeciles) ///
 	sdec(2) varlabels tex fragment nocenter replace ///
-	ctitles("" "D5/D1" "D5/D1 (ITRC)" "D10/D5" "D10/D5 (ITRC)" ///
-	"D10/D1" "D10/D1 (ITRC)")
-filefilter tables/interdeciles2.tex tables/interdeciles.tex, from("\BS_") to(" ") replace
+	ctitles("" "D5/D1" "" "D10/D5" "" "D10/D1" "" \ ///
+	"" "Euromod" "ITRC" "Euromod" "ITRC" "Euromod" "ITRC") ///
+	multicol(1,2,2; 1,4,2; 1,6,2) vlines(000{10}0)
+filefilter tables/interdeciles2.tex tables/interdeciles.tex, ///
+	from("\BS_") to(" ") replace
 
 	
 graph dot (asis) ecart_D10_D1 ecart_ours_D10_D1 ecart_D9_D2 ecart_ours2_D9_D2 ///

@@ -62,6 +62,11 @@ graph export images/deciles_impute_obs.eps, as(eps) preview (off) replace
 twoway line hmc_medianized_predict_d hmc_medianized_d decile ///
 	if !mi(hmc_medianized_q) & model2_ccyy & rich_ccyy  & year == max_year_obs, by(ccyy_f)
 
+twoway line hmc_medianized_predict_d hmc_medianized_d decile ///
+	if !mi(hmc_medianized_q) & model2_ccyy & rich_ccyy  & cname=="Slovenia", by(ccyy_f)
+
+
+	
 table cname model2_ccyy rich_ccyy if !mi(relerror_d)
 summar relerror_q if !mi(relerror_d), de
 summar relerror_d if !mi(relerror_d) & model2_ccyy & !rich_ccyy, de
