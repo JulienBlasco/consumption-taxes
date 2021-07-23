@@ -1,6 +1,5 @@
 /* CHANGE DIRECTORY */
-cd "D:"
-capture noisily cd "\BLASCOLIEPP\Code\21-03 Datasets V7 (JPubEc Resubmit)"
+cd "G:"
 
 /*
 use "DTA\2018_11_19 cross-validation qu100.dta", clear
@@ -17,7 +16,7 @@ append using ".\DTA\2020_09_21 qu100 mod10 4s4.dta"
 merge m:1 ccyy using ".\DTA\LOCAL_datasets\jblasc\18-09-09 availability matrix.dta", ///
 	keep(master match) nogenerate
 
-cd "\BLASCOLIEPP\Notes\2021-03 Resubmit JPubEc\Réponse"
+cd "N:/Réponse"
 	
 sort cname year dhi_quantiles
 drop if substr(ccyy, 1, 2) == "cn"
@@ -101,6 +100,8 @@ list ccyy_f error_prog if !rich_ccyy, clean
 graph dot (first) error_prog ///
 	if model2_ccyy & rich_ccyy  & year == max_year_obs, ///
 	over(ccyy_f, sort(error_prog)) nofill
+graph export images/error_prog.eps, as(eps) preview (off) replace
+	
 graph dot (first) prog1050* ///
 	if !mi(hmc_medianized_q) & year == max_year_obs, ///
 	over(ccyy_f, sort(prog1050))
@@ -122,3 +123,4 @@ graph hbar (first) diff diff_pred ///
 	over(ccyy_f, sort(diff)) ///
 	legend(title("Effect of cons taxes on T10/B50") cols(1) ///
 	order(1 "Observed consumption data" 2 "Imputed consumption data"))
+graph export images/error_T10B50_diff.eps, as(eps) preview(off) replace
