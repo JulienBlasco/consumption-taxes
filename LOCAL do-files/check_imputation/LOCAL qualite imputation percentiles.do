@@ -47,6 +47,10 @@ foreach n in q d m {
 	gen relerror_`n' = 100*(hmc_medianized_predict_`n'/hmc_medianized_`n'-1)
 }
 
+foreach n in q d m {
+	gen error_`n' = hmc_medianized_predict_`n'-hmc_medianized_`n'
+}
+
 gen error_prog = 100*(prog1050_predict/prog1050-1)
 
 gen diff_pred = T10_B50_inc_5_ours_pred - T10_B50_dhi
@@ -57,6 +61,11 @@ gen diff = T10_B50_inc_5_ours- T10_B50_dhi
 twoway (connected relerror_d decile) || (line relerror_m decile, lpattern(dash)) ///
 	if !mi(hmc_medianized_q) & year == max_year_obs, by(ccyy_f)
 graph export images/deciles_impute_obs.eps, as(eps) preview (off) replace
+
+// absolute error
+twoway (connected error_d decile) || (line error_m decile, lpattern(dash)) ///
+	if !mi(hmc_medianized_q) & year == max_year_obs & !mi(T10_B50_inc_5_ours) & ccyy != "za12", by(ccyy_f)
+
 
 twoway line hmc_medianized_predict_d hmc_medianized_d decile ///
 	if !mi(hmc_medianized_q) & model2_ccyy & rich_ccyy  & year == max_year_obs, by(ccyy_f)
