@@ -30,8 +30,8 @@ quiet {
 * I. independent variables in the econometric model *
 ****************************************************/
 global depvars 										///
-		i.nhhmem_top	i.hpartner_agg 	i.own_agg /* /// 
-		i.nhhmem65_top 	i.single_senior i.nearn_top */
+		i.nhhmem_top	i.hpartner_agg 	i.own_agg /// 
+		i.nhhmem65_top 	i.single_senior /* i.nearn_top */
 
 		
 /*****************************************
@@ -90,8 +90,13 @@ global sumonvarvars $sumonvarvars_obs $sumonvarvars_pred
 *****************************************/
 global availvars ///
 	hmc 	hmc_wor 	hmc_wor_scaled 	hmc_scaled ///
+	hchous hmchous ///
 	tax_eff_ours	tax_eff_ours_wor	inc_5_ours	inc_5_ours_wor ///
-	inc1 inc2 inc3 inc4 inc_5_ours_pred inc_5_ours_wor_pred
+	inc1 inc2 inc3 inc4 inc_5_ours_pred inc_5_ours_wor_pred ///
+	nhhmem_top	hpartner_agg 	own_agg  /// 
+	nhhmem65_top 	single_senior nearn_top ///
+	nhhmem5_top nhhmem17_top 
+	
 		
 /******************************************
 * III. variables in the quantiles dataset *
@@ -1294,4 +1299,4 @@ program display_availability
 * Call function on desired datasets    
 ***************************************/   
 
-main_program $ccyy_to_imput, runmodel(21_09_2020) model(10) 
+main_program $ccyy_to_imput, savemodel(28_10_2021) model(10) summaries
