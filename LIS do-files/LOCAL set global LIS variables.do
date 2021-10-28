@@ -1,5 +1,4 @@
-cd "D:"
-cd "BLASCOLIEPP\Code\19-08-21 Datasets V6\"
+cd "G:"
 
 global mydata "./DTA/LOCAL_datasets/"
 
