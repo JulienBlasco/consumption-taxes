@@ -612,14 +612,17 @@ program preprocessing
    
 	 /* trim and bottom-code:   
 	 we could also drop first percentiles but we use the method in    
-	 Addition to Consumption VAT program_eg.do */   
-	   
-	  
+	 Addition to Consumption VAT program_eg.do */
+
+	foreach ccyy in de83 tw81 tw86 tw91 uk69 {
+		replace model2_ccyy = 0 if ccyy == "`ccyy'"
+	 }
+	 
 	 gen dhi_obs 		= dhi_ccyy 		& !mi(dhi)
 	 gen hmc_obs 		= hmc_ccyy		& !mi(hmc)
 	 gen model0_obs		= 1
 	 gen model1_obs 	= model1_ccyy 	& !mi(dhi, nhhmem, hpartner)
-	 gen model2_obs 	= model2_ccyy 	& model1_obs & !mi(hchous, own)
+	 gen model2_obs 	= model2_ccyy 	& model1_obs & !mi(hchous, own, nhhmem65)
 	 gen wor_obs 		= wor_ccyy 		& !mi(hmchous)
 	 
 	 replace dhi_obs = 0 if dhi <= 0 
@@ -1299,4 +1302,4 @@ program display_availability
 * Call function on desired datasets    
 ***************************************/   
 
-main_program $ccyy_to_imput, savemodel(28_10_2021) model(10) summaries
+main_program $ccyy_to_imput, savemodel(29_10_2021) model(10) summaries
