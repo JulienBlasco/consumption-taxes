@@ -617,7 +617,7 @@ program preprocessing
 	foreach ccyy in de83 tw81 tw86 tw91 uk69 {
 		replace model2_ccyy = 0 if ccyy == "`ccyy'"
 	 }
-	 
+
 	 gen dhi_obs 		= dhi_ccyy 		& !mi(dhi)
 	 gen hmc_obs 		= hmc_ccyy		& !mi(hmc)
 	 gen model0_obs		= 1
@@ -1142,6 +1142,11 @@ program oneccyy_summary
 		gen gini_dhi_scope_hmc = r(coeff)
 	}
 	
+	capture confirm variable gini_dhi_scope_hmc
+	if _rc { 
+		gen gini_dhi_scope_hmc=.
+	}
+
 	foreach variable in $sumondhivars {
 		capture confirm variable conc_dhi_`variable'
 		if _rc { 
