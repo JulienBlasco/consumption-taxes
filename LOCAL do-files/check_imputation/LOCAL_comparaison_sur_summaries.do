@@ -1,4 +1,5 @@
-use "G:\DTA\2021_10_29_summarise_mod10.dta", clear
+cd "G:"
+use "G:\DTA\2021_10_29_summaries_mod10.dta", clear
 
 merge m:1 ccyy using ".\DTA\LOCAL_datasets\jblasc\18-09-09 availability matrix.dta", ///
 	keep(master match) nogenerate
