@@ -1,16 +1,29 @@
-* updated 31/08/2018 to change paths
-* updated 29/10/2018 to add indicators
-* updated 01/02/2019 to add gini_dhi_scope_hmc
-
 /* CHANGE DIRECTORY */
-cd "D:"
-cd "\BLASCOLIEPP\Code\21-03 Datasets V7 (JPubEc Resubmit)\"
+cd "G:"
+
+set varabbrev off, permanent
 
 // choose file
-local filename "2021_06_07_centralccyy_summaries_egap2"
-
+local filename "2021_10_29_summaries_mod2"
 import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
 drop v1 v39
+
+/*
+// pour régler le pb du summaries mod2
+{
+	keep if mean_scope > 0
+	rename (gini_inc1   gini_inc2   gini_inc3   gini_inc4   gini_inc_5_ours   ///
+	gini_inc_5_ours_pred   gini_inc_5_ours_wor   gini_inc_5_ours_wor_pred   ///
+	mean_dhi   mean_hchous   mean_hitp   mean_hmc   mean_hmc_pred_scaled   ///
+	mean_hmc_scaled   mean_hmc_wor_pred_scaled   mean_hmc_wor_scaled   ///
+	mean_hmchous   mean_inc1   mean_inc2   mean_inc3   mean_inc4   mean_scope v38) ///
+	(gini_dhi_scope_hmc gini_inc1   gini_inc2   gini_inc3   gini_inc4   ///
+	gini_inc_5_ours   gini_inc_5_ours_pred   gini_inc_5_ours_wor   gini_inc_5_ours_wor_pred   ///
+	mean_dhi   mean_hchous   mean_hitp   mean_hmc   mean_hmc_pred_scaled   ///
+	mean_hmc_scaled   mean_hmc_wor_pred_scaled   mean_hmc_wor_scaled   mean_hmchous   ///
+	mean_inc1   mean_inc2   mean_inc3   mean_inc4   mean_scope)
+}
+*/
 
 // get cnames and years
 merge m:1 ccyy using ".\DTA\match cname year.dta"
