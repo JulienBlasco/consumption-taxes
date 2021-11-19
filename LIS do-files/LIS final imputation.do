@@ -186,7 +186,8 @@ and makes a call to csv_percentiles once for each file */
 capture program drop main_program   
 program main_program   
 	syntax namelist, model(integer) ///
-		[ test quiet quantiles(integer 0) summaries availability crossvalid savemodel(string) runmodel(string) compare extreme_gap(real 0)]   
+		[ test quiet quantiles(integer 0) summaries availability par_age crossvalid ///
+		savemodel(string) runmodel(string) compare extreme_gap(real 0)]   
 
 	clear
 	set varabbrev off, permanent
@@ -199,6 +200,7 @@ program main_program
 	di "on a quantiles == `quantiles'"  
 	di "on a summaries == `summaries'"  
 	di "on a availability == `availability'"
+	di "on a par_age == `par_age'"  
 	di "on a obs == `obs'"  
 	di "on a crossvalid == `crossvalid'"
 	di "on a savemodel == `savemodel'"
@@ -287,7 +289,7 @@ program main_program
 			`quiet' consumption_imputation , model(`model') savemodel("`savemodel'") runmodel("`runmodel'")
 		}
 		
-		if (`quantiles'!=0) | ("`summaries'"!="") | ("`availability'" == "availability") {
+		if (`quantiles'!=0) | ("`summaries'"!="") | ("`availability'" == "availability") | ("`par_age'" == "par_age") {
 		di "----------- variables creation ------------"  
 		di "- " c(current_time) 
 		quiet variables_creation , extreme_gap(`extreme_gap')
@@ -298,6 +300,10 @@ program main_program
 	display_percentiles $quvars, ccyylist(`ccyylist') ///
 									n_quantiles(`quantiles') `median'
 	}  
+	
+	if ("`par_age'"=="par_age") {
+	stat_par_age $quvars, ccyylist(`ccyylist')
+	}
 	
 	if ("`summaries'"=="summaries") {  
 	display_summaries `ccyylist', summeanvars($summeanvars) sumondhivars($sumondhivars) sumonvarvars($sumonvarvars)
@@ -544,8 +550,13 @@ program define convert_ssc_to_household_level
   replace headactivage=0 if headactivage!=1
   bys ccyy hid: egen hhactivage=total(headactivage)
   
+  /* ajout de l'age du head en variable numerique */
+  gen age_head = age if relation == 1000
+  replace age_head = 0 if age_head == .
+  bys ccyy hid: egen headagenum=total(age_head)
+  
   * Keep only household level SSC and household id and activage dummy
-  drop pid pil pxit pxiti pxits age emp relation headactivage psscee psscer // pinctax NOT SUPPORTED
+  drop pid pil pxit pxiti pxits age emp relation headactivage psscee psscer age_head // pinctax NOT SUPPORTED
   drop if hid==.
   duplicates drop
   }
@@ -1101,7 +1112,53 @@ preserve
     
 end   
 } // end display_percentiles
-   
+
+
+*****************************   
+*        STAT_PAR_AGE       *   
+*****************************   
+{ 
+/* This program computes quantiles of income and outputs a CSV */   
+capture program drop stat_par_age   
+program stat_par_age   
+ syntax varlist, ccyylist(namelist)  
+  
+preserve
+
+ di "************ BEGIN STAT_PAR_AGE ****************"  
+ di "* " c(current_time)  
+
+ quiet {
+ egen agecat = cut(headagenum), at(1, 30, 50, 65, 1000)
+ 
+ foreach variable of local varlist {
+	local varlist_q `varlist_q' `variable'_q
+	egen `variable'_q = wtmean(`variable') if scope, by(ccyy agecat) weight(hwgt*nhhmem)
+ }
+  
+ drop if agecat == . | !scope
+ keep agecat ccyy `varlist_q'
+ duplicates drop
+ 
+ sort ccyy agecat
+ 
+ gen to_output = 0
+ 
+ foreach ccyy in `ccyylist' {
+	replace to_output = 1 if ccyy=="`ccyy'"
+ }
+ 
+ drop if to_output == 0
+ drop to_output
+ 
+ }
+ 
+ l, compress abbreviate(32) noobs table clean
+    
+end   
+} // end stat_par_age
+
+
 ***************************************   
 *          DISPLAY_SUMMARIES          *   
 ***************************************   
@@ -1307,4 +1364,4 @@ program display_availability
 * Call function on desired datasets    
 ***************************************/   
 
-main_program $ccyy_to_imput, savemodel(29_10_2021) model(10) summaries
+main_program $ccyy_to_imput, runmodel(29_10_2021) model(10) summaries test par_age
