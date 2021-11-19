@@ -4,8 +4,8 @@ cd "G:"
 set varabbrev off, permanent
 
 // choose file
-local filename "2021_10_29_qu100_mod10_4s4"
-local mod "mod10"
+local filename "2021_10_29_qu100_mod2_4s4"
+local mod "mod2"
 //
 
 import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
