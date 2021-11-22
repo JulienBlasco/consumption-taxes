@@ -634,7 +634,7 @@ program preprocessing
 	 gen hmc_obs 		= hmc_ccyy		& !mi(hmc)
 	 gen model0_obs		= 1
 	 gen model1_obs 	= model1_ccyy 	& !mi(dhi, nhhmem, hpartner)
-	 gen model2_obs 	= model2_ccyy 	& model1_obs & !mi(hchous, own, nhhmem65)
+	 gen model2_obs 	= model2_ccyy 	& model1_obs & !mi(hchous, own, agecat)
 	 gen wor_obs 		= wor_ccyy 		& !mi(hmchous)
 	 
 	 replace dhi_obs = 0 if dhi <= 0 
