@@ -3,11 +3,12 @@
 keep if year == max_year_obs & model2_ccyy & rich_ccyy
 
 // error by percentile
-
+capture drop year_temp
+egen year_temp = max(year) if !mi(relerror_d), by(cname)
 twoway (connected relerror_d decile) || (line relerror_m decile, lpattern(dash)) ///
-	, by(ccyy_f)
-twoway (connected relerror_scaled_d decile) || (line relerror_scaled_m decile, lpattern(dash)) ///
-	, by(ccyy_f)
+	if year==year_temp & rich_ccyy, by(ccyy_f)
+twoway (connected error_d decile) || (line error_m decile, lpattern(dash)) ///
+	if year==year_temp & rich_ccyy & cname != "Estonia", by(ccyy_f)
 	
 graph export images/deciles_impute_obs.eps, as(eps) preview (off) replace
 
@@ -101,3 +102,8 @@ graph hbar (first) diff diff_pred ///
 	over(ccyy_f, sort(diff)) ///
 	legend(title("Effect of cons taxes on T10/B50") cols(1) ///
 	order(1 "Observed consumption data" 2 "Imputed consumption data"))
+
+/* by quintile of income */
+graph bar (first) hmc_pred_scaled_quin hmc_scaled_quin ///
+	if !mi(hmc_scaled_quin), ///
+	by(ccyy_f, rescale) over(quintile)

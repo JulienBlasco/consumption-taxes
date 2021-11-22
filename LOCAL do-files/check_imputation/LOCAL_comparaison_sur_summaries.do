@@ -15,7 +15,10 @@ graph dot (asis) error_prog, over(ccyy_f, sort(error_prog))
 graph dot (asis) error_effect, over(ccyy_f, sort(error_effect))
 
 twoway (scatter G_diff_ours kak, mlabel(ccyy)) || ///
-	(scatter G_diff_ours_pred kak_pred, mlabel(ccyy))
+	(scatter G_diff_ours_pred kak_pred, mlabel(ccyy)), ///
+	ytitle("Effet antiredistributif (points de Gini)") ///
+	xtitle("Régressivité (kakwani)") ///
+	legend(order(1 "Observé" 2 "Imputé"))
 
 graph dot kak, over(ccyy_f, sort(kak))
 
