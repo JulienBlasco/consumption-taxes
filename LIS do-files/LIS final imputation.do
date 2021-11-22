@@ -31,7 +31,7 @@ quiet {
 ****************************************************/
 global depvars 										///
 		i.nhhmem_top	i.hpartner_agg 	i.own_agg /// 
-		i.nhhmem65_top 	i.single_senior /* i.nearn_top */
+		i.single_senior i.agecat /* i.nearn_top */
 
 		
 /*****************************************
@@ -554,6 +554,7 @@ program define convert_ssc_to_household_level
   gen age_head = age if relation == 1000
   replace age_head = 0 if age_head == .
   bys ccyy hid: egen headagenum=total(age_head)
+  egen agecat = cut(headagenum), at(1, 30, 50, 65, 1000)
   
   * Keep only household level SSC and household id and activage dummy
   drop pid pil pxit pxiti pxits age emp relation headactivage psscee psscer age_head // pinctax NOT SUPPORTED
@@ -1129,7 +1130,6 @@ preserve
  di "* " c(current_time)  
 
  quiet {
- egen agecat = cut(headagenum), at(1, 30, 50, 65, 1000)
  
  foreach variable of local varlist {
 	local varlist_q `varlist_q' `variable'_q
