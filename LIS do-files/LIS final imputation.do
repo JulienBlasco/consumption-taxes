@@ -342,7 +342,7 @@ program ssc_impute
 			}
 		}
 	
-	foreach ccyy in `redineq_inlist' {
+	foreach ccyy in `namelist' {
 		qui merge m:m dname hid using $`ccyy'p, ///
 		update keepusing($pvars) nogenerate ///
 		assert(master match match_update) ///
