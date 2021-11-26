@@ -4,7 +4,7 @@ cd "G:"
 set varabbrev off, permanent
 
 // choose file
-local filename "2021_10_29_par_age_mod2"
+local filename "2021_11_22_par_age_mod2"
 local mod "mod2"
 //
 
@@ -34,10 +34,10 @@ drop _merge
 order ccyy cname year, first
  
 preserve
-use 			".\DTA\2021_10_29_qu100_`mod'_1s4", clear
-append using 	".\DTA\2021_10_29_qu100_`mod'_2s4"
-append using 	".\DTA\2021_10_29_qu100_`mod'_3s4"
-append using 	".\DTA\2021_10_29_qu100_`mod'_4s4"
+use 			".\DTA\2021_11_22_qu100_`mod'_1s4", clear
+append using 	".\DTA\2021_11_22_qu100_`mod'_2s4"
+append using 	".\DTA\2021_11_22_qu100_`mod'_3s4"
+append using 	".\DTA\2021_11_22_qu100_`mod'_4s4"
 keep ccyy hmc_medianized_predict_q
 egen mean_hmc_med_pred = mean(hmc_medianized_predict_q), by(ccyy)
 keep ccyy mean_hmc_med_pred
