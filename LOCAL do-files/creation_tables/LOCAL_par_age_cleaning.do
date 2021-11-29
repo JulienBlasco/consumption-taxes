@@ -4,8 +4,8 @@ cd "G:"
 set varabbrev off, permanent
 
 // choose file
-local filename "2021_11_22_qu100_mod10_4s4"
-local mod "mod10"
+local filename "2021_11_22_par_age_mod2"
+local mod "mod2"
 //
 
 import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
@@ -24,47 +24,37 @@ drop if _merge == 2
 drop _merge
 
 // merge with summaries
-merge m:1 ccyy using ".\DTA\2021_11_22_summaries_`mod'.dta", ///
-			keepusing(mean_hmc_scaled mean_hmc_wor_scaled mean_hmc_pred_scaled)
+merge m:1 ccyy using ".\DTA\2021_10_29_summaries_`mod'.dta", ///
+			keepusing(mean_hmc mean_dhi mean_hmchous mean_hmc_scaled ///
+			mean_hmc_wor_scaled mean_hmc_pred_scaled)
 drop if _merge == 2
 drop _merge
 			
 // change order of variables
 order ccyy cname year, first
+ 
+preserve
+use 			".\DTA\2021_11_22_qu100_`mod'_1s4", clear
+append using 	".\DTA\2021_11_22_qu100_`mod'_2s4"
+append using 	".\DTA\2021_11_22_qu100_`mod'_3s4"
+append using 	".\DTA\2021_11_22_qu100_`mod'_4s4"
+keep ccyy hmc_medianized_predict_q
+egen mean_hmc_med_pred = mean(hmc_medianized_predict_q), by(ccyy)
+keep ccyy mean_hmc_med_pred
+duplicates drop
+mkmat mean_hmc_med_pred, mat(mean_pred) rownames(ccyy)
+restore
 
-egen hmc_mmean 			= mean(hmc_q), by(ccyy)
-egen hmc_med_pred_mmean = mean(hmc_medianized_predict_q), by(ccyy)
+svmat mean_pred, names( col )
+
+gen scaling_hmc = oecd_prop / (mean_hmc/mean_dhi)
+gen scaling_hmc_wor = oecd_prop_wor / ((mean_hmc-mean_hmchous)/mean_dhi)
+gen scaling_hmc_pred = oecd_prop / (mean_hmc_med_pred/mean_dhi)
+
 gen hmc_wor_q 			= hmc_q - hmchous_q
-egen hmc_wor_mmean		= mean(hmc_wor_q), by(ccyy)
-
-gen hmc_scaled_q 		= hmc_q * mean_hmc_scaled/hmc_mmean
-gen hmc_wor_scaled_q 	= hmc_wor_q * mean_hmc_wor_scaled/hmc_wor_mmean
-gen hmc_pred_scaled_q = hmc_medianized_predict_q * mean_hmc_pred_scaled/hmc_med_pred_mmean
-
-/* BY VINTILE : comment out to get by percentile
-egen vintile = xtile(quantile), by(ccyy) nquantiles(20)
-
-egen dhi_vt = mean(dhi), by(ccyy vintile)
-egen hmc_scaled_vt = mean(hmc_scaled), by(ccyy vintile)
-egen hmc_pred_scaled_vt = mean(hmc_pred_scaled), by(ccyy vintile)
-egen hmc_wor_scaled_vt = mean(hmc_wor_scaled), by(ccyy vintile)
-egen hmc_wor_pred_scaled_vt = mean(hmc_wor_pred_scaled), by(ccyy vintile)
-
-replace dhi = dhi_vt
-replace hmc_scaled = hmc_scaled_vt
-replace hmc_pred_scaled = hmc_pred_scaled_vt
-replace hmc_wor_scaled = hmc_wor_scaled_vt
-replace hmc_wor_pred_scaled = hmc_wor_pred_scaled_vt
-*/
-
-/*
-egen quintile = xtile(quantile), by(ccyy) nquantiles(5)
-local rategap = 0.005 
-  
-foreach def in carey euro ours { 
-	gen itrc_`def'_V3 = itrc_`def'_wor + `rategap' * (quintile-3)
-}
-*/
+gen hmc_scaled_q 		= hmc_q * scaling_hmc
+gen hmc_wor_scaled_q 	= hmc_wor_q * scaling_hmc_wor
+gen hmc_pred_scaled_q = hmc_medianized_predict_q * scaling_hmc_pred
 
 local _pred
 forvalues i = 1(1)2 {
@@ -102,5 +92,7 @@ gen the_year_obs = (!mi(last_year_obs) & year==last_year_obs) | (mi(last_year_ob
 
 tostring year, gen(year_s)
 gen ccyy_f = cname + " (" + year_s + ")"
+
+rename *_q *_a
 
 save "./DTA/`filename'.dta", replace
