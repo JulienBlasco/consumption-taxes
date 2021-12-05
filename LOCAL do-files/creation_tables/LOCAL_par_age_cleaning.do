@@ -24,7 +24,7 @@ drop if _merge == 2
 drop _merge
 
 // merge with summaries
-merge m:1 ccyy using ".\DTA\2021_10_29_summaries_`mod'.dta", ///
+merge m:1 ccyy using ".\DTA\2021_11_22_summaries_`mod'.dta", ///
 			keepusing(mean_hmc mean_dhi mean_hmchous mean_hmc_scaled ///
 			mean_hmc_wor_scaled mean_hmc_pred_scaled)
 drop if _merge == 2
@@ -94,5 +94,18 @@ tostring year, gen(year_s)
 gen ccyy_f = cname + " (" + year_s + ")"
 
 rename *_q *_a
+
+merge m:1 ccyy using ".\DTA\LOCAL_datasets\jblasc\18-09-09 availability matrix.dta", ///
+	keep(master match) nogenerate
+
+gen obs = !mi(hmc_a) & model2_ccyy
+gen obs_inc5 = !mi(inc_5_ours_a)
+gen obs_R = obs & rich_ccyy
+gen obs_inc5_R = obs_inc5 & rich_ccyy
+
+foreach indic in obs obs_inc5 obs_R obs_inc5_R {
+	egen M_`indic' = max(year) if `indic', by(cname)
+	gen L_`indic' = year == M_`indic' & M_`indic' != .
+}
 
 save "./DTA/`filename'.dta", replace
