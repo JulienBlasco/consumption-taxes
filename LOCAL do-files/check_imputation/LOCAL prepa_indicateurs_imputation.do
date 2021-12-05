@@ -8,11 +8,11 @@ rename (dhi hmc hmc_medianized_predict hmc_pred_scaled hmc_scaled hmc_wor ///
 	hmc_wor_pred_scaled hmc_wor_scaled inc_5* tax_eff* hmchous) =_q
 */
 
-local mod 10
-use 			".\DTA\2021_10_29_qu100_mod`mod'_1s4", clear
-append using 	".\DTA\2021_10_29_qu100_mod`mod'_2s4"
-append using 	".\DTA\2021_10_29_qu100_mod`mod'_3s4"
-append using 	".\DTA\2021_10_29_qu100_mod`mod'_4s4"
+local mod 2
+use 			".\DTA\2021_11_22_qu100_mod`mod'_1s4", clear
+append using 	".\DTA\2021_11_22_qu100_mod`mod'_2s4"
+append using 	".\DTA\2021_11_22_qu100_mod`mod'_3s4"
+append using 	".\DTA\2021_11_22_qu100_mod`mod'_4s4"
 	
 merge m:1 ccyy using ".\DTA\LOCAL_datasets\jblasc\18-09-09 availability matrix.dta", ///
 	keep(master match) nogenerate
@@ -60,4 +60,12 @@ gen error_prog = 100*(prog1050_predict/prog1050-1)
 gen diff_pred = T10_B50_inc_5_ours_pred - T10_B50_dhi
 gen diff = T10_B50_inc_5_ours- T10_B50_dhi
 
-egen max_year_obs = max(year) if !mi(inc_5_ours_q), by(cname)
+gen obs = !mi(hmc_q) & model2_ccyy
+gen obs_inc5 = !mi(inc_5_ours_q)
+gen obs_R = obs & rich_ccyy
+gen obs_inc5_R = obs_inc5 & rich_ccyy
+
+foreach indic in obs obs_inc5 obs_R obs_inc5_R {
+	egen M_`indic' = max(year) if `indic', by(cname)
+	gen L_`indic' = year == M_`indic' & M_`indic' != .
+}

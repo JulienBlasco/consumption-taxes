@@ -1,7 +1,5 @@
 // GRAPHS
 
-keep if year == max_year_obs & model2_ccyy & rich_ccyy
-
 // error by percentile
 capture drop year_temp
 egen year_temp = max(year) if !mi(relerror_d), by(cname)
@@ -104,6 +102,26 @@ graph hbar (first) diff diff_pred ///
 	order(1 "Observed consumption data" 2 "Imputed consumption data"))
 
 /* by quintile of income */
-graph bar (first) hmc_pred_scaled_quin hmc_scaled_quin ///
-	if !mi(hmc_scaled_quin), ///
-	by(ccyy_f, rescale) over(quintile)
+egen tot_hmc_medianized_predict = total(hmc_medianized_predict_q), by(ccyy)
+egen tot_hmc_medianized = total(hmc_medianized_q), by(ccyy)
+gen hmc_pred_quin_p = hmc_medianized_predict_quin/tot_hmc_medianized_predict
+gen hmc_quin_p = hmc_medianized_quin/tot_hmc_medianized
+graph bar (first) hmc_quin_p hmc_pred_quin_p if L_obs, ///
+	by(ccyy_f rich_ccyy, rescale) over(quintile) ///
+	legend(order(1 "Observed consumption" 2 "Imputed consumption"))
+graph export images/observed_imputed_quintile.eps, as(eps) preview(off) replace
+
+/* ici on regarde un peu si le modèle arriver à bien prédire l'hétérogénéité
+entre pays (si le rang, les valeurs relatives sont les mêmes) */
+preserve
+keep ccyy quintile hmc_pred_scaled_quin hmc_scaled_quin
+keep if !mi(hmc_scaled_quin)
+duplicates drop
+reshape long hmc_, i(ccyy quintile) j(variable, string)
+egen somme = total(hmc_), by(ccyy variable)
+replace hmc_ = hmc_/somme
+drop somme
+by quintile variable, sort : egen float rank = rank(hmc_)
+reshape wide hmc_ rank, i(quintile variable) j(ccyy, string)
+/* by quintile of income */
+graph bar (first) rank* , by(variable, rescale) over(quintile)
