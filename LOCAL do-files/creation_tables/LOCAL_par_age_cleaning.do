@@ -4,7 +4,7 @@ cd "G:"
 set varabbrev off, permanent
 
 // choose file
-local filename "2021_11_22_par_age_mod2"
+local filename "2020_09_21_par_age_mod2"
 local mod "mod2"
 //
 
