@@ -32,3 +32,9 @@ graph dot (first) error_old error_new if L_obs, ///
 	over(ccyy_f, sort(error_old)) ///
 	legend(order(1 "Imputed consumption (old model)" ///
 	2 "Imputed consumption (new model)"))
+graph export images/diff_old_newmodel_age.eps, as(eps) preview(off) replace
+
+* nombre de pays pour lesquels il y a amélioration ;	
+gen diff_rel = error_new/error_old
+count if diff_rel < 1 & L_obs
+count if diff_rel >= 1 & L_obs
