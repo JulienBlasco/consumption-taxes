@@ -16,8 +16,6 @@ append using 	".\DTA\2021_11_22_qu100_mod`mod'_4s4"
 	
 merge m:1 ccyy using ".\DTA\LOCAL_datasets\jblasc\18-09-09 availability matrix.dta", ///
 	keep(master match) nogenerate
-
-cd "N:/Réponse"
 	
 sort cname year dhi_quantiles
 drop if substr(ccyy, 1, 2) == "cn"

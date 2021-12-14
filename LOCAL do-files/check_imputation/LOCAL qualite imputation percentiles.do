@@ -1,5 +1,7 @@
 // GRAPHS
 
+cd "N:/Réponse"
+
 // error by percentile
 capture drop year_temp
 egen year_temp = max(year) if !mi(relerror_d), by(cname)

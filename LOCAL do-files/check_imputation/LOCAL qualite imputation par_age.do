@@ -1,9 +1,6 @@
 use "G:\DTA\2021_11_22_par_age_mod2.dta", clear
 cd "N:/Réponse"
 
-capture drop year_temp
-egen year_temp = max(year) if !mi(hmc_scaled_a) & !mi(hmc_pred_scaled_a), by(cname)
-
 egen tot_hmc_medianized_predict = total(hmc_medianized_predict_a), by(ccyy)
 egen tot_hmc = total(hmc_a), by(ccyy)
 gen hmc_age = hmc_a/tot_hmc
