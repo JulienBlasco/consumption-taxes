@@ -1,5 +1,5 @@
 cd "G:"
-use "G:\DTA\2021_10_29_summaries_mod2.dta", clear
+use "DTA\2021_11_22_summaries_mod2.dta", clear
 
 // préparation des données
 
@@ -34,11 +34,13 @@ twoway (scatter G_diff_ours kak, mlabel(ccyy)) || ///
 	xtitle("Régressivité (kakwani)") ///
 	legend(order(1 "Observé" 2 "Imputé"))
 
+	
 graph dot kak, over(ccyy_f, sort(kak))
 
 graph dot (asis)  Gini_ours Gini_ours_pred  Gini_pre if L_obs_inc5, ///
 	over(rich_ccyy, relabel(1 "*" 2 " ")) over(ccyy_f, sort(Gini_ours)) nofill ///
 	marker(1, msize(small) msymbol(T)) marker(2, msize(small) msymbol(T)) ///
+	exclude0  ylabel(0.2(0.1)0.7) ///
 	legend(title(Gini coefficients) cols(1) order(3 "Disposable Income" ///
 	1 "Inc5 (observed consumption data)" 2 "Inc5 (imputed consumption data)")) ///
 	note("* High inequality countries not used in the calibration of the model")
