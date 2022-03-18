@@ -24,7 +24,7 @@ keep if obs
 cd "E:\Notes\2021-03 Resubmit JPubEc\Réponse"
 // graphes
 
-graph dot (asis) error_prog, over(ccyy_f, sort(error_prog))
+graph dot (asis) error_prog wnoise1 if !mi(wnoise1), over(ccyy_f, sort(error_prog))
 graph dot (asis) error_prog if L_obs, over(ccyy_f, sort(error_prog))
 graph dot (asis) error_effect if L_obs_inc5_R, over(ccyy_f, sort(error_effect))
 
