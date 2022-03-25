@@ -261,7 +261,7 @@ graph export "E:\Notes\2020-10 Article\images\2020-11_regrimpact_itrc_mod1.eps",
 /* FIGURES IN APPENDIX WITH EGAP     */
 /************************************************/
 
-import delimited "D:\BLASCOLIEPP\Code\19-08-21 Datasets V6\CSV\19-08-23 V6 fr10 qu20 egap 0-1-2.csv", clear 
+import delimited "G:\CSV\19-08-23 V6 fr10 qu20 egap 0-1-2.csv", clear 
 keep extremegap quantile dhi tax_eff_ours tax_eff_ours_wor
 gen global_rate = tax_eff_ours/dhi
 gen global_rate_wor = tax_eff_ours_wor /dhi
@@ -278,3 +278,29 @@ twoway line global_rate global_rate_wor0  ///
  legend(position(6) cols(2)) lpattern(dash solid vshortdash longdash_dot) 
 
 graph export "E:\Notes\2020-10 Article\images\20-01_diff_rates.eps", as(eps) preview(on) replace
+
+
+import delimited "G:\CSV\19-08-23 V6 fr10 qu100 egap 0-1-2.csv", clear 
+keep extremegap quantile dhi tax_eff_ours tax_eff_ours_wor
+gen global_rate = tax_eff_ours/dhi
+gen global_rate_wor = tax_eff_ours_wor /dhi
+reshape wide tax_eff_ours_wor global_rate_wor , i(quantile dhi tax_eff_ours global_rate ) j(extremegap )
+
+label variable global_rate `""Constant tax rate" "on whole consumption""'
+label variable global_rate_wor0 `""Constant tax rate" "on non-housing consumption" "(present paper)""'
+label variable global_rate_wor1 `""Progressive tax rate" "(medium scenario)""'
+label variable global_rate_wor2 `""Progressive tax rate" "(extreme scenario)""'
+
+twoway line global_rate global_rate_wor0  ///
+ global_rate_wor1 global_rate_wor2 quantile, ///
+ xtitle(Income percentile) ytitle(Tax-to-income ratio) ///
+ legend(position(6) cols(2)) lpattern(dash solid vshortdash longdash_dot) 
+
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\reponse_reviews\images\22-03_diff_rates_0_100.eps", as(eps) preview(on) replace
+
+twoway line global_rate global_rate_wor0  ///
+ global_rate_wor1 global_rate_wor2 quantile if quantile <= 20, ///
+ xtitle(Income percentile) ytitle(Tax-to-income ratio) ///
+ legend(position(6) cols(2)) lpattern(dash solid vshortdash longdash_dot) 
+
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\reponse_reviews\images\22-03_diff_rates_0_20.eps", as(eps) preview(on) replace
