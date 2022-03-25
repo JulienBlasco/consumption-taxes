@@ -4,12 +4,12 @@ cd "G:"
 set varabbrev off, permanent
 
 // choose file
-local filename "2021_11_22_qu100_mod10_4s4"
+local filename "2021_11_22_qu100_mod2wprop4_4s4"
 local mod "mod10"
 //
 
 import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
-drop v1 v9
+drop v1 v12
 
 // get cnames and years
 merge m:1 ccyy using ".\DTA\match cname year.dta"
