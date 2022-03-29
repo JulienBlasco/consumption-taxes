@@ -8,19 +8,21 @@ gen effet_taxes_ours = T10_B50_inc5ours - T10_B50
 // taux d'effort par décile
 twoway line tax_prop tax_prop_ours decile_num ///
 	if decile_num != 11 & tax_prop_ours < 0.4 & central, ///
+	graphregion(fcolor(white)) legend(order(1 "BUA approach" 2 "ITRC (our method)")) ///
 	by(ccyy_f etude) yscale(range(0 0.1))
 		
 graph export images/taux_effort_central.eps, as(eps) preview (off) replace
 
 twoway (line tax_prop rescaled_tax_prop_ours decile_num) || (scatteri 0 5, msymbol(none)) ///
 	if decile_num != 11 & tax_prop_ours < 0.4 & central, ///
-	by(ccyy_f etude, rescale) legend(order(1 2))
+	by(ccyy_f etude, rescale) legend(order(1 "BUA approach" 2 "ITRC (our method)"))
 		
 graph export images/taux_effort_central_rescaled.eps, as(eps) preview (off) replace
 
 // différences de niveau
 graph dot (asis) effective_tax* if central & decile_num == 11, ///
-	over(ccyy_f, sort(effective_taxrate_ours)) nofill	
+	over(ccyy_f, sort(effective_taxrate_ours)) nofill	///
+	legend(order(1 "BUA approach" 2 "ITRC (our method)"))
 	
 graph export images/eff_taxrate_central.eps, as(eps) preview (off) replace
 
