@@ -1,40 +1,33 @@
 use "G:\DTA\ConsumptionTaxes_indicators_coremodel.dta", clear
 append using "G:\DTA\ConsumptionTaxes_indicators_xtnddmodel.dta", generate(model)
 
-egen min_model = min(model), by(ccyy)
-drop if min_model == 0 & model == 1
-drop min_model
+drop if (ccyy =="uk04" | ccyy == "uk99") & model == 0
+keep if year >= 1995
+
+gen mod0 = model == 0
+egen nb_mod0 = sum(mod0), by(cname)
+gen mod1 = model == 1
+egen nb_mod1 = sum(mod1), by(cname)
+drop if nb_mod0 != nb_mod1 & model == 0
+drop if nb_mod0 == nb_mod1 & model == 1
+drop mod0 nb_mod0 mod1 nb_mod1
 
 label define model 0 "Core" 1 "Extended"
 label values model model
+table cname model
+
+gen obs = !mi(M_inc5)
+table cname obs
+egen nb_obs = sum(obs), by(cname)
 
 egen max_year = max(year), by(cname)
-egen max_year_obs = max(year) if !mi(M_inc5), by(cname)
-egen max_year_core = max(year) if model == 0, by(cname)
-egen max_year_central = max(year) if (model == 0) | ///
-	inlist(cname, "United States", "Norway", "Sweden", "Australia"), by(cname)
-gen central = year == max_year_central
-	 
-gen M_tcons_central = M_tcons
-replace M_tcons_central = M_tcons_pred if mi(M_tcons_central)
-gen M_tax_central = M_tax
-replace M_tax_central = M_tax_pred if mi(M_tax_central)
-gen M_inc5_central = M_inc5
-replace M_inc5_central = M_inc5_pred if mi(M_inc5_central)
-gen Gini_inc5_central = Gini_inc5
-replace Gini_inc5_central = Gini_inc5_pred if mi(Gini_inc5_central)
-gen Gini_diff_central = Gini_diff
-replace Gini_diff_central = Gini_diff_pred if mi(Gini_diff_central)
-gen Kak_central = Kak
-replace Kak_central = Kak_pred if mi(Kak_central)
-gen RS_central = RS
-replace RS_central = RS_pred if mi(RS_central)
-gen Conc_tcons_central = Conc_tcons
-replace Conc_tcons_central = Conc_tcons_pred if mi(Conc_tcons_central)
-gen Conc_inc5_central = Conc_inc5
-replace Conc_inc5_central = Conc_inc5_pred if mi(Conc_inc5_central)
-gen Conc_tax_central = Conc_tax
-replace Conc_tax_central = Conc_tax_pred if mi(Conc_tax_central)
+
+twoway connected Gini_diff Gini_diff_pred year if nb_obs > 0, by(cname)
+
+foreach var in M_tcons M_tax M_inc5 Gini_inc5 Gini_diff Kak RS Conc_tcons Conc_inc5 Conc_tax {
+	gen `var'_central = `var'
+	replace `var'_central = `var'_pred if mi(`var')
+}
 
 merge 1:1 year cname using ///
 	"G:\Itrcs scalings\18-08-31_itrcs_scalings.dta" ///
@@ -63,6 +56,7 @@ merge 1:1 cname year using ///
 sort cname year
 replace standard_vat_rate = standard_vat_rate/100
 
+capture program drop tableau_tva
 program define tableau_tva
 	syntax namelist(name=pays)
 	
@@ -84,9 +78,6 @@ program define tableau_tva
 end
 
 tableau_tva United Kingdom
-
-graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\reponse_reviews\images\22-03_tab_tva_UK.eps", as(eps) preview(on) replace
-
 
 // give and idea of the variation over time of ITRCS
 
@@ -132,7 +123,8 @@ foreach pays in Denmark Greece Netherlands ///
 	Austria CzechRepublic Spain Germany Poland UnitedKingdom France ///
 	Australia Switzerland Mexico UnitedStates {
 		local plotlist_line `plotlist_line' || (line Gini_diff_pred`pays' year) 
-		local plotlist_scatter `plotlist_scatter' || (scatter G_`pays' year, mlabel(lab_`pays'))
+		local plotlist_scatter `plotlist_scatter' || (scatter G_`pays' year, ///
+		mlabel(lab_`pays'))
 }
 twoway `plotlist_line' || `plotlist_scatter', legend(off)
 restore
