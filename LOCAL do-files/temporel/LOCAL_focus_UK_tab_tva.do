@@ -42,9 +42,9 @@ keep if cname == "United Kingdom"
 keep year Gini_diff_pred itrc_ours Gini_pre standard_vat_rate Gini_diff_bloque
 rename (standard_vat_rate itrc_ours Gini_pre Gini_diff_pred ) (valeur#), addnumber
 reshape long valeur, i(year) j(indicateur)
-rename Gini_diff_bloque valeur_bis
-replace valeur_bis = . if indicateur != 4
-label variable valeur_bis "Inequality effect if ITRC was that of 2009"
+*rename Gini_diff_bloque valeur_bis
+*replace valeur_bis = . if indicateur != 4
+*label variable valeur_bis "Inequality effect if ITRC was that of 2009"
 label define label_indicateur ///
 	4 "Impact of consumption taxes on inequality" ///
 	2 "Effective tax rate (ITRC)" ///
@@ -55,3 +55,5 @@ twoway connected valeur* year if year >= 1995 & year <= 2015, ///
 	 yscale(range(0 0.1)) by(indicateur, yrescale title(Evolution of some VAT-related indicators in United Kingdom)) ///
 	ytitle(, size(zero))
 restore
+
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\reponse_reviews\images\22-03_tab_tva_UK.eps", as(eps) preview(on) replace
