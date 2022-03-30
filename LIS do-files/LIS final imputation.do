@@ -1233,9 +1233,17 @@ program oneccyy_summary
 			gen gini_`variable'=.
 		}
 	}
-
+	
+	// variance du log income
+	foreach variable in dhi inc_5_ours inc_5_ours_wor inc_5_ours_pred inc_5_ours_wor_pred inc1 inc2 inc3 inc4 {
+		qui gen log_`variable' = log(`variable')
+		qui sum log_`variable' [aw=hwgt*nhhmem] if scope, de
+		qui gen varlog_`variable' = r(Var)
+		drop log_`variable'
+	}
+	
 	keep if _n == 1
-	keep ccyy mean_* conc_dhi_* gini_*
+	keep ccyy mean_* conc_dhi_* gini_* varlog_*
 
 	order _all, alphabetic
 	order ccyy
@@ -1283,7 +1291,8 @@ preserve
 		}
 	  }
 	  
-	  keep $summeanvars $sumondhivars $sumonvarvars hwgt nhhmem scope scope_hmc dhi ccyy 
+	  keep $summeanvars $sumondhivars $sumonvarvars hwgt nhhmem scope scope_hmc dhi ccyy ///
+	  dhi inc_5_ours inc_5_ours_wor inc_5_ours_pred inc_5_ours_wor_pred inc1 inc2 inc3 inc4
 	  
 	  qui oneccyy_summary
 	  if (`first' == 1) {
