@@ -1,8 +1,8 @@
 /************************************************/
 /* FIGURES WITH SUMMARIES DATASET */
 /************************************************/
-cd "D:"
-cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6"
+cd "G:"
+*cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6"
 use ".\DTA\ConsumptionTaxes_indicators_coremodel.dta", clear
 append using ".\DTA\ConsumptionTaxes_indicators_xtnddmodel.dta", generate(model)
 
@@ -65,22 +65,22 @@ twoway (scatter Gini_inc5_pred Gini_inc5 if Gini_inc5<0.4, mlabel(ccyy) mlabvpos
 	(function y = x, range(0.25 0.4)), ///
 	ytitle(Imputed consumption) xtitle(Observed consumption) ///
 	legend(position(6) order(2 "45-degree line: no prediction error") title(Gini index of Post-Tax Income))
-graph export "E:\Notes\2020-10 Article\images\20-10_prediction_gini_posttax.eps", ///
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\20-10_prediction_gini_posttax.eps", ///
 	as(eps) preview(on) replace
 	
 	
 // Figure 4: Gini of market, gross, disposable and post tax income
 graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_inc5_central if central & !mi(Gini_inc2), ///
-	over(cname, sort(Gini_inc5_central) descending) ytitle(Gini index of income inequality) ///
+	over(ccyy_f, sort(Gini_inc5_central) descending) ytitle(Gini index of income inequality) ///
 	legend(order(1 "Market Income" 2 "Gross Income" 3 "Disposable Income" 4 "Post-Tax Income"))
-graph export "E:\Notes\2020-10 Article\images\2020-10_market_gross_di_posttax.eps", ///
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-10_market_gross_di_posttax.eps", ///
 	as(eps) preview(on) replace
 	
 
 // Figure 5: estimated rise in Gini index due to consumption taxes
-graph hbar (asis) Gini_diff_central if central, over(cname, sort(Gini_diff_central) descending) ///
+graph hbar (asis) Gini_diff_central if central, over(ccyy_f, sort(Gini_diff_central) descending) ///
 	ytitle(Regressive impact of consumption taxes (Gini points)) ylabel(0(0.01)0.05) graphregion(fcolor(white))
-graph export "E:\Notes\2020-10 Article\images\2020-10_regressive_impact.eps", as(eps) preview(on) replace
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-10_regressive_impact.eps", as(eps) preview(on) replace
 
 // Figure 6: redistributive impact vs effective tax rate
 capture {
@@ -91,8 +91,8 @@ capture {
 twoway (scatter Gini_diff_central effective_taxrate if model==0 & !central, mcolor(*0.3)) ///
 	(scatter Gini_diff_central effective_taxrate if central, mlabel(cname) mlabcolor(navy) mcolor(navy) msymbol(circle) mlabvpos(clock6)), ///
 	ytitle(Regressive impact of consumption taxes (Gini points)) ///
-	xtitle(Effective tax rate on consumption) graphregion(fcolor(white)) legend(off)
-graph export "E:\Notes\2020-10 Article\images\2020-10_regrimpact_itrc.eps", as(eps) preview(on) replace
+	xtitle(Implicit tax rate on consumption) graphregion(fcolor(white)) legend(off)
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-10_regrimpact_itrc.eps", as(eps) preview(on) replace
 	
 // Figure 7: Kakwani, global TIR and RS
 capture {
@@ -112,14 +112,14 @@ twoway (scatter pos_kak mean_rate if central, mlabel(cname)  ///
 	xtitle("Global tax-to-income ratio") ///
 	ytitle("Kakwani index of regressivity", axis(1)) ///
 	legend(off)
-graph export "E:\Notes\2020-10 Article\images\2020-10_kakwani_globalTIR.eps", as(eps) preview(on) replace
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-10_kakwani_globalTIR.eps", as(eps) preview(on) replace
 	
 	
 /************************************************/
 /* FIGURES WITH PERCENTILE DATASET */
 /************************************************/
-cd "D:"
-cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6"
+cd "G:"
+*cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6"
 use ".\DTA\ConsumptionTaxes_percentiles_coremodel.dta", clear
 append using ".\DTA\ConsumptionTaxes_percentiles_xtnddmodel.dta", generate(model)
 
@@ -150,16 +150,16 @@ replace propensity_central = propensity_pred if mi(propensity_central)
 gen tax_ratio_central = tax_ratio
 replace tax_ratio_central = tax_ratio_pred if mi(tax_ratio_central)
 
-// Figure 4: TIR for FR, US, DE, DK
+// Figure 4: TIR for FR, US, DE, DK	
 preserve
 keep if inlist(cname,"France", "United States", "Germany", "Denmark") & central
 keep ccyy tax_ratio_central percentile
 drop if tax_ratio_central > 0.4
-reshape wide tax_ratio_central , i(percentile) j(ccyy) string
+reshape wide tax_ratio_central, i(percentile) j(ccyy) string
 twoway line tax_ratio_central???? percentile, ytitle(Tax-to-income ratio) ///
-	legend(order(2 "Denmark" 3 "France" 1 "Germany" 4 "United States")) ///
+	legend(order(2 "Denmark (2013)" 3 "France (2010)" 1 "Germany (2013)" 4 "United States (2013)")) ///
 	graphregion(fcolor(white)) lpattern(solid dash vshortdash longdash_dot)
-graph export "E:\Notes\2020-10 Article\images\2020-10_TIR_qu100_dedkfrus.eps", ///
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-10_TIR_qu100_dedkfrus.eps", ///
 	as(eps) preview(on) replace
 restore
 
@@ -177,14 +177,14 @@ graph dot (mean) itrc_carey itrc_ours itrc_euro if !mi(itrc_ours), ///
 	ylabel(, angle(horizontal)) ///
 	legend(title(Average implicit tax rate for each definition, size(medium)) ///
 	order(1 "Carey et al. 2000" 2 "Present paper" 3 "Eurostat 2016") position(6) rows(1))
-graph export "E:\Notes\2020-10 Article\images\2020-11_averageITRCS.eps", as(eps) preview(on) replace
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-11_averageITRCS.eps", as(eps) preview(on) replace
 
 
 /************************************************/
 /* FIGURES IN APPENDIX WITH MOD 1     */
 /************************************************/
-cd "D:"
-cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6"
+cd "G:"
+*cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6"
 use ".\DTA\ConsumptionTaxes_indicators_xtnddmodel.dta", clear
 
 egen max_year = max(year), by(cname)
@@ -230,7 +230,7 @@ twoway (scatter Gini_inc5_pred Gini_inc5 if Gini_inc5<0.4, mlabel(ccyy) mlabvpos
 	(function y = x, range(0.25 0.4)), ///
 	ytitle(Imputed consumption (Lighter model)) xtitle(Observed consumption) ///
 	legend(position(6) order(2 "45-degree line: no prediction error") title(Gini index of Post-Tax Income))
-graph export "E:\Notes\2020-10 Article\images\2020-11_prediction_gini_posttax_mod1.eps", ///
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-11_prediction_gini_posttax_mod1.eps", ///
 	as(eps) preview(on) replace
 
 
@@ -238,7 +238,7 @@ graph export "E:\Notes\2020-10 Article\images\2020-11_prediction_gini_posttax_mo
 graph dot (asis) Gini_inc5_central Gini_pre if year == max_year, ///
 	over(cname, sort(Gini_pre) descending) ytitle(Gini index of income inequality) ///
 	legend(order(2 "Disposable Income" 1 "Post-consumption-tax"))
-graph export "E:\Notes\2020-10 Article\images\2020-11_gini_prepost_mod1.eps", as(eps) preview(on) replace
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-11_gini_prepost_mod1.eps", as(eps) preview(on) replace
 
 // Figure 6: redistributive impact vs effective tax rate
 capture {
@@ -255,7 +255,7 @@ twoway (scatter Gini_diff_central effective_taxrate if year != max_year, mcolor(
 	(scatter Gini_diff_central effective_taxrate if year == max_year, mlabel(cname) mlabcolor(navy) mcolor(navy) msymbol(circle)  mlabvpos(clockB6)), ///
 	ytitle(Regressive impact of consumption taxes (Gini points)) ///
 	xtitle(Effective tax rate on consumption) legend(off)
-graph export "E:\Notes\2020-10 Article\images\2020-11_regrimpact_itrc_mod1.eps", as(eps) preview(on) replace
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-11_regrimpact_itrc_mod1.eps", as(eps) preview(on) replace
 
 /************************************************/
 /* FIGURES IN APPENDIX WITH EGAP     */
@@ -277,7 +277,7 @@ twoway line global_rate global_rate_wor0  ///
  xtitle(Income vingtile) ytitle(Tax-to-income ratio) ///
  legend(position(6) cols(2)) lpattern(dash solid vshortdash longdash_dot) 
 
-graph export "E:\Notes\2020-10 Article\images\20-01_diff_rates.eps", as(eps) preview(on) replace
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\20-01_diff_rates.eps", as(eps) preview(on) replace
 
 
 import delimited "G:\CSV\19-08-23 V6 fr10 qu100 egap 0-1-2.csv", clear 
