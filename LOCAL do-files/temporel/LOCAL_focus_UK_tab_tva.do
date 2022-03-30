@@ -39,8 +39,8 @@ replace standard_vat_rate = standard_vat_rate/100
 
 preserve
 keep if cname == "United Kingdom"
-keep year Gini_diff_pred itrc_ours Gini_pre standard_vat_rate Gini_diff_bloque
-rename (standard_vat_rate itrc_ours Gini_pre Gini_diff_pred ) (valeur#), addnumber
+keep year Gini_diff_pred itrc_ours Gini_pre standard_vat_rate Gini_diff_bloque oecd_prop
+rename (standard_vat_rate itrc_ours Gini_pre Gini_diff_pred) (valeur#), addnumber
 reshape long valeur, i(year) j(indicateur)
 *rename Gini_diff_bloque valeur_bis
 *replace valeur_bis = . if indicateur != 4
@@ -49,7 +49,7 @@ label define label_indicateur ///
 	4 "Impact of consumption taxes on inequality" ///
 	2 "Effective tax rate (ITRC)" ///
 	3 "Inequality of disposable income" ///
-	1 "Standard VAT rate"
+	1 "Standard VAT rate" // 5 "propension agrégée" = oecd_prop à ajouter si on veut
 label values indicateur label_indicateur
 twoway connected valeur* year if year >= 1995 & year <= 2015, ///
 	 yscale(range(0 0.1)) by(indicateur, yrescale title(Evolution of some VAT-related indicators in United Kingdom)) ///
