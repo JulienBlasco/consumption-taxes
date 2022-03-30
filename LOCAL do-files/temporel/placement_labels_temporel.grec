@@ -1,0 +1,33 @@
+StataFileTM:00001:01100:GREC:                          :
+00004:00004:00001:
+*! classname: twowaygraph_g
+*! family: twoway
+*! date: 30 Mar 2022
+*! time: 00:45:26
+*! graph_scheme: plotplaincolor
+*! naturallywhite: 1
+*! end
+
+// File created by Graph Editor Recorder.
+// Edit only if you know what you are doing.
+
+.plotregion1.plot17.style.editstyle label(position(2)) editcopy
+// plot17 compass position
+
+.plotregion1.plot24.style.editstyle label(position(2)) editcopy
+// plot24 compass position
+
+.plotregion1.plot21.style.editstyle label(position(2)) editcopy
+// plot21 compass position
+
+.plotregion1.plot25.style.editstyle label(position(2)) editcopy
+// plot25 compass position
+
+.plotregion1.plot19.style.editstyle label(position(4)) editcopy
+// plot19 compass position
+
+.plotregion1.plot22.style.editstyle label(position(4)) editcopy
+// plot22 compass position
+
+
+// <end>
