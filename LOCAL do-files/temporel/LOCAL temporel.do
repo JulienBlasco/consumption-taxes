@@ -122,11 +122,14 @@ local plotlist_scatter (scatter G_Iceland year, mlabel(lab_Iceland))
 foreach pays in Denmark Greece Netherlands ///
 	Austria CzechRepublic Spain Germany Poland UnitedKingdom France ///
 	Australia Switzerland Mexico UnitedStates {
-		local plotlist_line `plotlist_line' || (line Gini_diff_pred`pays' year) 
+		local plotlist_line `plotlist_line' || (line Gini_diff_pred`pays' year, lpattern(solid)) 
 		local plotlist_scatter `plotlist_scatter' || (scatter G_`pays' year, ///
-		mlabel(lab_`pays'))
+		mlabel(lab_`pays')  msymbol(circle))
 }
-twoway `plotlist_line' || `plotlist_scatter', legend(off)
+twoway `plotlist_line' || `plotlist_scatter', legend(off) ///
+	play("G:/LOCAL do-files/temporel/placement_labels_temporel")
+	
+graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\reponse_reviews\images\22-03_g_diff_temporel.eps"
 restore
 
 graph hbox Gini_diff_pred if year >= 1995 & year <= 2013, ///
