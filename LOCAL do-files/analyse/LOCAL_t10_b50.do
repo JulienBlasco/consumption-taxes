@@ -57,11 +57,28 @@ egen T10_5 = max(inc5_central_dec), by(ccyy_f)
 egen B50_5 = sum(inc5_central_dec) if inlist(decile, 1, 2, 3, 4, 5), by(ccyy_f)
 gen T10_B50_inc5 = T10_5/B50_5
 
+egen T10_tax = max(tax_central_dec), by(ccyy_f)
+egen B50_tax = sum(tax_central_dec) if inlist(decile, 1, 2, 3, 4, 5), by(ccyy_f)
+gen T10_B50_tax = T10_tax/B50_tax
+
+gen T10_B50_taxratio = T10_B50_tax/T10_B50
+
+gen T10_TIR = T10_tax/T10
+gen B50_TIR = B50_tax/B50
+
+graph dot (first) T10_B50_taxratio if central, over(ccyy_f, sort(T10_B50_taxratio))
+
+preserve
+duplicates drop ccyy_f, force
+sort T10_B50_taxratio
+list ccyy_f T10_B50_taxratio if central
+
 preserve
 keep if central
 keep ccyy_f T10_B50 T10_B50_inc5 T10_B50_inc5_redresse
 save "./DTA/t10_b50.dta", replace
 
+preserve
 duplicates drop ccyy_f T10_B50 T10_B50_inc5 T10_B50_inc5_redresse, force
 drop if mi(T10_B50)
 
@@ -74,6 +91,8 @@ frmttable using tables/t10_b50_brut.tex, statmat(t10_b50) ///
 	ctitles("" "Disposable Income" "Post-tax" "Post-tax (redresse)") // vlines(000{10}0)
 filefilter tables/t10_b50_brut.tex tables/t10_b50.tex, ///
 	from("\BS_") to(" ") replace
-
+restore
+	
+preserve
 
 
