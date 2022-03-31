@@ -94,5 +94,14 @@ filefilter tables/t10_b50_brut.tex tables/t10_b50.tex, ///
 restore
 	
 preserve
+duplicates drop ccyy_f, force
+sort T10_B50_taxratio
 
+mkmat B50_TIR T10_TIR T10_B50_taxratio if central, matrix(t10_b50_tir) rownames(ccyy_f)
+
+frmttable using tables/t10_b50_tir_brut.tex, statmat(t10_b50_tir) ///
+	sdec(2) varlabels tex fragment nocenter replace ///
+	ctitles("" "TIR of B50" "TIR of T10" "Ratio") // vlines(000{10}0)
+filefilter tables/t10_b50_tir_brut.tex tables/t10_b50_tir.tex, ///
+	from("\BS_") to(" ") replace
 
