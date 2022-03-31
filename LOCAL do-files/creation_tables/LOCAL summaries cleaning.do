@@ -4,9 +4,9 @@ cd "G:"
 set varabbrev off, permanent
 
 // choose file
-local filename "2021_11_22_summaries_mod10"
+local filename "2021_11_22_summaries_mod10_egapcentralccyy"
 import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
-drop v1 v39
+drop v1 v48
 
 /*
 // pour régler le pb du summaries mod2

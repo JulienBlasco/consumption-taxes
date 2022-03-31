@@ -57,8 +57,14 @@ egen T10_5 = max(inc5_central_dec), by(ccyy_f)
 egen B50_5 = sum(inc5_central_dec) if inlist(decile, 1, 2, 3, 4, 5), by(ccyy_f)
 gen T10_B50_inc5 = T10_5/B50_5
 
-duplicates drop ccyy T10_B50 T10_B50_inc5 T10_B50_inc5_redresse, force
+preserve
+keep if central
+keep ccyy_f T10_B50 T10_B50_inc5 T10_B50_inc5_redresse
+save "./DTA/t10_b50.dta", replace
+
+duplicates drop ccyy_f T10_B50 T10_B50_inc5 T10_B50_inc5_redresse, force
 drop if mi(T10_B50)
+
 // stockage latex
 cd "N:\Article"
 mkmat T10_B50 T10_B50_inc5 T10_B50_inc5_redresse if central, matrix(t10_b50) rownames(ccyy_f)

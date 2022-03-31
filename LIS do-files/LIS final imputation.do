@@ -821,6 +821,7 @@ program define def_tax_and_transfer
   * For France, incomes are reported net of ssc, but gross of income tax
   replace marketincome = hil + (hic-hicvip) + hsscer + hic_csg_crds + hxits + pension_csg_crds if incometype == "France"
   
+  replace hitp = 0 if mi(hitp)
   gen inc1 = marketincome
   gen inc2 = marketincome + allpension + hitp // added 07/05/2020 --> private transfers included from inc2
   gen inc3 = marketincome + allpension + hitp + transfer
