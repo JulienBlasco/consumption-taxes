@@ -73,13 +73,13 @@ graph export images/t10_b50.eps, as(eps) preview (off) replace
 
 mkmat T10_B50 T10_B50_inc5 T10_B50_inc5ours ///
 	if decile_num == 1 & !mi(T10_B50_inc5) & central & (etude != 3 | percentile==1), ///
-	matrix(T10_B50) rownames(ccyy_f)
+	matrix(T10_B50_euromod) rownames(ccyy_f)
 
-frmttable using tables/T10_B50_brut.tex, statmat(T10_B50) ///
+frmttable using tables/T10_B50_euromod_brut.tex, statmat(T10_B50_euromod) ///
 	sdec(3) varlabels tex fragment nocenter replace ///
 	ctitles("" "Disposable income" "Post-Tax (bottom-up approach)" ///
 	"Post-Tax (ITRC)")
-filefilter tables/T10_B50_brut.tex tables/T10_B50.tex, from("\BS_") to(" ") replace
+filefilter tables/T10_B50_euromod_brut.tex tables/T10_B50_euromod.tex, from("\BS_") to(" ") replace
 
 graph bar (first) effet_taxes_ours effet_taxes  effet_taxes_ours_rescaled ///
 	if central, nofill ///

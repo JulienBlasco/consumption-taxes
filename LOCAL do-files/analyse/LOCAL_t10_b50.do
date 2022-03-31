@@ -1,3 +1,4 @@
+cd "G:"
 use ".\DTA\ConsumptionTaxes_percentiles_coremodel.dta", clear
 append using ".\DTA\ConsumptionTaxes_percentiles_xtnddmodel.dta", generate(model)
 
@@ -56,14 +57,15 @@ egen T10_5 = max(inc5_central_dec), by(ccyy_f)
 egen B50_5 = sum(inc5_central_dec) if inlist(decile, 1, 2, 3, 4, 5), by(ccyy_f)
 gen T10_B50_inc5 = T10_5/B50_5
 
-
+duplicates drop ccyy T10_B50 T10_B50_inc5 T10_B50_inc5_redresse, force
+drop if mi(T10_B50)
 // stockage latex
-
+cd "N:\Article"
 mkmat T10_B50 T10_B50_inc5 T10_B50_inc5_redresse if central, matrix(t10_b50) rownames(ccyy_f)
 
 frmttable using tables/t10_b50_brut.tex, statmat(t10_b50) ///
 	sdec(2) varlabels tex fragment nocenter replace ///
-	ctitles("Disposable Income" "Post-tax" "Post-tax (redresse)") /// vlines(000{10}0)
+	ctitles("" "Disposable Income" "Post-tax" "Post-tax (redresse)") // vlines(000{10}0)
 filefilter tables/t10_b50_brut.tex tables/t10_b50.tex, ///
 	from("\BS_") to(" ") replace
 
