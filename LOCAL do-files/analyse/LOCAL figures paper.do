@@ -172,12 +172,16 @@ use "./Itrcs scalings/18-08-31_itrcs_scalings.dta", replace
 tostring year, gen(year_s)
 gen ccyy_f = cname + " (" + year_s + ")"
 
+foreach pays in Japan Turkey Colombia "Costa Rica" Peru Canada Korea ///
+	Latvia "Slovak Republic" Israel Chile "Cabo Verde" Argentina {
+		drop if cname == "`pays'"
+	}
+
 graph dot (mean) itrc_carey itrc_ours itrc_euro if !mi(itrc_ours), ///
 	over(cname, sort(itrc_ours) label(angle(45))) vertical ///
 	ylabel(, angle(horizontal)) ///
-	legend(title(Average implicit tax rate for each definition, size(medium)) ///
-	order(1 "Carey et al. 2000" 2 "Present paper" 3 "Eurostat 2016") position(6) rows(1))
-graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-11_averageITRCS.eps", as(eps) preview(on) replace
+	legend(order(1 "Carey et al. 2000" 2 "Present paper" 3 "Eurostat 2016") position(6) rows(1))
+graph export "N:\Article\images\2020-11_averageITRCS.eps", as(eps) preview(on) replace
 
 
 /************************************************/
@@ -236,9 +240,9 @@ graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-11_prediction
 
 // Gini pre et post tax
 graph dot (asis) Gini_inc5_central Gini_pre if year == max_year, ///
-	over(cname, sort(Gini_pre) descending) ytitle(Gini index of income inequality) ///
+	over(ccyy_f, sort(Gini_pre) descending) ytitle(Gini index of income inequality) ///
 	legend(order(2 "Disposable Income" 1 "Post-consumption-tax"))
-graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-11_gini_prepost_mod1.eps", as(eps) preview(on) replace
+graph export "N:\Article\images\2020-11_gini_prepost_mod1.eps", as(eps) preview(on) replace
 
 // Figure 6: redistributive impact vs effective tax rate
 capture {

@@ -1,9 +1,11 @@
 use "G:\DTA\comparaison_euromod\comparaison_euromod.dta", clear
-cd "N:\Réponse"
+cd "N:\Article"
 
 gen effet_taxes = T10_B50_inc5 - T10_B50
 gen effet_taxes_ours_rescaled = T10_B50_inc5ours_rescaled - T10_B50
 gen effet_taxes_ours = T10_B50_inc5ours - T10_B50
+
+set scheme plotplaincolor
 
 // taux d'effort par décile
 twoway line tax_prop tax_prop_ours decile_num ///
@@ -13,9 +15,9 @@ twoway line tax_prop tax_prop_ours decile_num ///
 		
 graph export images/taux_effort_central.eps, as(eps) preview (off) replace
 
-twoway (line tax_prop rescaled_tax_prop_ours decile_num) || (scatteri 0 5, msymbol(none)) ///
+twoway (line tax_prop rescaled_tax_prop_ours decile_num, lpattern(solid solid)) || (scatteri 0 5, msymbol(none)) ///
 	if decile_num != 11 & tax_prop_ours < 0.4 & central, ///
-	by(ccyy_f etude, rescale) legend(order(1 "BUA approach" 2 "ITRC (our method)"))
+	by(ccyy_f, rescale) legend(order(1 "BUA approach" 2 "ITRC (our method)"))
 		
 graph export images/taux_effort_central_rescaled.eps, as(eps) preview (off) replace
 
