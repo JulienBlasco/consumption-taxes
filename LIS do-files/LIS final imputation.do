@@ -670,6 +670,28 @@ program preprocessing
 	 rename hmc hmc_old
 	 gen hmc = max(1, hmc_old) if !mi(hmc_old)
 	 
+	 /* scalings : means of households income and consumption */
+     egen dhi_mean = wtmean(dhi) if scope,  by(ccyy)  weight(hwgt)
+		
+	 rename hmc hmc_unscaled
+	 egen hmc_unscaled_mean = wtmean(hmc_unscaled) if scope, by(ccyy)  weight(hwgt) 
+	 egen hmc_unscaled_squared = hmc_unscaled ^ 2
+	 egen hmc_unscaled_squared_mean = wtmean(hmc_unscaled_squared) if scope, by(ccyy) weight(hwgt)
+	 
+	 gen beta = (oecd_prop * dhi_mean - hmc_unscaled_mean)/hmc_unscaled_squared_mean
+	 
+	 gen hmc = hmc_unscaled * (1+beta*hmc_unscaled)
+	 
+	 /* without rent */
+	 gen hmc_wor = hmc_unscaled-hmchous  
+	 egen hmc_wor_mean = wtmean(hmc_wor) if scope, by(ccyy)  weight(hwgt) 
+	 gen hmc_wor_squared = hmc_wor^2
+	 egen hmc_wor_squared_mean = wtmean(hmc_wor_squared) if scope, by(ccyy)  weight(hwgt) 
+	 
+	 gen beta_wor = (oecd_prop_wor * dhi_mean - hmc_wor_mean)/hmc_wor_squared_mean
+	 
+	 replace hmc_wor = hmc_wor * (1+beta_wor*hmc_wor)
+	 
 	 rename hchous hchous_old
 	 gen hchous = max(1, hchous_old) if !mi(hchous_old)
 	 
@@ -677,10 +699,10 @@ program preprocessing
     replace hsscee=0 if hsscee<0 // Employee
 	 
 	 /* equivalise */   
-	 foreach var in dhi hmc hmchous hchous $hvarsflow $hvarsnew {   
+	 foreach var in dhi hmc hmchous hmc_wor hchous $hvarsflow $hvarsnew {   
 	 capture gen `var'_equiv = `var'/(nhhmem^0.5)   
 	 }   
-	 foreach var in dhi hmc hmchous hchous $hvarsflow $hvarsnew {   
+	 foreach var in dhi hmc hmchous hmc_wor hchous $hvarsflow $hvarsnew {   
 	 replace `var' = `var'_equiv
 	 }   
 	 
@@ -999,24 +1021,18 @@ program variables_creation
 		}
 	
 	 // compute scaled variables, propensities, tax rates, etc.  
-	   
-	 egen dhi_mean = wtmean(dhi) if scope,  by(ccyy)  weight(hwgt*nhhmem) 
 		
-	 egen hmc_mean = wtmean(hmc) if scope, by(ccyy)  weight(hwgt*nhhmem) 
-	 gen hmc_scaled = oecd_prop * (dhi_mean/hmc_mean) * hmc  
+	 gen hmc_scaled = hmc  
 	 gen prop_scaled = hmc_scaled/dhi  
+	 gen hmc_wor_scaled = hmc_wor
+	 gen prop_wor_scaled = hmc_wor_scaled/dhi  
 	 
 	foreach def in carey euro ours {   
 	 gen tax_eff_`def' = hmc_scaled * itrc_`def'
 	 gen tax_rate_`def' = tax_eff_`def'/dhi  
 	 gen inc_5_`def' = dhi - tax_eff_`def'
 	 }  
-	 
-	 gen hmc_wor = hmc-hmchous  
-	 egen hmc_wor_mean = wtmean(hmc_wor) if scope, by(ccyy)  weight(hwgt*nhhmem) 
-	 gen hmc_wor_scaled = oecd_prop_wor * (dhi_mean/hmc_wor_mean) * hmc_wor  
-	 gen prop_wor_scaled = hmc_wor_scaled/dhi  
-	   	
+
 	 foreach def in carey euro ours {   
 	 gen tax_eff_`def'_wor = hmc_wor_scaled * itrc_`def'_wor  
 	 gen tax_rate_`def'_wor = tax_eff_`def'_wor/dhi  
@@ -1024,10 +1040,12 @@ program variables_creation
 	 }   
 	  
 	 // version with rent  
-	 egen hmc_medianized_predict_mean = wtmean(hmc_medianized_predict) if scope, by(ccyy)  weight(hwgt*nhhmem) 
+	 gen hmc_medianized_predict_unequiv = hmc_medianized_predict*(nhhmem^0.5)   
+	 egen hmc_medianized_predict_mean = wtmean(hmc_medianized_predict_unequiv) if scope, by(ccyy)  weight(hwgt) 
 	 gen hmc_pred_scaled = oecd_prop * (dhi_mean/hmc_medianized_predict_mean) * ///  
-		hmc_medianized_predict  
+		hmc_medianized_predict 
 	 gen prop_pred_scaled = hmc_pred_scaled/dhi  
+
 	   
 	 // compute taxes   
 	 foreach def in carey euro ours {   
