@@ -103,7 +103,8 @@ global availvars ///
 ******************************************/
 
 * III. a) Observed variables *
-global quvars_obs hmc dhi hmchous prop4 prop4_scaled			
+global quvars_obs hmc dhi hmchous prop4 prop4_scaled ///
+			hmc_unscaled hmc_scaled_unif
 
 * III. b) Predicted (imputed) variables *
 global quvars_pred	hmc_medianized_predict hmc_wor_pred_scaled	prop4_pred_scaled			
@@ -681,6 +682,7 @@ program preprocessing
 	 gen beta = (oecd_prop * dhi_mean - hmc_unscaled_mean)/hmc_unscaled_squared_mean
 	 
 	 gen hmc = hmc_unscaled * (1+beta*hmc_unscaled)
+	 gen hmc_scaled_unif = hmc_unscaled * oecd_prop * (dhi_mean/hmc_unscaled_mean)
 	 
 	 /* without rent */
 	 gen hmc_wor = hmc_unscaled-hmchous  
@@ -706,10 +708,10 @@ program preprocessing
 	 gen hmchous_scaled = oecd_P31CP041/oecd_income * (dhi_mean/hmchous_mean) * hmchous
 	 
 	 /* equivalise */   
-	 foreach var in dhi hmc hmchous hmc_wor hchous $hvarsflow $hvarsnew {   
+	 foreach var in dhi hmc hmc_unscaled hmchous hmc_wor hchous $hvarsflow $hvarsnew {   
 	 capture gen `var'_equiv = `var'/(nhhmem^0.5)   
 	 }   
-	 foreach var in dhi hmc hmchous hmc_wor hchous $hvarsflow $hvarsnew {   
+	 foreach var in dhi hmc hmc_unscaled hmchous hmc_wor hchous $hvarsflow $hvarsnew {   
 	 replace `var' = `var'_equiv
 	 }   
 	 
