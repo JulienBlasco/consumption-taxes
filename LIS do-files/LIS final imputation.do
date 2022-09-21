@@ -675,7 +675,7 @@ program preprocessing
 		
 	 rename hmc hmc_unscaled
 	 egen hmc_unscaled_mean = wtmean(hmc_unscaled) if scope, by(ccyy)  weight(hwgt) 
-	 egen hmc_unscaled_squared = hmc_unscaled ^ 2
+	 gen hmc_unscaled_squared = hmc_unscaled ^ 2
 	 egen hmc_unscaled_squared_mean = wtmean(hmc_unscaled_squared) if scope, by(ccyy) weight(hwgt)
 	 
 	 gen beta = (oecd_prop * dhi_mean - hmc_unscaled_mean)/hmc_unscaled_squared_mean
@@ -697,6 +697,13 @@ program preprocessing
 	 
     replace hsscer=0 if hsscer<0 // Employer
     replace hsscee=0 if hsscee<0 // Employee
+	 
+	 egen hmchous_mean = wtmean(hmchous) if scope, by(ccyy)  weight(hwgt*nhhmem)
+	 gen oecd_income = 	cond(oecd_prop_wor_def == 0, oecd_income_S14-oecd_P31CP042, ///
+						cond(oecd_prop_wor_def == 1, oecd_income_S14, ///
+						cond(oecd_prop_wor_def == 2, oecd_income_S14_S15-oecd_P31CP042, ///
+						cond(oecd_prop_wor_def == 3, oecd_income_S14_S15, .))))
+	 gen hmchous_scaled = oecd_P31CP041/oecd_income * (dhi_mean/hmchous_mean) * hmchous
 	 
 	 /* equivalise */   
 	 foreach var in dhi hmc hmchous hmc_wor hchous $hvarsflow $hvarsnew {   
@@ -1056,13 +1063,6 @@ program variables_creation
 	   
 	   
 	 // version without rent 
-	 egen hmchous_mean = wtmean(hmchous) if scope, by(ccyy)  weight(hwgt*nhhmem)
-	 gen oecd_income = 	cond(oecd_prop_wor_def == 0, oecd_income_S14-oecd_P31CP042, ///
-						cond(oecd_prop_wor_def == 1, oecd_income_S14, ///
-						cond(oecd_prop_wor_def == 2, oecd_income_S14_S15-oecd_P31CP042, ///
-						cond(oecd_prop_wor_def == 3, oecd_income_S14_S15, .))))
-	 gen hmchous_scaled = oecd_P31CP041/oecd_income * (dhi_mean/hmchous_mean) * hmchous
-	 
 	 gen hmc_wor_pred = hmc_pred_scaled - hmchous_scaled
 	 egen hmc_wor_pred_mean = wtmean(hmc_wor_pred) if scope, by(ccyy) weight(hwgt*nhhmem)  
 	 gen hmc_wor_pred_scaled = oecd_prop_wor * (dhi_mean/hmc_wor_pred_mean) * ///  
