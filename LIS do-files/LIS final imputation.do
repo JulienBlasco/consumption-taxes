@@ -636,7 +636,7 @@ program preprocessing
 	 }
 
 	 gen dhi_obs 		= dhi_ccyy 		& !mi(dhi)
-	 gen hmc_obs 		= hmc_ccyy		& !mi(hmc)
+	 gen hmc_obs 		= hmc_ccyy		& !mi(hmc) & !mi(oecd_prop)
 	 gen model0_obs		= 1
 	 gen model1_obs 	= model1_ccyy 	& !mi(dhi, nhhmem, hpartner)
 	 gen model2_obs 	= model2_ccyy 	& model1_obs & !mi(hchous, own, agecat)
