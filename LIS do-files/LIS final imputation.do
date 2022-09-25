@@ -708,10 +708,10 @@ program preprocessing
 	 gen hmchous_scaled = oecd_P31CP041/oecd_income * (dhi_mean/hmchous_mean) * hmchous
 	 
 	 /* equivalise */   
-	 foreach var in dhi hmc hmc_unscaled hmchous hmc_wor hchous $hvarsflow $hvarsnew {   
+	 foreach var in dhi hmc hmc_unscaled hmc_scaled_unif hmchous hmc_wor hchous $hvarsflow $hvarsnew {   
 	 capture gen `var'_equiv = `var'/(nhhmem^0.5)   
 	 }   
-	 foreach var in dhi hmc hmc_unscaled hmchous hmc_wor hchous $hvarsflow $hvarsnew {   
+	 foreach var in dhi hmc hmc_unscaled hmc_scaled_unif hmchous hmc_wor hchous $hvarsflow $hvarsnew {   
 	 replace `var' = `var'_equiv
 	 }   
 	 
@@ -1410,4 +1410,4 @@ program display_availability
 * Call function on desired datasets    
 ***************************************/   
 
-main_program $ccyy_to_imput, runmodel(22_11_2021) model(10) summaries test
+main_program $ccyy_to_imput, savemodel(21_09_2022) model(10) quantiles(10)
