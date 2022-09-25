@@ -1,5 +1,5 @@
 use "G:\DTA\comparaison_euromod\comparaison_euromod.dta", clear
-cd "N:\Article"
+cd "N:\"
 
 gen effet_taxes = T10_B50_inc5 - T10_B50
 gen effet_taxes_ours_rescaled = T10_B50_inc5ours_rescaled - T10_B50
@@ -24,7 +24,7 @@ graph export images/taux_effort_central_rescaled.eps, as(eps) preview (off) repl
 // différences de niveau
 graph dot (asis) effective_tax* if central & decile_num == 11, ///
 	over(ccyy_f, sort(effective_taxrate_ours)) nofill	///
-	legend(order(1 "BUA approach" 2 "ITRC (our method)"))
+	legend(order(1 "Bottom-up approach" "(statutory rates)" 2 "ITRC (present paper)"))
 	
 graph export images/eff_taxrate_central.eps, as(eps) preview (off) replace
 
