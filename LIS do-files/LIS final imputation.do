@@ -107,7 +107,7 @@ global quvars_obs hmc dhi hmchous prop4 prop4_scaled ///
 			hmc_unscaled hmc_scaled_unif
 
 * III. b) Predicted (imputed) variables *
-global quvars_pred	hmc_medianized_predict hmc_wor_pred_scaled	prop4_pred_scaled			
+global quvars_pred	hmc_medianized_predict hmc_pred_scaled hmc_wor_pred_scaled	prop4_pred_scaled			
 
 * III. c) Variables in the quantiles
 global quvars $quvars_obs $quvars_pred
