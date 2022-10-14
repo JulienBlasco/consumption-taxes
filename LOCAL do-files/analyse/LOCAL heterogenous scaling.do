@@ -38,3 +38,27 @@ twoway (connected hmc_unscaled_q scaled_unif scaled_heter dhi_q) || ///
 	 xtitle(, size(small))
 
 graph export "N:\images\2022-10_heterogenous_deciles.eps", as(eps) preview(on) replace
+
+// SUMMARIES FIGURE
+cd "G:"
+
+set scheme plotplaincolor
+
+use ".\DTA\scaling_heter_summaries_centralccyy.dta", clear
+keep ccyy_f Gini_ours_pred Gini_ours
+rename (Gini_ours_pred Gini_ours) =_h
+
+merge 1:1 ccyy_f using ".\DTA\scaling_unif_summaries_centralccyy.dta", keepusing(Gini*)
+
+gen Gini_inc5 = Gini_ours
+replace Gini_inc5 = Gini_ours_pred if mi(Gini_ours)
+gen Gini_inc5_h = Gini_ours_h
+replace Gini_inc5_h = Gini_ours_pred_h if mi(Gini_ours_h)
+
+// Figure 4: Gini of market, gross, disposable and post tax income
+graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_inc5 Gini_inc5_h, ///
+	over(ccyy_f, sort(Gini_inc5) descending) ytitle(Gini index of income inequality)	///
+	marker(4, msize(medsmall) msymbol(plus)) marker(5, msymbol(lgx)) exclude0 ///
+	legend(order(1 "Market Income" 2 "Gross Income" 3 "Disposable Income" 4 "Post-Tax Income (uniform)" 5 "Post-Tax Income (heterogenous)"))
+	
+graph export "N:\images\2022-10_heterogenous_gini.eps", as(eps) preview(on) replace
