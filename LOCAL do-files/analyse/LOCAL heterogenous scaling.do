@@ -62,3 +62,9 @@ graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_inc5 Gini_inc5_h, ///
 	legend(order(1 "Market Income" 2 "Gross Income" 3 "Disposable Income" 4 "Post-Tax Income (uniform)" 5 "Post-Tax Income (heterogenous)"))
 	
 graph export "N:\images\2022-10_heterogenous_gini.eps", as(eps) preview(on) replace
+
+preserve
+gsort -Gini_inc5
+export excel ccyy_f Gini_inc2 Gini_inc3 Gini_pre Gini_inc5 Gini_inc5_h using "gini_heterogenous.xlsx", ///
+	firstrow(variables)
+restore
