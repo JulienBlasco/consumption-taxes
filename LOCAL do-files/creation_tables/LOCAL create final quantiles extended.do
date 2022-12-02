@@ -1,11 +1,7 @@
 /* CHANGE DIRECTORY */
-cd "D:"
-capture noisily cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6"
+cd "G:"
 
-use ".\DTA\2020_09_21 qu100 mod1 1s4", clear
-append using ".\DTA\2020_09_21 qu100 mod1 2s4.dta"
-append using ".\DTA\2020_09_21 qu100 mod1 3s4.dta"
-append using ".\DTA\2020_09_21 qu100 mod1 4s4.dta"
+use "./DTA/20_11_2022_mod1_qu100_ccyypapier", clear
 
 keep ccyy ccyy_f cname year dhi_quantiles ///
 	dhi_q hmc_scaled_q hmc_pred_scaled_q ///
@@ -21,17 +17,7 @@ order ccyy ccyy_f cname year dhi_quantiles ///
 	global_rate_ours_q global_rate_ours_pred_q ///
 	inc_5_ours_q inc_5_ours_pred_q
 	
-preserve
-import delimited ".\CSV\2020_09_21 availability mod1.csv", clear delimiter(space, collapse)
-drop v1 v17
-capture noisily save ".\DTA\2020_09_21 availability mod1.dta"
-restore
-
-merge m:1 ccyy using ".\DTA\2020_09_21 availability mod1.dta", ///
-	keep(master match) keepusing(av_inc_5_ours_pred av_inc_5_ours) nogenerate
-
-drop if (mi(hmc_scaled_q) & mi(hmc_pred_scaled_q)) | (av_inc_5_ours_pred < 0.9 & av_inc_5_ours < 0.9)
-drop av_inc_5_ours*
+drop if (mi(hmc_scaled_q) & mi(hmc_pred_scaled_q))
 
 rename *_q *
 rename dhi_quantiles percentile
@@ -68,7 +54,7 @@ rents are NOT removed from taxable consumption, and the imputation model DOES NO
 the value of housing as an independant variable. Hence, the imputed consumption is a bit less ///
 accurate whereas the regressivity of consumption taxes are slightly overestimated.
 
-note: Version of the model: 2020.09.21
+note: Version of the model: 2022.11.20
 
 note: Use carefully: very high propensities to consume observed at the first percentiles ///
 may not be reliable.
@@ -79,4 +65,4 @@ note: Credits: Julien Blasco, Elvire Guillaud, Michael Zemmour, ///
 "How regressive are consumptions taxes? An international perspective with microsimulation", ///
 February 2020
 
-save ".\DTA\ConsumptionTaxes_percentiles_xtnddmodel", replace
+save ".\DTA\ConsumptionTaxes_percentiles_xtnddmodel_ccyypapier", replace

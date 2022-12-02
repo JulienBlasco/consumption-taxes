@@ -1,11 +1,7 @@
 /* CHANGE DIRECTORY */
-cd "D:"
-capture noisily cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6"
+cd "G:"
 
-use ".\DTA\2020_09_21 qu100 mod10 1s4", clear
-append using ".\DTA\2020_09_21 qu100 mod10 2s4.dta"
-append using ".\DTA\2020_09_21 qu100 mod10 3s4.dta"
-append using ".\DTA\2020_09_21 qu100 mod10 4s4.dta"
+use "./DTA/20_11_2022_mod2_qu100_ccyypapier", clear
 
 drop year_s hmc_q hmchous_q hmc_medianized_predict_q oecd_prop_wor ///
 oecd_prop itrc_carey_wor itrc_euro_wor itrc_carey itrc_euro itrc_ours ///
@@ -29,17 +25,7 @@ order ccyy ccyy_f cname year dhi_quantiles ///
 	global_rate_ours_wor_q global_rate_ours_wor_pred_q ///
 	inc_5_ours_wor_q inc_5_ours_wor_pred_q
 	
-preserve
-import delimited ".\CSV\2020_09_21 availability mod0.csv", clear delimiter(space, collapse)
-drop v1 v17
-capture noisily save ".\DTA\2020_09_21 availability mod0.dta"
-restore
-
-merge m:1 ccyy using ".\DTA\2020_09_21 availability mod0.dta", ///
-	keep(master match) keepusing(av_inc_5_ours_wor_pred av_inc_5_ours_wor) nogenerate
-
-drop if (mi(hmc_wor_scaled_q) & mi(hmc_wor_pred_scaled_q)) | (av_inc_5_ours_wor_pred < 0.9 & av_inc_5_ours_wor < 0.9)
-drop av_inc_5_ours_wor*
+drop if (mi(hmc_wor_scaled_q) & mi(hmc_wor_pred_scaled_q))
 
 rename *_q *
 rename dhi_quantiles percentile
@@ -75,7 +61,7 @@ note: This data contains variable percentiles from the core model: ///
 rents are removed from taxable consumption, and the imputation model uses ///
 the value of housing as an independant variable.
 
-note: Version of the model: 2020.09.21
+note: Version of the model: 2022.11.20
 
 note: Use carefully: very high propensities to consume observed at the first percentiles ///
 may not be reliable.
@@ -86,4 +72,4 @@ note: Credits: Julien Blasco, Elvire Guillaud, Michael Zemmour, ///
 "How regressive are consumptions taxes? An international perspective with microsimulation", ///
 February 2020
 
-save ".\DTA\ConsumptionTaxes_percentiles_coremodel", replace
+save ".\DTA\ConsumptionTaxes_percentiles_coremodel_ccyypapier", replace
