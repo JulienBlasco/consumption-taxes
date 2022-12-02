@@ -4,7 +4,7 @@ cd "G:"
 set varabbrev off, permanent
 
 // choose file
-local filename "2021_11_22_summaries_mod10_egapcentralccyy"
+local filename "20_11_2022 mod1 summaries"
 import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
 drop v1 v48
 

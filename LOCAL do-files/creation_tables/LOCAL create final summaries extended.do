@@ -1,6 +1,6 @@
 /* CHANGE DIRECTORY */
 cd "G:"
-use ".\DTA\2021_10_29_summaries_mod1", clear
+use ".\DTA\20_11_2022 mod10 summaries", clear
 
 global redineq_datasets ///
 	at04 at07 at13 au03 au08 au10 ca04 ca07 ca10 ca13 ch00 ch02 ch04 ch07 ch10 ch13 cz02 cz04 ///
@@ -58,7 +58,7 @@ drop if (mi(mean_hmc_pred_scaled) & mi(mean_hmc_scaled)) | (av_inc_5_ours_pred <
 drop av_inc_5_ours*
 */
 
-drop if mean_scope < 0.9 | (mi(inc_5_ours_mean) & mi(inc_5_ours_pred_mean))
+drop if (mi(inc_5_ours_mean) & mi(inc_5_ours_pred_mean))
 drop mean_scope
 
 rename (mean_dhi mean_hmc_pred_scaled mean_hmc_scaled ///
@@ -133,7 +133,7 @@ rents are NOT removed from taxable consumption, and the imputation model DOES NO
 the value of housing as an independant variable. Hence, the imputed consumption is a bit less ///
 accurate whereas the regressivity of consumption taxes are slightly overestimated
 
-note: Version of the model: 2021.10.29
+note: Version of the model: 2022.11.20
 
 note: Version of the dataset: TS
 
@@ -141,4 +141,4 @@ note: Credits: Julien Blasco, Elvire Guillaud, Michael Zemmour, ///
 "How regressive are consumptions taxes? An international perspective with microsimulation", ///
 February 2020
 
-save ".\DTA\ConsumptionTaxes_indicators_xtnddmodel_211029", replace
+save ".\DTA\ConsumptionTaxes_indicators_xtnddmodel", replace

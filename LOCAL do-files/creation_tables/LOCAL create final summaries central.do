@@ -1,8 +1,7 @@
 /* CHANGE DIRECTORY */
-cd "D:"
-cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6"
+cd "G:"
 
-use ".\DTA\2020_09_21 summaries mod10v2", clear
+use ".\DTA\20_11_2022 mod2 summaries", clear
 
 global redineq_datasets ///
 	at04 at07 at13 au03 au08 au10 ca04 ca07 ca10 ca13 ch00 ch02 ch04 ch07 ch10 ch13 cz02 cz04 ///
@@ -62,7 +61,8 @@ drop if (mi(mean_hmc_wor_pred_scaled) & mi(mean_hmc_wor_scaled)) | (av_inc_5_our
 drop av_inc_5_ours_wor*
 */
 
-drop if mean_scope < 0.9 | (mi(inc_5_ours_wor_mean) & mi(inc_5_ours_wor_pred_mean))
+
+drop if (mi(inc_5_ours_wor_mean) & mi(inc_5_ours_wor_pred_mean))
 drop mean_scope
 
 rename (mean_dhi mean_hmc_wor_pred_scaled mean_hmc_wor_scaled ///
@@ -135,7 +135,7 @@ note: This data contains aggregated indicators from the core model: ///
 rents are removed from taxable consumption, and the imputation model uses ///
 the value of housing as an independant variable.
 
-note: Version of the model: 2020.09.21
+note: Version of the model: 2022.11.20
 
 note: Version of the dataset: TS
 
