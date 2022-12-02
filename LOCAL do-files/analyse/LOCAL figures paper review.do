@@ -5,7 +5,6 @@
 cd "G:"
 use ".\DTA\ConsumptionTaxes_indicators_coremodel.dta", clear
 append using ".\DTA\ConsumptionTaxes_indicators_xtnddmodel.dta", generate(model)
-append using ".\DTA\no13_ConsumptionTaxes_indicators_xtnddmodel.dta"
 
 egen min_model = min(model), by(ccyy)
 drop if min_model == 0 & model == 1
@@ -61,19 +60,19 @@ twoway (scatter Gini_inc5_pred Gini_inc5 if Gini_inc5<0.4, mlabel(ccyy) mlabvpos
 	(function y = x, range(0.25 0.4)), ///
 	ytitle(Imputed consumption) xtitle(Observed consumption) ///
 	legend(position(6) order(2 "45-degree line: no prediction error") title(Gini index of Post-Tax Income))
-graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\20-10_prediction_gini_posttax.eps", ///
+graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\22-12_prediction_gini_posttax.eps", ///
 	as(eps) preview(on) replace
 
 // Figure 4: estimated rise in Gini index due to consumption taxes
 graph hbar (asis) Gini_diff_central if ccyy_papier == 1, over(ccyy_lighter) nofill over(ccyy_f, sort(Gini_diff_central) descending) ///
 	ytitle(Regressive impact of consumption taxes (Gini points)) ylabel(0(0.01)0.05) graphregion(fcolor(white))
-graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-10_regressive_impact.eps", as(eps) preview(on) replace
+graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\22-12_regressive_impact.eps", as(eps) preview(on) replace
 
 // Figure 5: Gini of market, gross, disposable and post tax income
 graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_inc5_central if ccyy_papier == 1 & !mi(Gini_inc2), ///
 	over(ccyy_lighter) nofill over(ccyy_f, sort(Gini_inc5_central) descending) ytitle(Gini index of income inequality) ///
 	legend(order(1 "Market Income" 2 "Gross Income" 3 "Disposable Income" 4 "Post-Tax Income"))
-graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-10_market_gross_di_posttax.eps", ///
+graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\22-12_market_gross_di_posttax.eps", ///
 	as(eps) preview(on) replace
 
 // Figure 6: redistributive impact vs effective tax rate
@@ -86,7 +85,7 @@ twoway (scatter Gini_diff_central effective_taxrate if ccyy_papier != 1, mcolor(
 	(scatter Gini_diff_central effective_taxrate if ccyy_papier == 1, mlabel(cname) mlabcolor(navy) mcolor(navy) msymbol(circle) mlabvpos(clock6)), ///
 	ytitle(Regressive impact of consumption taxes (Gini points)) ///
 	xtitle(Implicit tax rate on consumption) graphregion(fcolor(white)) legend(off)
-graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-10_regrimpact_itrc.eps", as(eps) preview(on) replace
+graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\22-12_regrimpact_itrc.eps", as(eps) preview(on) replace
 
 // Figure 7: Kakwani, global TIR and RS
 capture {
@@ -106,5 +105,5 @@ twoway (scatter pos_kak mean_rate if ccyy_papier == 1, mlabel(cname)  ///
 	xtitle("Global tax-to-income ratio") ///
 	ytitle("Kakwani index of regressivity", axis(1)) ///
 	legend(off)
-graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-10_kakwani_globalTIR.eps", as(eps) preview(on) replace
+graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\22-12_kakwani_globalTIR.eps", as(eps) preview(on) replace
 
