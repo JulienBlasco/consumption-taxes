@@ -32,37 +32,46 @@ foreach ccyy in br13 hu12 it10 no13 za12 se05 ch13 uk13 {
 	replace ccyy_lighter = "*" if ccyy == "`ccyy'"
 }
 
-// Figure 2 : 
-gen scope_fig2 = dhi_ccyy & model2_ccyy & hmc_ccyy & wor_ccyy & ///
-	!mi(itrc_ours_wor) & !mi(oecd_prop_wor)
-*clist ccyy if scope_fig2, noobs
 
 // Figure 4 :
-gen scope_fig4_core = ccyy_papier == 1 & ccyy_lighter == " " 
-*clist ccyy if scope_fig4_core, noobs// Figure 5 :
+gen scope_fig4_lighter = ccyy_papier == 1 & ccyy_lighter == "*" 
+*clist ccyy if scope_fig4_lighter, noobs// Figure 5 :
 gen fourlevers = .
 foreach ccyy in at13 cz13 dk13 ee13 fi13 fr10 de13 gr13 is10 ie10 nl13 es13 ///
 	uk13 au10 it10 se05 us13 no13 {
 		replace fourlevers = 1 if ccyy == "`ccyy'"
 }
-gen scope_fig5_core = ccyy_papier == 1 & ccyy_lighter == " " & fourlevers == 1
-*clist ccyy if scope_fig5_core, noobs
+gen scope_fig5_lighter= ccyy_papier == 1 & ccyy_lighter == "*" & fourlevers == 1
+*clist ccyy if scope_fig5_lighter, noobs
 
-// Figure 6
-gen scope_fig6 = dhi_ccyy & model2_ccyy & wor_ccyy & !mi(itrc_ours_wor) & !mi(oecd_prop_wor)
-clist ccyy if scope_fig6, noobs
-
-// Figure 7
-gen scope_fig7_core = ccyy_papier == 1 & ccyy_lighter == " "
-*clist ccyy if scope_fig7_core, noobs
+// Figure 8
+gen scope_fig8 = cname == "United Kingdom"
+clist ccyy if scope_fig8, noobs
 
 // Figure 13
-gen scope_fig13 = scope_fig5_core
+gen scope_fig13 = scope_fig5_lighter
 
-// Figure A.a
-gen scope_figA = scope_fig2
+// Figure A.b
+gen scope_figAb = dhi_ccyy & model1_ccyy & hmc_ccyy & ///
+	!mi(itrc_ours) & !mi(oecd_prop)
+*clist ccyy if scope_figAb, noobs
+
+// Figure E.a
+gen scope_figEa = ccyy_papier == 1 & ccyy_lighter == " " 
+*clist ccyy if scope_figEa, noobs
+
+// Figure E.b
+gen scope_figEb = dhi_ccyy & model1_ccyy & !mi(itrc_ours) & !mi(oecd_prop)
+clist ccyy if scope_figEb, noobs
+
+// Figure G.a
+gen scope_figGa = 0	
+foreach cname in Denmark Greece Iceland Poland "Czech Republic" "United Kingdom" ///
+	Austria Spain Netherlands Germany France Australia Switzerland Mexico "United States" {
+	replace scope_figGa = 1 if cname == "`cname'"
+	}
 
 
 // print ccyy
-clist ccyy if scope_fig2 | scope_fig4_core | scope_fig5_core | scope_fig6 | ///
-	scope_fig7_core | scope_fig13 | scope_figA, noobs
+clist ccyy if scope_fig4_lighter | scope_fig5_lighter | scope_fig8 | scope_fig13 | ///
+	scope_figAb | scope_figEa | scope_figEb | scope_figGa, noobs
