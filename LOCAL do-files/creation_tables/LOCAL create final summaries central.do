@@ -1,8 +1,7 @@
 /* CHANGE DIRECTORY */
-cd "D:"
-cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6"
+cd "G:"
 
-use ".\DTA\2020_09_21 summaries mod10v2", clear
+use ".\DTA\2022_11_20_summaries_mod2_ccyypapier", clear
 
 global redineq_datasets ///
 	at04 at07 at13 au03 au08 au10 ca04 ca07 ca10 ca13 ch00 ch02 ch04 ch07 ch10 ch13 cz02 cz04 ///
@@ -17,7 +16,7 @@ global red_net_datasets ///
 	at00 be00 gr00 hu05 hu07 hu09 hu12 hu99 ie00 lu00 mx00 mx02 mx04 mx08 mx10 mx12 mx98 si10 ///
 	/*it00*/ // Removed es00 and it98 in this version since they contain dupicates and missing values respectively in pil.
 
-drop conc_dhi_hmc conc_dhi_dhi conc_dhi_hmc_medianized_predict conc_dhi_inc_5_ours ///
+capture drop conc_dhi_hmc conc_dhi_dhi conc_dhi_hmc_medianized_predict conc_dhi_inc_5_ours ///
 	conc_dhi_inc_5_ours_pred conc_dhi_tax_eff_ours conc_dhi_tax_eff_ours_pred ///
 	gini_dhi_scope_hmc gini_inc4 Gini_ours Gini_ours_pred mean_hchous ///
 	mean_hitp mean_hmc mean_hmc_pred_scaled mean_hmc_scaled mean_hmchous ///
@@ -44,9 +43,6 @@ replace fourlevers = 0 if inlist(ccyy, "at00", "be00", "gr00", "hu05", "hu07", "
 	| inlist(ccyy, "lu00", "mx00", "mx02", "mx04", "mx08", "mx10", "mx12", "mx98", "si10")
 replace fourlevers = 0 if inlist(ccyy, "kr06", "jp08", "is04") | inlist(cname, "Poland", "Switzerland")
 
-foreach var4L in mean_inc1 mean_inc2 mean_inc3 Gini_inc1 Gini_inc2 Gini_inc3 {
-	replace `var4L' = . if fourlevers != 1
-}
 
 /*
 preserve
@@ -62,12 +58,6 @@ drop if (mi(mean_hmc_wor_pred_scaled) & mi(mean_hmc_wor_scaled)) | (av_inc_5_our
 drop av_inc_5_ours_wor*
 */
 
-drop if mean_scope < 0.9 | (mi(inc_5_ours_wor_mean) & mi(inc_5_ours_wor_pred_mean))
-drop mean_scope
-
-rename (mean_dhi mean_hmc_wor_pred_scaled mean_hmc_wor_scaled ///
-	mean_inc1 mean_inc2 mean_inc3) ///
-	(M_dhi M_tcons_pred M_tcons M_inc1 M_inc2 M_inc3)
 	
 rename itrc_ours_wor effective_taxrate
 
@@ -99,19 +89,8 @@ label variable ccyy "Country-year code"
 label variable ccyy_f "Country-year name"
 label variable cname "Country name"
 label variable year "Year"
-label variable M_dhi "Mean of Disposable Income"
-label variable M_tcons_pred "Mean of imputed taxable consumption"
-label variable M_tcons "Mean of observed taxable consumption"
-label variable M_inc1 "Mean of Factor Income"
-label variable M_inc2 "Mean of Market Income"
-label variable M_inc3 "Mean of Gross Income"
 label variable effective_taxrate "Implicit effective tax rate on consumption"
-label variable M_tax_pred "Mean of consumption tax paid (imputed consumption)"
-label variable M_tax "Mean of consumption tax paid (observed consumption)"
-label variable M_inc5_pred "Mean of Post-Tax Income (imputed consumption)"
-label variable M_inc5 "Mean of Post-Tax income (observed consumption)"
 label variable Gini_pre "Gini of Disposable Income"
-label variable Gini_inc1 "Gini of Factor Income"
 label variable Gini_inc2 "Gini of Market Income"
 label variable Gini_inc3 "Gini of Gross Income"
 label variable Gini_inc5 "Gini of Post-Tax Income (observed consumption)"
@@ -143,4 +122,4 @@ note: Credits: Julien Blasco, Elvire Guillaud, Michael Zemmour, ///
 "How regressive are consumptions taxes? An international perspective with microsimulation", ///
 February 2020
 
-save ".\DTA\ConsumptionTaxes_indicators_coremodel", replace
+save ".\DTA\ConsumptionTaxes_indicators_coremodel_ccyypapier", replace
