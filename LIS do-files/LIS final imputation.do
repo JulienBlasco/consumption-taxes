@@ -248,6 +248,7 @@ program main_program
 	qui drop if _merge==2
 	qui drop _merge
 
+	replace hmc_ccyy = 1 if ccyy == "au10"
 	
 	replace model2_ccyy = 0
 	qui foreach ccyy in $datasets_w_hchous {
@@ -272,7 +273,7 @@ program main_program
 	di "************ BEGIN PREPROCESSING ****************"  
 	di "* " c(current_time)
 
-	quiet preprocessing `ccyylist', model(`model')
+	quiet preprocessing `ccyylist', model(`model') `crossvalid'
 	
 	if ("`test'"=="test") {  
 	local ccyylist au10 fr10 it14 us04
@@ -627,7 +628,7 @@ end
 */   
 capture program drop preprocessing   
 program preprocessing     
-	syntax namelist, model(integer)
+	syntax namelist, model(integer) [crossvalid]
   
    
 	 /* trim and bottom-code:   
@@ -655,6 +656,14 @@ program preprocessing
 		 
 		 egen nb_scope`m' 			= sum(scope`m')
 		 egen nb_scope_regress`m'  = sum(scope_regression`m')
+		 
+		 if ("`crossvalid'" == "crossvalid") {
+			foreach ccyy in `namelist' {
+				sum scope_regression`m' if ccyy != "`ccyy'"
+				gen nb_scope_regress`m'`ccyy' = r(sum)
+			}
+		 }
+		 
 	 }
 	 
 	 if (`model' == 10)  {
@@ -873,9 +882,9 @@ program consumption_imputation
 			}
 			
 			local no_regress = e(N)
-			if (nb_scope_regress0 != `no_regress') {
+			if (nb_scope_regress0`crossvalid' != `no_regress') {
 				noisily display as error "__________REGRESSION SCOPE PROBLEM__________"
-				noisily display as error nb_scope_regress0
+				noisily display as error nb_scope_regress0`crossvalid'
 				noisily display as error `no_regress'
 				exit
 				}
@@ -892,9 +901,9 @@ program consumption_imputation
 			}
 			
 			local no_regress = e(N)
-			if (nb_scope_regress1 != `no_regress') {
+			if (nb_scope_regress1`crossvalid' != `no_regress') {
 				noisily display as error "__________REGRESSION SCOPE PROBLEM__________"
-				noisily display as error nb_scope_regress1
+				noisily display as error nb_scope_regress1`crossvalid'
 				noisily display as error `no_regress'
 				exit
 				}
@@ -911,9 +920,9 @@ program consumption_imputation
 			}
 			
 			local no_regress = e(N)
-			if (nb_scope_regress2 != `no_regress') {
+			if (nb_scope_regress2`crossvalid' != `no_regress') {
 				noisily display as error "__________REGRESSION SCOPE PROBLEM__________"
-				noisily display as error nb_scope_regress2
+				noisily display as error nb_scope_regress2`crossvalid'
 				noisily display as error `no_regress'
 				exit
 				}
