@@ -37,6 +37,8 @@ merge m:1 ccyy using "G:/DTA/2021_11_22_summarise_uk_itrcbloque", ///
 sort cname year
 replace standard_vat_rate = standard_vat_rate/100
 
+set scheme plotplaincolor
+
 preserve
 keep if cname == "United Kingdom"
 keep year Gini_diff_pred itrc_ours Gini_pre standard_vat_rate Gini_diff_bloque oecd_prop
@@ -52,8 +54,8 @@ label define label_indicateur ///
 	1 "Standard VAT rate" // 5 "propension agrégée" = oecd_prop à ajouter si on veut
 label values indicateur label_indicateur
 twoway connected valeur* year if year >= 1995 & year <= 2015, ///
-	 yscale(range(0 0.1)) by(indicateur, yrescale title(Evolution of some VAT-related indicators in United Kingdom)) ///
+	 yscale(range(0 0.1)) by(indicateur, note("") yrescale title(Evolution of some VAT-related indicators in United Kingdom)) ///
 	ytitle(, size(zero))
 restore
 
-graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\22-03_tab_tva_UK.eps", as(eps) preview(on) replace
+graph export "N:\images\22-12_tab_tva_UK.eps", as(eps) preview(on) replace
