@@ -20,7 +20,7 @@ set scheme plotplaincolor
 label variable hmc_unscaled_q "Unscaled (micro data)"
 label variable scaled_unif "Uniform scaling (present paper)"
 label variable scaled_heter "Heterogenous scaling"
-label variable dhi_q "Equivalized disposable income in euros (left) and dollars (right)"
+label variable dhi_q "Equivalized disposable income in Euros (left) and Dollars (right)"
 label variable dhi_quantiles "Decile of equivalized disposable income"
 
 gen ccyy_f = "France 2010 (observed consumption data)"  if ccyy == "fr10"
@@ -37,7 +37,7 @@ twoway (connected hmc_unscaled_q scaled_unif scaled_heter dhi_q) || ///
 	legend(order(1 2 3) rows(1) position(5) ring(0) title(Consumption data, size(medium) position(11))) ///
 	 xtitle(, size(small))
 
-graph export "N:\images\2022-10_heterogenous_deciles.eps", as(eps) preview(on) replace
+graph export "N:\images\22-10_heterogenous_deciles.eps", as(eps) preview(on) replace
 
 // SUMMARIES FIGURE
 cd "G:"
