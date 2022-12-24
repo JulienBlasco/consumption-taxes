@@ -1,4 +1,4 @@
-cd "E:\Code\21-03 Datasets V7 (JPubEc Resubmit)\DTA\comparaison_euromod"
+cd "G:\DTA\comparaison_euromod"
 
 * Déciles de revenu
 import delimited using "..\..\CSV\ilc_di01_1_Data.csv", clear

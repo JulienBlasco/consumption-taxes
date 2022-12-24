@@ -1,4 +1,4 @@
-use "E:\Code\21-03 Datasets V7 (JPubEc Resubmit)\DTA\ConsumptionTaxes_percentiles_xtnddmodel.dta", clear
+use "G:\DTA\ConsumptionTaxes_percentiles_xtnddmodel_ccyypapier.dta", clear
 keep if ccyy == "us13"
 sort percentile
 
@@ -21,7 +21,7 @@ replace taxrate_group_ITEP = 0.027392 if group == 88
 replace taxrate_group_ITEP = 0.016966 if group == 97
 replace taxrate_group_ITEP = 0.008738 if group == 100
 
-merge m:1 cname year using "E:\Code\21-03 Datasets V7 (JPubEc Resubmit)\Itrcs scalings\18-08-31_itrcs_scalings.dta", ///
+merge m:1 cname year using "G:\Itrcs scalings\18-08-31_itrcs_scalings.dta", ///
 keep(match) keepusing(oecd_5110 oecd_5121 oecd_P3 oecd_D1CG oecd_P31CP042 oecd_rents itrc_ours)
 
 gen itrc_ours_salesexc = (oecd_5110+oecd_5121)/ ///
@@ -89,4 +89,4 @@ rename T10_B50_inc5ITEP T10_B50_inc5
 rename T10_B50_inc5salesexc T10_B50_inc5ours_rescaled
 	
 notes: Created TS
-save "E:\Code\21-03 Datasets V7 (JPubEc Resubmit)\DTA\comparaison_euromod\US_ITEP.dta", replace
+save "G:\DTA\comparaison_euromod\US_ITEP.dta", replace
