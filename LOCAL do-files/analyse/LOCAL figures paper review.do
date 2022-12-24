@@ -11,15 +11,17 @@ drop if min_model == 0 & model == 1
 drop min_model
 
 gen ccyy_papier = .
-gen ccyy_lighter = ""
+gen ccyy_lighter = " "
+replace ccyy_lighter = "*" if model == 1
+
 foreach ccyy in at13 be97 cz13 dk13 ee13 fi13 fr10 de13 gr13 is10 ie10 ///
 	mx12 nl13 pl13 si12 es13 uk13 {
 	replace ccyy_papier = 1 if ccyy == "`ccyy'"
-	replace ccyy_lighter = " " if ccyy == "`ccyy'"
+	*replace ccyy_lighter = " " if ccyy == "`ccyy'"
 }
-foreach ccyy in au10 br13 hu12 it10 no13 za12 se05 ch13 us13 {
+foreach ccyy in au10  hu12 it10 no13  se05 ch13 us13 { // br13 za12
 	replace ccyy_papier = 1 if ccyy == "`ccyy'"
-	replace ccyy_lighter = "*" if ccyy == "`ccyy'"
+	*replace ccyy_lighter = "*" if ccyy == "`ccyy'"
 }
 
 *label define lab_lighter 0 "*" 1 ""
@@ -75,7 +77,7 @@ graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_inc5_central if ccyy_papier =
 graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\22-12_market_gross_di_posttax.eps", ///
 	as(eps) preview(on) replace
 
-// Figure 6: redistributive impact vs effective tax rate
+// Figure 6: redistributive impact vs effective tax	 rate
 capture {
 	gen clock6 = 9
 	replace clock6 = 12 if inlist(cname, "Czech Republic", "United States")
@@ -92,10 +94,21 @@ capture {
 	gen mean_rate = M_tax_central/M_dhi
 	gen pos_kak = -Kak_central
 }
-twoway (scatter pos_kak mean_rate if ccyy_papier == 1, mlabel(cname)  ///
+
+gen pos_kak_core = pos_kak if ccyy_lighter == " "
+gen pos_kak_lighter = pos_kak if ccyy_lighter == "*"
+label variable pos_kak_core "Core model"
+label variable pos_kak_lighter "Lighter model"
+
+gen clock7 = 3
+replace clock7 = 9 if inlist(cname, "Netherlands", "South Africa", "Sweden")
+replace clock7 = 6 if inlist(cname, "Czech Republic")
+
+twoway (scatter pos_kak_core mean_rate if ccyy_papier == 1, mlabvpos(clock7) mlabel(cname)  ///
 	yaxis(1 2) ylab(.02333333 "RS = 0.01" .04666667 "RS = 0.02" ///
 	0.07 "RS = 0.03" 0.093333 "RS = 0.04" 0.11666667 "RS = 0.05" ///
 	0.14 "RS = 0.06", noticks labstyle(size(small)) axis(2) angle(h))) ///
+	(scatter pos_kak_lighter mean_rate if ccyy_papier == 1, mlabvpos(clock7) mlabel(cname))  ///
 	(function RS1 = (0.01*(1-x)/x)/(1-(.01*(1-x)/x > 0.2)), range(0.05 0.3)) ///
 	(function RS3 = (0.02*(1-x)/x)/(1-(.02*(1-x)/x > 0.2)), range(0.05 0.3)) ///
 	(function RS5 = (0.03*(1-x)/x)/(1-(.03*(1-x)/x > 0.2)), range(0.05 0.3)) ///
@@ -104,6 +117,6 @@ twoway (scatter pos_kak mean_rate if ccyy_papier == 1, mlabel(cname)  ///
 	(function (0.06*(1-x)/x)/(1-(.06*(1-x)/x > 0.2)), range(0.05 0.3)), ///
 	xtitle("Global tax-to-income ratio") ///
 	ytitle("Kakwani index of regressivity", axis(1)) ///
-	legend(off)
+	legend(order(1 2))
 graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\22-12_kakwani_globalTIR.eps", as(eps) preview(on) replace
 

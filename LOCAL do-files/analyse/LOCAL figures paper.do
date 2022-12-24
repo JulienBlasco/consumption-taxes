@@ -120,8 +120,8 @@ graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-10_kakwani_gl
 /************************************************/
 cd "G:"
 *cd "\BLASCOLIEPP\Code\19-08-21 Datasets V6"
-use ".\DTA\ConsumptionTaxes_percentiles_coremodel.dta", clear
-append using ".\DTA\ConsumptionTaxes_percentiles_xtnddmodel.dta", generate(model)
+use ".\DTA\ConsumptionTaxes_percentiles_coremodel_ccyypapier.dta", clear
+append using ".\DTA\ConsumptionTaxes_percentiles_xtnddmodel_ccyypapier.dta", generate(model)
 
 sort ccyy percentile
 
@@ -136,7 +136,7 @@ egen max_year = max(year), by(cname)
 egen max_year_obs = max(year) if !mi(inc5), by(cname)
 egen max_year_core = max(year) if model == 0, by(cname)
 egen max_year_central = max(year) if (model == 0) | ///
-	inlist(cname, "United States", "Norway", "Sweden", "Australia"), by(cname)
+	inlist(cname, "United States", "Norway", "Sweden", "Australia", "Denmark"), by(cname)
 gen central = year == max_year_central
 
 gen tcons_central = tcons
@@ -150,6 +150,7 @@ replace propensity_central = propensity_pred if mi(propensity_central)
 gen tax_ratio_central = tax_ratio
 replace tax_ratio_central = tax_ratio_pred if mi(tax_ratio_central)
 
+cd "N:/"
 // Figure 4: TIR for FR, US, DE, DK	
 preserve
 keep if inlist(cname,"France", "United States", "Germany", "Denmark") & central
@@ -159,7 +160,7 @@ reshape wide tax_ratio_central, i(percentile) j(ccyy) string
 twoway line tax_ratio_central???? percentile, ytitle(Tax-to-income ratio) ///
 	legend(order(2 "Denmark (2013)" 3 "France (2010)" 1 "Germany (2013)" 4 "United States (2013)")) ///
 	graphregion(fcolor(white)) lpattern(solid dash vshortdash longdash_dot)
-graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-10_TIR_qu100_dedkfrus.eps", ///
+graph export "images\22-12_TIR_qu100_dedkfrus.eps", ///
 	as(eps) preview(on) replace
 restore
 
