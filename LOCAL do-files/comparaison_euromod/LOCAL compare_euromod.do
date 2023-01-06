@@ -17,9 +17,9 @@ graph export images/taux_effort_central.eps, as(eps) preview (off) replace
 
 twoway (line tax_prop rescaled_tax_prop_ours decile_num, lpattern(solid solid)) || (scatteri 0 5, msymbol(none)) ///
 	if decile_num != 11 & tax_prop_ours < 0.4 & central, ///
-	by(ccyy_f, rescale) legend(order(1 "BUA approach" 2 "ITRC (our method)"))
+	by(ccyy_f, rescale note("")) legend(order(1 "BUA approach" 2 "ITRC (our method)"))
 		
-graph export images/taux_effort_central_rescaled.eps, as(eps) preview (off) replace
+graph export images/22-12_taux_effort_central_rescaled.eps, as(eps) preview (off) replace
 
 // différences de niveau
 graph dot (asis) effective_tax* if central & decile_num == 11, ///
@@ -88,5 +88,6 @@ graph bar (first) effet_taxes_ours effet_taxes  effet_taxes_ours_rescaled ///
 	over(ccyy_f, label(angle(forty_five))) legend(order( ///
 	1 "Constant ITRC (our methodology)" ///
 	2 "Bottom-up approach without bundle effect (constant effective tax rate)" ///
-	3 "Bottom-up approach (including bundle effect)") cols(1))
-graph export images/decompo_level_bundle.eps, as(eps) preview(off) replace
+	3 "Bottom-up approach (including bundle effect)") cols(1)) ///
+	legend(position(bottom))
+graph export images/22-12_decompo_level_bundle.eps, as(eps) preview(off) replace
