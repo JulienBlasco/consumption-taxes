@@ -951,7 +951,9 @@ program consumption_imputation
 		gen var_p = `e(deviance)'/`e(N)'
 		
 			predict hmc_medianized_predict if scope
-			replace hmc_medianized_predict = hmc_medianized_predict+sqrt(var_p/2)*rnormal()
+			if ("`crossvalid'" == "") {
+				replace hmc_medianized_predict = hmc_medianized_predict+sqrt(var_p/2)*rnormal()
+			}
 			
 			quiet count if !mi(hmc_medianized_predict)
 			local no_imput = r(N)
@@ -969,7 +971,9 @@ program consumption_imputation
 				gen var_p`j' = `e(deviance)'/`e(N)'
 				
 				predict hmc_medianized_predict`j' if scope`j'
+				if ("`crossvalid'" == "") {
 				replace hmc_medianized_predict`j' = hmc_medianized_predict`j'+sqrt(var_p`j'/2)*rnormal()
+				}
 				
 				quiet count if !mi(hmc_medianized_predict`j')
 				local no_imput = r(N)
