@@ -112,7 +112,7 @@ reshape wide tax_ratio_central, i(percentile) j(ccyy) string
 twoway line tax_ratio_central???? percentile, ytitle(Tax-to-income ratio) ///
 	legend(order(2 "Denmark (2013)" 3 "France (2010)" 1 "Germany (2013)" 4 "United States (2013)")) ///
 	graphregion(fcolor(white)) lpattern(solid dash vshortdash longdash_dot)
-graph export "images\22-12_TIR_qu100_dedkfrus.eps", ///
+graph export "images\23-01_TIR_qu100_dedkfrus.eps", ///
 	as(eps) preview(on) replace
 restore
 
@@ -121,7 +121,7 @@ preserve
 duplicates drop ccyy_f, force
 graph hbar (asis) t10_diff if central, over(ccyy_lighter) nofill over(ccyy_f, sort(t10_diff) descending) ///
 	ytitle("") graphregion(fcolor(white))
-graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\22-12_diff_t10_b50.eps", as(eps) preview(on) replace
+graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-01_diff_t10_b50.eps", as(eps) preview(on) replace
 restore
 
 // Table 1: tax-to-income ratios of T10 and B50
@@ -131,10 +131,10 @@ sort T10_B50_taxratio
 mkmat T10_TIR B50_TIR T10_B50_taxratio if central, matrix(t10_b50_tir) rownames(ccyy_f)
 restore
 
-frmttable using "tables/22-12_t10_b50_tir_brut.tex", statmat(t10_b50_tir) ///
+frmttable using "tables/23-01_t10_b50_tir_brut.tex", statmat(t10_b50_tir) ///
 	sdec(2) varlabels tex fragment nocenter replace ///
 	ctitles("" "TIR of T10" "TIR of B50" "Ratio") // vlines(000{10}0)
-filefilter "tables/22-12_t10_b50_tir_brut.tex" "tables/22-12_t10_b50_tir.tex", ///
+filefilter "tables/23-01_t10_b50_tir_brut.tex" "tables/23-01_t10_b50_tir.tex", ///
 	from("\BS_") to(" ") replace
 
 // Figure A.a: estimated error in T10/B50 due to consumption taxes
@@ -142,7 +142,7 @@ preserve
 duplicates drop ccyy_f, force
 graph hbar (asis) t10_diff_obs t10_diff_pred if !mi(t10_diff_obs), over(ccyy_lighter) nofill ///
 	over(ccyy_f, sort(t10_diff_obs)) ytitle("") graphregion(fcolor(white))
-graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\22-12_prediction_gini_posttax_mod1.eps", ///
+graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-01_prediction_gini_posttax_mod1.eps", ///
 	as(eps) preview(on) replace
 restore
 	

@@ -52,4 +52,4 @@ twoway connected valeur* year if year >= 1995 & year <= 2015, ///
 	ytitle(, size(zero))
 restore
 
-graph export "N:\images\22-12_tab_tva_UK.eps", as(eps) preview(on) replace
+graph export "N:\images\23-01_tab_tva_UK.eps", as(eps) preview(on) replace
