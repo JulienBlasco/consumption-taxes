@@ -31,9 +31,6 @@ merge 1:1 cname year using ///
 	"G:\LOCAL do-files\temporel\consumption_data", ///
 	keepusing(cname year standard_vat_rate) generate(merge3) update
 
-merge m:1 ccyy using "G:/DTA/2021_11_22_summarise_uk_itrcbloque", ///
-	keepusing(ccyy Gini_diff_bloque) nogenerate
-	
 sort cname year
 replace standard_vat_rate = standard_vat_rate/100
 
@@ -41,12 +38,9 @@ set scheme plotplaincolor
 
 preserve
 keep if cname == "United Kingdom"
-keep year Gini_diff_pred itrc_ours Gini_pre standard_vat_rate Gini_diff_bloque oecd_prop
+keep year Gini_diff_pred itrc_ours Gini_pre standard_vat_rate oecd_prop
 rename (standard_vat_rate itrc_ours Gini_pre Gini_diff_pred) (valeur#), addnumber
 reshape long valeur, i(year) j(indicateur)
-*rename Gini_diff_bloque valeur_bis
-*replace valeur_bis = . if indicateur != 4
-*label variable valeur_bis "Inequality effect if ITRC was that of 2009"
 label define label_indicateur ///
 	4 "Impact of consumption taxes on inequality" ///
 	2 "Effective tax rate (ITRC)" ///

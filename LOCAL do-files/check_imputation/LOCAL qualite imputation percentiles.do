@@ -90,8 +90,7 @@ graph dot (last) T10_B50_inc_5_ours T10_B50_inc_5_ours_pred T10_B50_dhi ///
 	1 "Inc5 (observed consumption data)" ///
 	2 "Inc5 (imputed consumption data)"))	
 	
-graph hbar (first) diff diff_pred ///
-	if !mi(hmc_medianized_q) & year == max_year_obs & diff < 0.5, ///
+graph hbar (first) diff diff_pred if !mi(hmc_medianized_q) /*& year == max_year_obs & diff < 0.5*/, ///
 	over(ccyy_f, sort(diff)) ///
 	legend(title("Effect of cons taxes on T10/B50") cols(1) ///
 	order(1 "Observed consumption data" 2 "Imputed consumption data"))

@@ -1,3 +1,7 @@
+do "G:\LOCAL do-files\comparaison_euromod\parpays_to_dta.do"
+do "G:\LOCAL do-files\comparaison_euromod\LOCAL comparaison US.do"
+do "G:\LOCAL do-files\comparaison_euromod\LOCAL creation_euromod.do"
+
 use "G:\DTA\comparaison_euromod\comparaison_euromod.dta", clear
 cd "N:\"
 
@@ -8,28 +12,28 @@ gen effet_taxes_ours = T10_B50_inc5ours - T10_B50
 set scheme plotplaincolor
 
 // taux d'effort par décile
+/*
 twoway line tax_prop tax_prop_ours decile_num ///
 	if decile_num != 11 & tax_prop_ours < 0.4 & central, ///
 	graphregion(fcolor(white)) legend(order(1 "BUA approach" 2 "ITRC (our method)")) ///
 	by(ccyy_f etude) yscale(range(0 0.1))
-		
 graph export images/taux_effort_central.eps, as(eps) preview (off) replace
+*/
 
 twoway (line tax_prop rescaled_tax_prop_ours decile_num, lpattern(solid solid)) || (scatteri 0 5, msymbol(none)) ///
 	if decile_num != 11 & tax_prop_ours < 0.4 & central, ///
 	by(ccyy_f, rescale note("")) legend(order(1 "BUA approach" 2 "ITRC (our method)"))
-		
 graph export images/22-12_taux_effort_central_rescaled.eps, as(eps) preview (off) replace
 
 // différences de niveau
 graph dot (asis) effective_tax* if central & decile_num == 11, ///
 	over(ccyy_f, sort(effective_taxrate_ours)) nofill	///
 	legend(order(1 "Bottom-up approach" "(statutory rates)" 2 "ITRC (present paper)"))
-	
 graph export images/eff_taxrate_central.eps, as(eps) preview (off) replace
 
 	
 // rapport interdécile des taux d'effort
+/*
 preserve
 	keep ccyy_f cname year tax_prop* decile_num etude central
 	drop if decile_num == 11 | !central | etude == 3
@@ -65,9 +69,10 @@ preserve
 		
 	graph export images/interdecile_effort_central.eps, as(eps) preview (off) replace
 restore
-
+*/
  
 // T10 et B50
+/*
 graph dot (first) T10_B50 T10_B50_inc5 T10_B50_inc5ours if central ///
 	, over(ccyy_f) nofill ///
 	marker(1, msymbol(x)) marker(2, msymbol(x)) marker(3, msymbol(x))
@@ -82,6 +87,7 @@ frmttable using tables/T10_B50_euromod_brut.tex, statmat(T10_B50_euromod) ///
 	ctitles("" "Disposable income" "Post-Tax (bottom-up approach)" ///
 	"Post-Tax (ITRC)")
 filefilter tables/T10_B50_euromod_brut.tex tables/T10_B50_euromod.tex, from("\BS_") to(" ") replace
+*/
 
 graph bar (first) effet_taxes_ours effet_taxes  effet_taxes_ours_rescaled ///
 	if central, nofill ///

@@ -80,7 +80,7 @@ tostring year, gen(year_s)
 gen ccyy_f = cname + " (" + year_s + ")"
 
 merge m:1 cname year using ///
-"E:\Code\21-03 Datasets V7 (JPubEc Resubmit)\Itrcs scalings\18-08-31_itrcs_scalings.dta", ///
+"G:\Itrcs scalings\18-08-31_itrcs_scalings.dta", ///
 keep(match) keepusing(itrc_ours oecd_5110 oecd_5121 oecd_P3 oecd_D1CG oecd_P31CP042) nogenerate
 
 sort etude cname decile_num

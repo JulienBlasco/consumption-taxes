@@ -38,11 +38,20 @@ replace max_year = max_year5 if mi(max_year)
 
 gen central = year == max_year
 
+gen tcons_central = tcons
+replace tcons_central = tcons_pred if mi(tcons_central)
+
 gen tax_central = tax
 replace tax_central = tax_pred if mi(tax_central)
 
 gen inc5_central = inc5
-replace inc5_central = inc5_pred if mi(inc5)
+replace inc5_central = inc5_pred if mi(inc5_central)
+
+gen propensity_central = propensity
+replace propensity_central = propensity_pred if mi(propensity_central)
+
+gen tax_ratio_central = tax_ratio
+replace tax_ratio_central = tax_ratio_pred if mi(tax_ratio_central)
 
 egen T10_ind = sum(dhi) if percentile >= 91, by(ccyy_f)
 egen B50_ind = sum(dhi) if percentile <= 50, by(ccyy_f)
@@ -56,6 +65,18 @@ egen T10_inc5 = max(T10_inc5_ind), by(ccyy_f)
 egen B50_inc5 = max(B50_inc5_ind), by(ccyy_f)
 gen T10_B50_inc5 = T10_inc5/B50_inc5
 
+egen T10_inc5_ind_obs = sum(inc5) if percentile >= 91, by(ccyy_f)
+egen B50_inc5_ind_obs = sum(inc5) if percentile <= 50, by(ccyy_f)
+egen T10_inc5_obs = max(T10_inc5_ind_obs), by(ccyy_f)
+egen B50_inc5_obs = max(B50_inc5_ind_obs), by(ccyy_f)
+gen T10_B50_inc5_obs = T10_inc5_obs/B50_inc5_obs
+
+egen T10_inc5_ind_pred = sum(inc5_pred) if percentile >= 91, by(ccyy_f)
+egen B50_inc5_ind_pred = sum(inc5_pred) if percentile <= 50, by(ccyy_f)
+egen T10_inc5_pred = max(T10_inc5_ind_pred), by(ccyy_f)
+egen B50_inc5_pred = max(B50_inc5_ind_pred), by(ccyy_f)
+gen T10_B50_inc5_pred = T10_inc5_pred/B50_inc5_pred
+
 egen T10_tax_ind = sum(tax_central) if percentile >= 91, by(ccyy_f)
 egen B50_tax_ind = sum(tax_central) if percentile <= 50, by(ccyy_f)
 egen T10_tax = max(T10_tax_ind), by(ccyy_f)
@@ -65,8 +86,8 @@ gen B50_TIR = B50_tax/B50
 gen T10_B50_taxratio = T10_TIR/B50_TIR
 
 gen t10_diff = T10_B50_inc5 - T10_B50
-
-gsort cname -year percentile
+gen t10_diff_obs = T10_B50_inc5_obs - T10_B50
+gen t10_diff_pred = T10_B50_inc5_pred - T10_B50
 
 cd "N:/"
 
@@ -80,6 +101,8 @@ restore
 
 graph dot (first) T10_B50 if central, over(cname, sort(T10_B50))
 
+
+// Table 1: tax-to-income ratios of T10 and B50
 preserve
 duplicates drop ccyy_f, force
 sort T10_B50_taxratio
@@ -91,3 +114,10 @@ frmttable using "tables/22-12_t10_b50_tir_brut.tex", statmat(t10_b50_tir) ///
 	ctitles("" "TIR of T10" "TIR of B50" "Ratio") // vlines(000{10}0)
 filefilter "tables/22-12_t10_b50_tir_brut.tex" "tables/22-12_t10_b50_tir.tex", ///
 	from("\BS_") to(" ") replace
+
+	
+// Figure A.a: estimated error in T10/B50 due to consumption taxes
+preserve
+duplicates drop ccyy_f, force
+graph hbar (asis) t10_diff_obs t10_diff_pred if !mi(t10_diff_obs), over(ccyy_lighter) nofill over(ccyy_f, sort(t10_diff_obs) descending) ///
+	ytitle("") graphregion(fcolor(white))

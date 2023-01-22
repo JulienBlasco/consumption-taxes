@@ -8,11 +8,11 @@ foreach cc in be hu ie uk {
 	gen etude = 1
 	rename decile decile_num
 	
-	save "E:\Code\21-03 Datasets V7 (JPubEc Resubmit)\DTA\comparaison_euromod\indirect_taxes_`cc'.dta", ///
+	save "G:\DTA\comparaison_euromod\indirect_taxes_`cc'.dta", ///
 		replace
 }
 
-use "E:\Code\21-03 Datasets V7 (JPubEc Resubmit)\DTA\ConsumptionTaxes_percentiles_coremodel.dta", clear
+use "G:\DTA\ConsumptionTaxes_percentiles_coremodel.dta", clear
 keep if ccyy == "gr04"
 gen decile_num = ceil(percentile/10)
 gen cc = substr(ccyy, 1, 2)
@@ -21,4 +21,4 @@ egen dhi_mean = mean(dhi), by(ccyy decile_num)
 keep cc etude decile_num dhi_mean
 rename dhi_mean dhi
 duplicates drop
-save "E:\Code\21-03 Datasets V7 (JPubEc Resubmit)\DTA\comparaison_euromod\indirect_taxes_gr.dta", replace
+save "G:\DTA\comparaison_euromod\indirect_taxes_gr.dta", replace

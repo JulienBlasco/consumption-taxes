@@ -235,7 +235,7 @@ twoway (scatter Gini_inc5_pred Gini_inc5 if Gini_inc5<0.4, mlabel(ccyy) mlabvpos
 	(function y = x, range(0.25 0.4)), ///
 	ytitle(Imputed consumption (Lighter model)) xtitle(Observed consumption) ///
 	legend(position(6) order(2 "45-degree line: no prediction error") title(Gini index of Post-Tax Income))
-graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-11_prediction_gini_posttax_mod1.eps", ///
+graph export "N:\images\22-12_prediction_gini_posttax_mod1.eps", ///
 	as(eps) preview(on) replace
 
 
@@ -243,7 +243,7 @@ graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-11_prediction
 graph dot (asis) Gini_inc5_central Gini_pre if year == max_year, ///
 	over(ccyy_f, sort(Gini_pre) descending) ytitle(Gini index of income inequality) ///
 	legend(order(2 "Disposable Income" 1 "Post-consumption-tax"))
-graph export "N:\Article\images\2020-11_gini_prepost_mod1.eps", as(eps) preview(on) replace
+graph export "N:\images\22-12_gini_prepost_mod1.eps", as(eps) preview(on) replace
 
 // Figure 6: redistributive impact vs effective tax rate
 capture {
@@ -260,7 +260,7 @@ twoway (scatter Gini_diff_central effective_taxrate if year != max_year, mcolor(
 	(scatter Gini_diff_central effective_taxrate if year == max_year, mlabel(cname) mlabcolor(navy) mcolor(navy) msymbol(circle)  mlabvpos(clockB6)), ///
 	ytitle(Regressive impact of consumption taxes (Gini points)) ///
 	xtitle(Effective tax rate on consumption) legend(off)
-graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\images\2020-11_regrimpact_itrc_mod1.eps", as(eps) preview(on) replace
+graph export "N:\images\22-12_regrimpact_itrc_mod1.eps", as(eps) preview(on) replace
 
 /************************************************/
 /* FIGURES IN APPENDIX WITH EGAP     */

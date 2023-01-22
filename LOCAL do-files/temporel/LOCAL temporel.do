@@ -22,6 +22,8 @@ egen nb_obs = sum(obs), by(cname)
 
 egen max_year = max(year), by(cname)
 
+set scheme plotplaincolor
+
 twoway connected Gini_diff Gini_diff_pred year if nb_obs > 0, by(cname)
 
 foreach var in M_tcons M_tax M_inc5 Gini_inc5 Gini_diff Kak RS Conc_tcons Conc_inc5 Conc_tax {
@@ -111,10 +113,18 @@ foreach pays in Iceland Denmark Greece Netherlands ///
 	Austria "CzechRepublic" Spain Germany Poland "UnitedKingdom" France ///
 	Australia Switzerland Mexico "UnitedStates" {
 		gen lab_`pays' = "`pays'"
+		gen clock_`pays' = 3
+		if (inlist("`pays'", "Denmark", "Austria")) {
+			replace clock_`pays' = 2
+			}
+		if (inlist("`pays'", "Spain","UnitedKingdom")) {
+			replace clock_`pays' = 4
+		}
 }
+
 keep if year >= 1995 & year <= 2013 & pays_central == 1
 gen G_ = Gini_diff_pred if year == max_year
-keep G_ Gini_diff_pred year cname lab_*
+keep G_ Gini_diff_pred year cname lab_* clock_*
 replace cname = subinstr(cname, " ", "", 1)
 reshape wide Gini_diff_pred G_, i(year) j(cname, string)
 local plotlist_line (line Gini_diff_predIceland year) 
@@ -124,12 +134,12 @@ foreach pays in Denmark Greece Netherlands ///
 	Australia Switzerland Mexico UnitedStates {
 		local plotlist_line `plotlist_line' || (line Gini_diff_pred`pays' year, lpattern(solid)) 
 		local plotlist_scatter `plotlist_scatter' || (scatter G_`pays' year, ///
-		mlabel(lab_`pays')  msymbol(circle))
+		mlabel(lab_`pays') mlabvpos(clock_`pays') msymbol(circle))
 }
-twoway `plotlist_line' || `plotlist_scatter', legend(off) ///
-	play("G:/LOCAL do-files/temporel/placement_labels_temporel")
+
+twoway `plotlist_line' || `plotlist_scatter', legend(off)
 	
-graph export "E:\Notes\2021-03 Resubmit JPubEc\Article\reponse_reviews\images\22-03_g_diff_temporel.eps"
+graph export "N:\images\22-12_g_diff_temporel.eps"
 restore
 
 graph hbox Gini_diff_pred if year >= 1995 & year <= 2013, ///
