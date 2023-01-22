@@ -1,6 +1,6 @@
 /* CHANGE DIRECTORY */
 cd "G:"
-use ".\DTA\20_11_2022 mod10 summaries", clear
+use ".\DTA\2023-01-21_22_11_2021_mod1_summaries", clear
 
 global redineq_datasets ///
 	at04 at07 at13 au03 au08 au10 ca04 ca07 ca10 ca13 ch00 ch02 ch04 ch07 ch10 ch13 cz02 cz04 ///

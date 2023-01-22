@@ -1014,11 +1014,13 @@ program variables_creation
 		replace itrc_`def'_wor = itrc_`def'_wor + `extreme_gap' * (dhi_percentile-50)/100
 		}
 	
-	 // compute scaled variables, propensities, tax rates, etc.  
-	   
-	 egen dhi_mean = wtmean(dhi) if scope,  by(ccyy)  weight(hwgt*nhhmem) 
-		
-	 egen hmc_mean = wtmean(hmc) if scope, by(ccyy)  weight(hwgt*nhhmem) 
+	 // compute scaled variables, propensities, tax rates, etc.
+	 gen dhi_unequiv = dhi*(nhhmem^0.5)  
+	 egen dhi_mean = wtmean(dhi_unequiv) if scope,  by(ccyy)  weight(hwgt) 
+	 
+	 gen hmc_unequiv = hmc*(nhhmem^0.5)  
+	 egen hmc_mean = wtmean(hmc_unequiv) if scope, by(ccyy)  weight(hwgt) 
+	 
 	 gen hmc_scaled = oecd_prop * (dhi_mean/hmc_mean) * hmc  
 	 gen prop_scaled = hmc_scaled/dhi  
 	 
@@ -1029,7 +1031,9 @@ program variables_creation
 	 }  
 	 
 	 gen hmc_wor = hmc-hmchous  
-	 egen hmc_wor_mean = wtmean(hmc_wor) if scope, by(ccyy)  weight(hwgt*nhhmem) 
+	 gen hmc_wor_unequiv = hmc_wor*(nhhmem^0.5)  
+	 egen hmc_wor_mean = wtmean(hmc_wor_unequiv) if scope, by(ccyy)  weight(hwgt) 
+	 
 	 gen hmc_wor_scaled = oecd_prop_wor * (dhi_mean/hmc_wor_mean) * hmc_wor  
 	 gen prop_wor_scaled = hmc_wor_scaled/dhi  
 	   	
@@ -1040,7 +1044,8 @@ program variables_creation
 	 }   
 	  
 	 // version with rent  
-	 egen hmc_medianized_predict_mean = wtmean(hmc_medianized_predict) if scope, by(ccyy)  weight(hwgt*nhhmem) 
+	 gen hmc_med_predict_unequiv = hmc_medianized_predict*(nhhmem^0.5)  
+	 egen hmc_medianized_predict_mean = wtmean(hmc_med_predict_unequiv) if scope, by(ccyy)  weight(hwgt) 
 	 gen hmc_pred_scaled = oecd_prop * (dhi_mean/hmc_medianized_predict_mean) * ///  
 		hmc_medianized_predict  
 	 gen prop_pred_scaled = hmc_pred_scaled/dhi  
@@ -1054,7 +1059,8 @@ program variables_creation
 	   
 	   
 	 // version without rent 
-	 egen hmchous_mean = wtmean(hmchous) if scope, by(ccyy)  weight(hwgt*nhhmem)
+	 gen hmchous_unequiv = hmchous*(nhhmem^0.5)  
+	 egen hmchous_mean = wtmean(hmchous_unequiv) if scope, by(ccyy)  weight(hwgt)
 	 gen oecd_income = 	cond(oecd_prop_wor_def == 0, oecd_income_S14-oecd_P31CP042, ///
 						cond(oecd_prop_wor_def == 1, oecd_income_S14, ///
 						cond(oecd_prop_wor_def == 2, oecd_income_S14_S15-oecd_P31CP042, ///
@@ -1062,7 +1068,9 @@ program variables_creation
 	 gen hmchous_scaled = oecd_P31CP041/oecd_income * (dhi_mean/hmchous_mean) * hmchous
 	 
 	 gen hmc_wor_pred = hmc_pred_scaled - hmchous_scaled
-	 egen hmc_wor_pred_mean = wtmean(hmc_wor_pred) if scope, by(ccyy) weight(hwgt*nhhmem)  
+	 gen hmc_wor_pred_unequiv = hmc_wor_pred*(nhhmem^0.5)  
+	 egen hmc_wor_pred_mean = wtmean(hmc_wor_pred_unequiv) if scope, by(ccyy) weight(hwgt)  
+	 
 	 gen hmc_wor_pred_scaled = oecd_prop_wor * (dhi_mean/hmc_wor_pred_mean) * ///  
 	   hmc_wor_pred  
 	 gen prop_wor_pred_scaled = hmc_wor_pred_scaled/dhi  

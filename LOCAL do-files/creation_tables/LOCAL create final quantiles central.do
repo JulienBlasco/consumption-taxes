@@ -1,7 +1,7 @@
 /* CHANGE DIRECTORY */
 cd "G:"
 
-use "./DTA/20_11_2022_mod2_qu100_ccyypapier", clear
+use "./DTA/2023-01-21_22_11_2021_mod2_qu100 ccyypapier", clear
 
 drop year_s hmc_q hmchous_q hmc_medianized_predict_q oecd_prop_wor ///
 oecd_prop itrc_carey_wor itrc_euro_wor itrc_carey itrc_euro itrc_ours ///

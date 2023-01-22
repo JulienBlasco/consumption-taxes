@@ -1,14 +1,15 @@
 /* CHANGE DIRECTORY */
-cd "C:\Users\Julien\Documents\BLASCOLIEPP"
-cd "BLASCOLIEPP\Code\18-07-27 Datasets V5\"
+cd "G:"
 
+set varabbrev off, permanent
 
 // choose file
-local filename "18-11-19 cross-validation qu100"
+local filename "20_11_2022_mod2_qu100_crossvalid_ccyypap"
 local mod "mod2"
 //
 
-import delimited "./CSV/`filename'.csv", clear 
+import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
+drop v1 v12
 
 // get cnames and years
 merge m:1 ccyy using ".\DTA\match cname year.dta"
@@ -23,32 +24,32 @@ drop if _merge == 2
 drop _merge
 
 // merge with summaries
-merge m:1 ccyy using ".\DTA\18-09-14 summaries V5 `mod'.dta", ///
-			keepusing(hmc_scaled_mean hmc_wor_scaled_mean hmc_pred_scaled_mean)
+merge m:1 ccyy using ".\DTA\20_11_2022 `mod' summaries.dta", ///
+			keepusing(mean_hmc_scaled mean_hmc_wor_scaled mean_hmc_pred_scaled)
 drop if _merge == 2
 drop _merge
 			
 // change order of variables
 order ccyy cname year, first
 
-egen hmc_mmean 			= mean(hmc), by(ccyy)
-egen hmc_med_pred_mmean = mean(hmc_medianized_predict), by(ccyy)
-gen hmc_wor 			= hmc - hmchous
-egen hmc_wor_mmean		= mean(hmc_wor), by(ccyy)
+egen hmc_mmean 			= mean(hmc_q), by(ccyy)
+egen hmc_med_pred_mmean = mean(hmc_medianized_predict_q), by(ccyy)
+gen hmc_wor_q 			= hmc_q - hmchous_q
+egen hmc_wor_mmean		= mean(hmc_wor_q), by(ccyy)
 
-gen hmc_scaled 		= hmc * hmc_scaled_mean/hmc_mmean
-gen hmc_wor_scaled 	= hmc_wor * hmc_wor_scaled_mean/hmc_wor_mmean
-gen hmc_pred_scaled = hmc_medianized_predict * hmc_pred_scaled_mean/hmc_med_pred_mmean
+gen hmc_scaled_q 		= hmc_q * mean_hmc_scaled/hmc_mmean
+gen hmc_wor_scaled_q 	= hmc_wor_q * mean_hmc_wor_scaled/hmc_wor_mmean
+gen hmc_pred_scaled_q = hmc_medianized_predict_q * mean_hmc_pred_scaled/hmc_med_pred_mmean
 
 local _pred
 forvalues i = 1(1)2 {
 	local _wor
 	forvalues j = 1(1)2 {
-	gen global_prop`_wor'`_pred' = hmc`_wor'`_pred'_scaled/dhi
+	gen global_prop`_wor'`_pred'_q = hmc`_wor'`_pred'_scaled_q/dhi_q
 		foreach def in carey euro ours {
-			gen tax_eff_`def'`_wor'`_pred' = itrc_`def'`_wor' * hmc`_wor'`_pred'_scaled
-			gen inc_5_`def'`_wor'`_pred' = dhi - tax_eff_`def'`_wor'`_pred'
-			gen global_rate_`def'`_wor'`_pred' = tax_eff_`def'`_wor'`_pred'/dhi
+			gen tax_eff_`def'`_wor'`_pred'_q = itrc_`def'`_wor' * hmc`_wor'`_pred'_scaled_q
+			gen inc_5_`def'`_wor'`_pred'_q = dhi_q - tax_eff_`def'`_wor'`_pred'_q
+			gen global_rate_`def'`_wor'`_pred'_q = tax_eff_`def'`_wor'`_pred'_q/dhi_q
 		}
 		local _wor _wor
 	}
