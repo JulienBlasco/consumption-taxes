@@ -1067,9 +1067,7 @@ program variables_creation
 	   
 	 // version without rent 
 	 gen hmc_wor_pred = hmc_pred_scaled - hmchous_scaled
-	 egen hmc_wor_pred_mean = wtmean(hmc_wor_pred) if scope, by(ccyy) weight(hwgt*nhhmem)  
-	 gen hmc_wor_pred_scaled = oecd_prop_wor * (dhi_mean/hmc_wor_pred_mean) * ///  
-	   hmc_wor_pred  
+	 gen hmc_wor_pred_scaled = hmc_wor_pred
 	 gen prop_wor_pred_scaled = hmc_wor_pred_scaled/dhi  
 	  
 	 // compute taxes   
