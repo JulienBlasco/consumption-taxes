@@ -1,7 +1,7 @@
 /* CHANGE DIRECTORY */
 cd "G:"
 
-use "./DTA/2023-01-21_22_11_2021_mod1_qu100 ccyypapier", clear
+use "./DTA/2023-01-25_20_11_2022_mod1_qu100 ccyypapier", clear
 
 keep ccyy ccyy_f cname year dhi_quantiles ///
 	dhi_q hmc_scaled_q hmc_pred_scaled_q ///

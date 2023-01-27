@@ -4,8 +4,8 @@ cd "G:"
 set varabbrev off, permanent
 
 // choose file
-local filename "2023-01-21_22_11_2021_mod2_qu100 ccyypapier"
-local mod "mod2"
+local filename "2023-01-25_20_11_2022_mod1_qu100 ccyypapier"
+local mod "mod1"
 //
 
 import delimited "./CSV/`filename'.csv", clear delimiter(space, collapse)
@@ -24,7 +24,7 @@ drop if _merge == 2
 drop _merge
 
 // merge with summaries
-merge m:1 ccyy using ".\DTA\2023-01-21_22_11_2021_`mod'_summaries", ///
+merge m:1 ccyy using ".\DTA\2023-01-25_20_11_2022_`mod'_summaries", ///
 			keepusing(mean_hmc_scaled mean_hmc_wor_scaled mean_hmc_pred_scaled)
 drop if _merge == 2
 drop _merge

@@ -142,7 +142,7 @@ preserve
 duplicates drop ccyy_f, force
 graph hbar (asis) t10_diff_obs t10_diff_pred if !mi(t10_diff_obs), over(ccyy_lighter) nofill ///
 	over(ccyy_f, sort(t10_diff_obs)) ytitle("") graphregion(fcolor(white))
-graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-01_prediction_gini_posttax_mod1.eps", ///
+graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-01_error_T10B50.eps", ///
 	as(eps) preview(on) replace
 restore
 	
