@@ -968,11 +968,7 @@ program consumption_imputation
 	else {
 		if (`model' != 10) {
 		estimates restore themodel`model'
-		gen var_p = `e(deviance)'/`e(N)'
-		
-			predict hmc_medianized_predict if scope
-			replace hmc_medianized_predict = hmc_medianized_predict+sqrt(var_p/2)*rnormal()
-			
+			predict hmc_medianized_predict if scope	
 			quiet count if !mi(hmc_medianized_predict)
 			local no_imput = r(N)
 			
@@ -985,12 +981,8 @@ program consumption_imputation
 			}
 		else {
 			 forvalues j = 0(1)2 {   
-				estimates restore themodel`j'
-				gen var_p`j' = `e(deviance)'/`e(N)'
-				
-				predict hmc_medianized_predict`j' if scope`j'
-				replace hmc_medianized_predict`j' = hmc_medianized_predict`j'+sqrt(var_p`j'/2)*rnormal()
-				
+				estimates restore themodel`j'				
+				predict hmc_medianized_predict`j' if scope`j'	
 				quiet count if !mi(hmc_medianized_predict`j')
 				local no_imput = r(N)
 				
