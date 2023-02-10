@@ -63,19 +63,19 @@ twoway (scatter Gini_inc5_pred Gini_inc5 if Gini_inc5<0.4, mlabel(ccyy) mlabvpos
 	(function y = x, range(0.25 0.4)), ///
 	ytitle(Imputed consumption) xtitle(Observed consumption) ///
 	legend(position(6) order(2 "45-degree line: no prediction error") title(Gini index of Post-Tax Income))
-graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-01_prediction_gini_posttax.eps", ///
+graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-02_prediction_gini_posttax.eps", ///
 	as(eps) preview(on) replace
 
 // Figure 4: estimated rise in Gini index due to consumption taxes
 graph hbar (asis) Gini_diff_central if ccyy_papier == 1, over(ccyy_lighter) nofill over(ccyy_f, sort(Gini_diff_central) descending) ///
 	ytitle(Regressive impact of consumption taxes (Gini points)) ylabel(0(0.01)0.05) graphregion(fcolor(white))
-graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-01_regressive_impact.eps", as(eps) preview(on) replace
+graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-02_regressive_impact.eps", as(eps) preview(on) replace
 
 // Figure 5: Gini of market, gross, disposable and post tax income
 graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_inc5_central if ccyy_papier == 1 & !mi(Gini_inc2), ///
 	over(ccyy_lighter) nofill over(ccyy_f, sort(Gini_inc5_central) descending) ytitle(Gini index of income inequality) ///
 	legend(order(1 "Market Income" 2 "Gross Income" 3 "Disposable Income" 4 "Post-Tax Income"))
-graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-01_market_gross_di_posttax.eps", ///
+graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-02_market_gross_di_posttax.eps", ///
 	as(eps) preview(on) replace
 
 // Figure 6: redistributive impact vs effective tax	 rate
@@ -88,7 +88,7 @@ twoway (scatter Gini_diff_central effective_taxrate if ccyy_papier != 1, mcolor(
 	(scatter Gini_diff_central effective_taxrate if ccyy_papier == 1, mlabel(cname) mlabcolor(navy) mcolor(navy) msymbol(circle) mlabvpos(clock6)), ///
 	ytitle(Regressive impact of consumption taxes (Gini points)) ///
 	xtitle(Implicit tax rate on consumption) graphregion(fcolor(white)) legend(off)
-graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-01_regrimpact_itrc.eps", as(eps) preview(on) replace
+graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-02_regrimpact_itrc.eps", as(eps) preview(on) replace
 
 // Figure 7: Kakwani, global TIR and RS
 capture {
@@ -119,12 +119,12 @@ twoway (scatter pos_kak_core mean_rate if ccyy_papier == 1, mlabvpos(clock7) mla
 	xtitle("Global tax-to-income ratio") ///
 	ytitle("Kakwani index of regressivity", axis(1)) ///
 	legend(order(1 2))
-graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-01_kakwani_globalTIR.eps", as(eps) preview(on) replace
+graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-02_kakwani_globalTIR.eps", as(eps) preview(on) replace
 
 // Figure 14 : gross, market and disposable with heterogeneous
 preserve
-use "DTA\20_11_2022_heter mod2 summaries ccyy_fig13.dta" , clear
-append using "DTA\20_11_2022_heter mod1 summaries ccyy_fig13", generate(model)
+use "DTA\2023-01-28_20_11_2022_heter mod2 summaries ccyy_fig13.dta" , clear
+append using "DTA\2023-01-28_20_11_2022_heter mod1 summaries ccyy_fig13.dta", generate(model)
 save "DTA\20_11_2022_heter mod12 summaries ccyy_fig13.dta", replace
 restore
 
@@ -140,7 +140,7 @@ graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_inc5_central Gini_inc5_centra
 	over(ccyy_f, sort(Gini_inc5_central) descending) ytitle(Gini index of income inequality)	///
 	marker(4, msize(medsmall) msymbol(plus)) marker(5, msymbol(lgx)) exclude0 ///
 	legend(order(1 "Market Income" 2 "Gross Income" 3 "Disposable Income" 4 "Post-Tax Income (uniform)" 5 "Post-Tax Income (heterogenous)"))
-graph export "N:\images\23-01_heterogenous_gini.eps", as(eps) preview(on) replace
+graph export "N:\images\23-02_heterogenous_gini.eps", as(eps) preview(on) replace
 restore
 
 // Fgure Appendix G.a : temporel
@@ -182,9 +182,21 @@ foreach pays in Denmark Greece Netherlands ///
 
 twoway `plotlist_line' || `plotlist_scatter', legend(off)
 	
-graph export "N:\images\23-01_g_diff_temporel.eps", replace
+graph export "N:\images\23-02_g_diff_temporel.eps", replace
 restore
 
+// Figure Appendix F : vertical vs horizontal redistribution
+gen rerank = Gini_diff - RS 
+preserve
+label variable rerank "Reranking index"
+label variable RS "Reynolds-Smolensky vertical redistribution index"
+tostring year, gen(year_s)
+keep if !mi(rerank)
+egen max_year = max(year), by(cname)
+keep if year == max_year
+graph bar (asis) RS rerank , over(ccyy_f, sort(Gini_diff) descending label(alternate)) ///
+	stack legend(position(6))
+graph export "N:\images\23-02_decomposition_effective_redistribution.eps", replace
 
 
 /************************************************/
@@ -236,7 +248,7 @@ twoway (scatter Gini_inc5_pred Gini_inc5 if Gini_inc5<0.4, mlabel(ccyy) mlabvpos
 	(function y = x, range(0.25 0.4)), ///
 	ytitle(Imputed consumption (Lighter model)) xtitle(Observed consumption) ///
 	legend(position(6) order(2 "45-degree line: no prediction error") title(Gini index of Post-Tax Income))
-graph export "N:\images\23-01_prediction_gini_posttax_mod1.eps", ///
+graph export "N:\images\23-02_prediction_gini_posttax_mod1.eps", ///
 	as(eps) preview(on) replace
 
 
@@ -244,7 +256,7 @@ graph export "N:\images\23-01_prediction_gini_posttax_mod1.eps", ///
 graph dot (asis) Gini_inc5_central Gini_pre if year == max_year, ///
 	over(ccyy_f, sort(Gini_pre) descending) ytitle(Gini index of income inequality) ///
 	legend(order(2 "Disposable Income" 1 "Post-consumption-tax"))
-graph export "N:\images\23-01_gini_prepost_mod1.eps", as(eps) preview(on) replace
+graph export "N:\images\23-02_gini_prepost_mod1.eps", as(eps) preview(on) replace
 
 // Figure 6: redistributive impact vs effective tax rate
 capture {
@@ -261,4 +273,4 @@ twoway (scatter Gini_diff_central effective_taxrate if year != max_year, mcolor(
 	(scatter Gini_diff_central effective_taxrate if year == max_year, mlabel(cname) mlabcolor(navy) mcolor(navy) msymbol(circle)  mlabvpos(clockB6)), ///
 	ytitle(Regressive impact of consumption taxes (Gini points)) ///
 	xtitle(Effective tax rate on consumption) legend(off)
-graph export "N:\images\23-01_regrimpact_itrc_mod1.eps", as(eps) preview(on) replace
+graph export "N:\images\23-02_regrimpact_itrc_mod1.eps", as(eps) preview(on) replace

@@ -22,8 +22,8 @@ graph export images/taux_effort_central.eps, as(eps) preview (off) replace
 
 twoway (line tax_prop rescaled_tax_prop_ours decile_num, lpattern(solid solid)) || (scatteri 0 5, msymbol(none)) ///
 	if decile_num != 11 & tax_prop_ours < 0.4 & central, ///
-	by(ccyy_f, rescale note("")) legend(order(1 "BUA approach" 2 "ITRC (our method)"))
-graph export images/22-12_taux_effort_central_rescaled.eps, as(eps) preview (off) replace
+	by(ccyy_f, rescale note("")) legend(order(1 "Bottom-up approach (statutory rates)" 2 "ITRC (present paper)"))
+graph export images/23-02_taux_effort_central_rescaled.eps, as(eps) preview (off) replace
 
 // différences de niveau
 graph dot (asis) effective_tax* if central & decile_num == 11, ///
