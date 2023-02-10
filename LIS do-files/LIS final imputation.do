@@ -273,7 +273,7 @@ program main_program
 	di "************ BEGIN PREPROCESSING ****************"  
 	di "* " c(current_time)
 
-	quiet preprocessing `ccyylist', model(`model') `crossvalid'
+	`quiet' preprocessing `ccyylist', model(`model') `crossvalid' 
 	
 	if ("`test'"=="test") {  
 	local ccyylist au10 fr10 it14 us04
@@ -657,13 +657,6 @@ program preprocessing
 		 egen nb_scope`m' 			= sum(scope`m')
 		 egen nb_scope_regress`m'  = sum(scope_regression`m')
 		 
-		 if ("`crossvalid'" == "crossvalid") {
-			foreach ccyy in `namelist' {
-				sum scope_regression`m' if ccyy != "`ccyy'"
-				gen nb_scope_regress`m'`ccyy' = r(sum)
-			}
-		 }
-		 
 	 }
 	 
 	 if (`model' == 10)  {
@@ -853,6 +846,13 @@ end
 capture program drop consumption_imputation
 program consumption_imputation
 	syntax , model(integer) [crossvalid(string) savemodel(string) runmodel(string)]
+	
+	foreach m in 0 1 2 {
+		if ("`crossvalid'"!="") {
+			sum scope_regression`m' if substr(ccyy, 1,2) != substr("`crossvalid'", 1,2)
+			gen nb_scope_regress`m'`crossvalid' = r(sum)
+		}
+	}
 	
 	if ("`runmodel'" != "") {
 		if (`model' == 10) {
