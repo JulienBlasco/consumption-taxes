@@ -1,3 +1,7 @@
 DTA/LOCAL_datasets/jblasc/estimation_models/*
 DTA/old/*
 CSV/old/*
+.Rproj.user
+.Rhistory
+*.Rproj
+
