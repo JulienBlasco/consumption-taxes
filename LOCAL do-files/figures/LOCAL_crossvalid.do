@@ -18,9 +18,9 @@ replace ccyy_f = ccyy_f + "*" if mi(global_prop_wor_q) | mi(global_prop_wor_pred
 label variable prop "Observed consumption"
 label variable prop_pred "Imputed consumption"
 
-twoway (scatter prop dhi_quantiles, msize(tiny)) ///
-	(line prop_pred dhi_quantiles,  lpattern(solid)) ///
-	if prop <= 3 & prop_pred <= 3,  yscale(range(0 2.5)) ///
+twoway (line prop_pred dhi_quantiles,  lpattern(solid)) ///
+	(scatter prop dhi_quantiles, msize(tiny) msymbol(circle)) ///
+	if prop <= 2 & prop_pred <= 2,  yscale(range(0 2)) ///
 	by(ccyy_f, legend(position(3)) note("")) ///
 	xtitle(Income percentile)
 	
