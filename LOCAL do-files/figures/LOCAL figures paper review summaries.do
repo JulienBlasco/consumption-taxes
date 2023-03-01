@@ -74,7 +74,8 @@ graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-02_regressive_impact.
 // Figure 5: Gini of market, gross, disposable and post tax income
 graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_inc5_central if ccyy_papier == 1 & !mi(Gini_inc2), ///
 	over(ccyy_lighter) nofill over(ccyy_f, sort(Gini_inc5_central) descending) ytitle(Gini index of income inequality) ///
-	legend(order(1 "Market Income" 2 "Gross Income" 3 "Disposable Income" 4 "Post-Tax Income"))
+	legend(order(1 "Market Income" 2 "Gross Income" 3 "Disposable Income" 4 "Post-Tax Income")) exclude0 ///
+	yscale(range(0.2 0.2))
 graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-02_market_gross_di_posttax.eps", ///
 	as(eps) preview(on) replace
 
@@ -139,7 +140,8 @@ drop Gini_ours*
 graph dot (asis) Gini_inc2 Gini_inc3 Gini_pre Gini_inc5_central Gini_inc5_central_h, ///
 	over(ccyy_f, sort(Gini_inc5_central) descending) ytitle(Gini index of income inequality)	///
 	marker(4, msize(medsmall) msymbol(plus)) marker(5, msymbol(lgx)) exclude0 ///
-	legend(order(1 "Market Income" 2 "Gross Income" 3 "Disposable Income" 4 "Post-Tax Income (uniform)" 5 "Post-Tax Income (heterogenous)"))
+	yscale(range(0.2 0.2)) ///
+	legend(order(1 "Market Income" 2 "Gross Income" 3 "Disposable Income" 4 "Post-Tax Income (uniform)" 5 "Post-Tax Income (heterogeneous)"))
 graph export "N:\images\23-02_heterogenous_gini.eps", as(eps) preview(on) replace
 restore
 
