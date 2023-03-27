@@ -87,7 +87,7 @@ capture {
 }
 twoway (scatter Gini_diff_central effective_taxrate if ccyy_papier != 1, mcolor(*0.3)) ///
 	(scatter Gini_diff_central effective_taxrate if ccyy_papier == 1, mlabel(cname) mlabcolor(navy) mcolor(navy) msymbol(circle) mlabvpos(clock6)), ///
-	ytitle(Regressive impact of consumption taxes (Gini points)) ///
+	ytitle(Redistribution effect of consumption taxes (increase in Gini points), size(small)) ///
 	xtitle(Implicit tax rate on consumption) graphregion(fcolor(white)) legend(off)
 graph export "E:\Notes\2022-08_Reresubmit_JPubEc\images\23-02_regrimpact_itrc.eps", as(eps) preview(on) replace
 
